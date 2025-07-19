@@ -1,0 +1,138 @@
+import { useState, useEffect } from "react";
+import HealthBar from "./HealthBar";
+import ScoreDisplay from "./ScoreDisplay";
+import { useFireSafety } from "@/lib/stores/useFireSafety";
+import { usePlayer } from "@/lib/stores/usePlayer";
+import { SAFETY_TIPS } from "@/lib/constants";
+import PauseMenu from "../screens/PauseMenu";
+import { Controls } from "@/lib/types";
+
+export default function GameUI() {
+  const { 
+    isPaused, 
+    resumeGame, 
+    resetLevel,
+    activeTip, 
+    levelData
+  } = useFireSafety();
+  
+  const { hasExtinguisher } = usePlayer();
+  
+  const [showTip, setShowTip] = useState(false);
+  const [tipContent, setTipContent] = useState<{title: string, content: string} | null>(null);
+
+  useEffect(() => {
+    if (activeTip) {
+      const tip = SAFETY_TIPS.find(t => t.id === activeTip);
+      if (tip) {
+        setTipContent({
+          title: tip.title,
+          content: tip.content
+        });
+        setShowTip(true);
+
+        const tipTimeout = setTimeout(() => {
+          setShowTip(false);
+        }, 5000);
+        
+        return () => clearTimeout(tipTimeout);
+      }
+    } else {
+      setShowTip(false);
+    }
+  }, [activeTip]);
+  
+  return (
+    <>
+      {/* Health and Oxygen Bars */}
+      <HealthBar />
+      
+
+      
+      {/* Simple Gas Mask Status - Temporarily disabled for debugging */}
+      {/* {hasGasMask && (
+        <div className="absolute top-4 right-4 bg-blue-900 bg-opacity-80 p-2 rounded-md text-white">
+          <h3 className="text-sm font-bold">🛡️ BFP Breathing Apparatus</h3>
+          <p className="text-xs text-green-300">Smoke Protection: Active</p>
+        </div>
+      )} */}
+      
+      {/* BFP Gas Mask Status */}
+      {/* {hasGasMask && (
+        <div className="absolute top-4 right-4 bg-blue-900 bg-opacity-80 p-3 rounded-md text-white">
+          <h3 className="text-sm font-bold mb-1">🛡️ BFP Breathing Apparatus</h3>
+          <div className="flex items-center space-x-2">
+            <span className="text-xs">Oxygen Filter:</span>
+            <div className="w-24 h-2 bg-gray-600 rounded-full overflow-hidden">
+              <div 
+                className={`h-full transition-all duration-300 ${
+                  gasMaskOxygenLevel > 50 ? 'bg-green-500' : 
+                  gasMaskOxygenLevel > 25 ? 'bg-yellow-500' : 'bg-red-500'
+                }`}
+                style={{ width: `${gasMaskOxygenLevel}%` }}
+              />
+            </div>
+            <span className="text-xs">{Math.round(gasMaskOxygenLevel)}%</span>
+          </div>
+          {gasMaskOxygenLevel < 25 && (
+            <p className="text-xs text-red-300 mt-1">⚠️ Filter Running Low!</p>
+          )}
+        </div>
+      )} */}
+      
+      {/* Oxygen Level Display */}
+      {/* <div className="absolute top-20 left-4 bg-black bg-opacity-50 p-2 rounded-md text-white">
+        <div className="flex items-center space-x-2">
+          <span className="text-sm">💨 Oxygen:</span>
+          <div className="w-20 h-2 bg-gray-600 rounded-full overflow-hidden">
+            <div 
+              className={`h-full transition-all duration-300 ${
+                oxygen > 70 ? 'bg-blue-500' : 
+                oxygen > 40 ? 'bg-yellow-500' : 'bg-red-500'
+              }`}
+              style={{ width: `${oxygen}%` }}
+            />
+          </div>
+          <span className="text-xs">{Math.round(oxygen)}%</span>
+        </div>
+      </div> */}
+      
+      {/* Score and Time */}
+      <ScoreDisplay />
+      
+      {/* Controls Guide */}
+      <div className="absolute bottom-4 right-4 bg-black bg-opacity-50 p-3 rounded-md text-white">
+        <h3 className="text-lg font-bold mb-2">Controls</h3>
+        <ul className="text-sm space-y-1">
+          <li>WASD / Arrows: Move (Walk Animation)</li>
+          <li>Shift: Run (Running Animation)</li>
+          <li>C: Crouch (Crouch Animation)</li>
+          <li>E: Interact / Collect Items</li>
+          {hasExtinguisher && <li>F: Use Extinguisher (Action Animation)</li>}
+          <li>Esc: Pause</li>
+          <li>M: Toggle Sound</li>
+        </ul>
+
+      </div>
+      
+      {/* Level Info */}
+      <div className="absolute top-4 left-4 bg-black bg-opacity-50 p-3 rounded-md text-white">
+        <h2 className="text-xl font-bold">{levelData.name}</h2>
+        <p className="text-sm mt-1">{levelData.description}</p>
+      </div>
+      
+      {/* Safety Tip */}
+      {showTip && tipContent && (
+        <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-600 bg-opacity-90 p-4 rounded-md text-white max-w-md">
+          <h3 className="text-xl font-bold mb-2">{tipContent.title}</h3>
+          <p className="text-md">{tipContent.content}</p>
+        </div>
+      )}
+      
+      {/* Pause Menu */}
+      {isPaused && (
+        <PauseMenu onResume={resumeGame} onRestart={resetLevel} />
+      )}
+    </>
+  );
+}

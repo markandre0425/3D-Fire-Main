@@ -1,0 +1,76 @@
+import { create } from "zustand";
+import { Howl } from "howler";
+
+interface AudioState {
+  backgroundMusic: Howl | null;
+  hitSound: Howl | null;
+  successSound: Howl | null;
+  isMuted: boolean;
+
+  setBackgroundMusic: (music: Howl) => void;
+  setHitSound: (sound: Howl) => void;
+  setSuccessSound: (sound: Howl) => void;
+
+  toggleMute: () => void;
+  playHit: () => void;
+  playSuccess: () => void;
+}
+
+export const useAudio = create<AudioState>((set, get) => ({
+  backgroundMusic: null,
+  hitSound: null,
+  successSound: null,
+  isMuted: true,
+
+  setBackgroundMusic: (music) => set({ backgroundMusic: music }),
+  setHitSound: (sound) => set({ hitSound: sound }),
+  setSuccessSound: (sound) => set({ successSound: sound }),
+  
+  toggleMute: () => {
+    const { isMuted, backgroundMusic, hitSound, successSound } = get();
+    const newMutedState = !isMuted;
+
+    if (backgroundMusic) {
+      backgroundMusic.mute(newMutedState);
+    }
+    
+    if (hitSound) {
+      hitSound.mute(newMutedState);
+    }
+    
+    if (successSound) {
+      successSound.mute(newMutedState);
+    }
+
+    set({ isMuted: newMutedState });
+
+    console.log(`Sound ${newMutedState ? 'muted' : 'unmuted'}`);
+  },
+  
+  playHit: () => {
+    const { hitSound, isMuted } = get();
+    if (hitSound) {
+      if (isMuted) {
+        console.log("Hit sound skipped (muted)");
+        return;
+      }
+
+      hitSound.volume(0.3);
+      hitSound.play();
+    }
+  },
+  
+  playSuccess: () => {
+    const { successSound, isMuted } = get();
+    if (successSound) {
+      // If sound is muted, don't play anything
+      if (isMuted) {
+        console.log("Success sound skipped (muted)");
+        return;
+      }
+      
+      // Play the sound
+      successSound.play();
+    }
+  }
+}));
