@@ -4,7 +4,7 @@ import { KeyboardControls } from "@react-three/drei";
 import { useAudio } from "./lib/stores/useAudio";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
-import "@fontsource/inter";
+// import "@fontsource/inter"; // Temporarily disabled due to path issues
 import { Controls } from "./lib/types";
 import GameScreen from "./components/screens/GameScreen";
 import MainMenu from "./components/screens/MainMenu";
