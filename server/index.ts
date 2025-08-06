@@ -24,20 +24,17 @@ app.use(express.urlencoded({ extended: false }));
     serveStatic(app);
   }
 
-  const basePort = parseInt(process.env.PORT || "5000", 10);
-
-  portfinder.basePort = basePort;
+  const port = parseInt(process.env.PORT || "5000", 10);
 
   try {
-    const port = await portfinder.getPortPromise();
     server.listen({
       port,
-      host: "127.0.0.1",
+      host: "0.0.0.0", // Changed from 127.0.0.1 to work on Render
     }, () => {
-      log(`Port ${basePort} was ${port !== basePort ? 'busy, now ' : ''}serving on port ${port}`);
+      log(`Server running on port ${port}`);
     });
   } catch (err) {
-    console.error("Failed to find an available port:", err);
+    console.error("Failed to start server:", err);
     process.exit(1);
   }
 })();
