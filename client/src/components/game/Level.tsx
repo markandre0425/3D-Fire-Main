@@ -6,12 +6,14 @@ import HomeEnvironment from "./HomeEnvironment";
 import Hazard from "./Hazard";
 import ExtinguisherPickup from "./ExtinguisherPickup";
 import ExtinguisherEffect from "./ExtinguisherEffect";
-import SmokeZone from "./SmokeZone";
+import RandomFireSpawner from "./RandomFireSpawner";
+import Fire from "./Fire";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { usePlayer } from "@/lib/stores/usePlayer";
 import { useKeyboardControls } from "@react-three/drei";
 import { Controls } from "@/lib/types";
 import { GAME_CONSTANTS } from "@/lib/constants";
+import { getLevelConfig } from "@/lib/levelConfigs";
 
 export default function Level() {
   const { 
@@ -20,7 +22,6 @@ export default function Level() {
     updateLevelTime,
     extinguishHazard,
     collectObject,
-    activateSmokeDetector,
     isPaused,
     currentLevel
   } = useFireSafety();
@@ -29,36 +30,35 @@ export default function Level() {
   
   const playerState = usePlayer();
   const [isExtinguishing, setIsExtinguishing] = useState(false);
+  const [levelFires, setLevelFires] = useState<Array<{
+    id: string;
+    position: [number, number, number];
+    intensity: number;
+    size: number;
+    isActive: boolean;
+  }>>([]);
 
-  
   const lastUpdateTime = useRef(Date.now());
   const extinguishCooldown = useRef(0);
   
-  // Initialize level-specific items
-  // useEffect(() => {
-  //   if (levelConfig) {
-  //     // Set up gas masks from level config
-  //     const levelGasMasks = levelConfig.items
-  //       .filter(item => item.type === 'gasMask')
-  //       .map(item => ({
-  //         id: item.id,
-  //         position: item.position,
-  //         collected: false
-  //       }));
-  //     setGasMasks(levelGasMasks);
+  // Initialize level-specific fires from levelConfigs
+  useEffect(() => {
+    const levelConfig = getLevelConfig(parseInt(currentLevel) || 1);
+    if (levelConfig) {
+      const fires = levelConfig.hazards
+        .filter(hazard => hazard.type === 'fire')
+        .map(hazard => ({
+          id: hazard.id,
+          position: hazard.position as [number, number, number],
+          intensity: hazard.intensity,
+          size: Math.max(0.5, hazard.intensity * 0.8),
+          isActive: true
+        }));
       
-  //     // Set up smoke zones from level config
-  //     const levelSmokeZones = levelConfig.hazards
-  //       .filter(hazard => hazard.type === 'smoke')
-  //       .map(hazard => ({
-  //         id: hazard.id,
-  //         position: hazard.position,
-  //         intensity: hazard.intensity,
-  //         radius: hazard.smokeRadius || 2
-  //       }));
-  //     setSmokeZones(levelSmokeZones);
-  //   }
-  // }, [levelConfig]);
+      setLevelFires(fires);
+      console.log(`Level ${currentLevel} initialized with ${fires.length} fires`);
+    }
+  }, [currentLevel]);
   
   // Get keyboard controls
   const actionPressed = useKeyboardControls<Controls>(state => state.action);
@@ -86,7 +86,7 @@ export default function Level() {
     if (actionPressed) {
       // Check for nearby interactive objects
       interactiveObjects.forEach(obj => {
-        if (obj.isCollected || (obj.type === "SmokeDetector" && obj.isActive)) return;
+        if (obj.isCollected) return;
         
         const dx = playerState.position.x - obj.position.x;
         const dz = playerState.position.z - obj.position.z;
@@ -100,17 +100,12 @@ export default function Level() {
               obj.type === "PowderExtinguisher" ||
               obj.type === "WetChemicalExtinguisher") {
             collectObject(obj.id);
-          } else if (obj.type === "SmokeDetector") {
-            activateSmokeDetector(obj.id);
           }
-          
           console.log(`Interacted with ${obj.type}: ${obj.id}`);
         }
       });
-      
-
     }
-      }, [actionPressed, interactiveObjects, playerState.position, collectObject, activateSmokeDetector]);
+  }, [actionPressed, interactiveObjects, playerState.position, collectObject]);
   
   // Handle fire extinguisher usage with enhanced effects
   useEffect(() => {
@@ -132,6 +127,19 @@ export default function Level() {
           console.log(`Extinguished hazard: ${hazard.id}`);
         }
       });
+
+      // Check for nearby level fires to extinguish
+      setLevelFires(prev => prev.map(fire => {
+        const dx = playerState.position.x - fire.position[0];
+        const dz = playerState.position.z - fire.position[2];
+        const distanceSquared = dx * dx + dz * dz;
+        
+        if (distanceSquared < GAME_CONSTANTS.EXTINGUISHER_RANGE * GAME_CONSTANTS.EXTINGUISHER_RANGE) {
+          console.log(`Extinguished level fire: ${fire.id}`);
+          return { ...fire, isActive: false };
+        }
+        return fire;
+      }));
       
       // Set cooldown to prevent spam and allow for animation
       extinguishCooldown.current = 0.5;
@@ -155,12 +163,29 @@ export default function Level() {
         <Hazard key={hazard.id} hazard={hazard} />
       ))}
       
-      {/* Simple smoke zone for testing */}
-      <SmokeZone
-        position={[3, 1, 3]}
-        radius={2}
-        intensity={1}
-        damageRate={10}
+      {/* Render level-specific fires from levelConfigs */}
+      {levelFires.map(fire => (
+        <Fire
+          key={fire.id}
+          position={fire.position}
+          size={fire.size}
+          intensity={fire.intensity}
+          isActive={fire.isActive}
+        />
+      ))}
+      
+      {/* Random Fire Spawner for additional dynamic fires */}
+      <RandomFireSpawner
+        maxFires={3}
+        spawnInterval={5000}
+        spawnChance={0.4}
+        mapBounds={{
+          minX: -8,
+          maxX: 8,
+          minZ: -8,
+          maxZ: 8,
+          y: 0.1
+        }}
       />
       
       {/* Render interactive objects */}
@@ -174,8 +199,6 @@ export default function Level() {
           />
         );
       })}
-      
-
       
       {/* Fire extinguisher effects */}
       {playerState.hasExtinguisher && (

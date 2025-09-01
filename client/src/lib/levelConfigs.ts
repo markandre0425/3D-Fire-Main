@@ -63,6 +63,14 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
         intensity: 1,
         smokeRadius: 1.5,
         damageRate: 10
+      },
+      {
+        id: 'stove-fire',
+        type: 'fire',
+        position: [-2, 0, -2],
+        intensity: 0.8,
+        smokeRadius: 1,
+        damageRate: 8
       }
     ],
     items: [
@@ -84,6 +92,12 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
         description: 'Extinguish the cooking oil fire using wet chemical extinguisher',
         type: 'extinguish',
         target: 'kitchen-fire-1'
+      },
+      {
+        id: 'extinguish-stove-fire',
+        description: 'Extinguish the stove fire to prevent kitchen spread',
+        type: 'extinguish',
+        target: 'stove-fire'
       },
       {
         id: 'collect-mask',
@@ -134,19 +148,19 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
       },
       {
         id: 'electrical-fire',
-        type: 'electrical',
+        type: 'fire', // Changed from 'electrical' to 'fire'
         position: [-3, 0, 2],
         intensity: 1.5,
         smokeRadius: 2,
         damageRate: 12
       },
       {
-        id: 'heavy-smoke-zone',
-        type: 'smoke',
+        id: 'candle-fire',
+        type: 'fire', // Changed from 'smoke' to 'fire'
         position: [0, 0, -3],
-        intensity: 3,
-        smokeRadius: 3,
-        damageRate: 8
+        intensity: 1,
+        smokeRadius: 1.5,
+        damageRate: 6
       }
     ],
     items: [
@@ -193,10 +207,10 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
         target: 'living-room-fire'
       },
       {
-        id: 'survive-smoke',
-        description: 'Navigate through smoke without losing consciousness',
-        type: 'survive',
-        duration: 60
+        id: 'extinguish-candle',
+        description: 'Extinguish candle fire to prevent spread',
+        type: 'extinguish',
+        target: 'candle-fire'
       }
     ],
     timeLimit: 180,
@@ -238,7 +252,7 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
     hazards: [
       {
         id: 'server-room-fire',
-        type: 'electrical',
+        type: 'fire', // Changed from 'electrical' to 'fire'
         position: [6, 0, -5],
         intensity: 3,
         smokeRadius: 3,
@@ -254,27 +268,27 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
       },
       {
         id: 'chemical-storage-fire',
-        type: 'chemical',
+        type: 'fire', // Changed from 'chemical' to 'fire'
         position: [6, 0, 5],
         intensity: 2,
         smokeRadius: 4,
         damageRate: 25
       },
       {
-        id: 'corridor-smoke-1',
-        type: 'smoke',
+        id: 'paper-fire',
+        type: 'fire', // Changed from 'smoke' to 'fire'
         position: [0, 0, 0],
-        intensity: 4,
-        smokeRadius: 5,
-        damageRate: 15
+        intensity: 1.5,
+        smokeRadius: 2,
+        damageRate: 10
       },
       {
-        id: 'stairwell-smoke',
-        type: 'smoke',
+        id: 'stairwell-fire',
+        type: 'fire', // Changed from 'smoke' to 'fire'
         position: [-6, 0, -5],
-        intensity: 3,
-        smokeRadius: 3.5,
-        damageRate: 12
+        intensity: 2,
+        smokeRadius: 2.5,
+        damageRate: 15
       }
     ],
     items: [
@@ -338,10 +352,16 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
         target: 'office-fire-1'
       },
       {
-        id: 'survive-heavy-smoke',
-        description: 'Navigate through heavy smoke without mask failure',
-        type: 'survive',
-        duration: 90
+        id: 'extinguish-paper-fire',
+        description: 'Extinguish paper fire in corridor',
+        type: 'extinguish',
+        target: 'paper-fire'
+      },
+      {
+        id: 'extinguish-stairwell',
+        description: 'Clear stairwell fire for safe evacuation',
+        type: 'extinguish',
+        target: 'stairwell-fire'
       }
     ],
     timeLimit: 240,
@@ -385,7 +405,7 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
     hazards: [
       {
         id: 'chemical-tank-fire',
-        type: 'chemical',
+        type: 'fire', // Changed from 'chemical' to 'fire'
         position: [-7, 0, -6],
         intensity: 4,
         smokeRadius: 6,
@@ -393,7 +413,7 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
       },
       {
         id: 'machinery-fire-1',
-        type: 'electrical',
+        type: 'fire', // Changed from 'electrical' to 'fire'
         position: [7, 0, -6],
         intensity: 3.5,
         smokeRadius: 4,
@@ -409,7 +429,7 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
       },
       {
         id: 'machinery-fire-2',
-        type: 'electrical',
+        type: 'fire', // Changed from 'electrical' to 'fire'
         position: [7, 0, 6],
         intensity: 3,
         smokeRadius: 3.5,
@@ -417,27 +437,27 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
       },
       {
         id: 'toxic-smoke-main',
-        type: 'smoke',
+        type: 'fire', // Changed from 'smoke' to 'fire'
         position: [0, 0, 0],
-        intensity: 5,
-        smokeRadius: 8,
-        damageRate: 25
+        intensity: 2.5,
+        smokeRadius: 4,
+        damageRate: 20
       },
       {
         id: 'toxic-smoke-north',
-        type: 'smoke',
+        type: 'fire', // Changed from 'smoke' to 'fire'
         position: [0, 0, -7],
-        intensity: 4,
-        smokeRadius: 6,
-        damageRate: 22
+        intensity: 2,
+        smokeRadius: 3,
+        damageRate: 18
       },
       {
         id: 'toxic-smoke-south',
-        type: 'smoke',
+        type: 'fire', // Changed from 'smoke' to 'fire'
         position: [0, 0, 7],
-        intensity: 4,
-        smokeRadius: 6,
-        damageRate: 22
+        intensity: 2,
+        smokeRadius: 3,
+        damageRate: 18
       }
     ],
     items: [
@@ -513,10 +533,22 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
         target: 'oil-fire'
       },
       {
-        id: 'survive-toxic-environment',
-        description: 'Survive in toxic smoke environment for extended period',
-        type: 'survive',
-        duration: 150
+        id: 'extinguish-toxic-fires',
+        description: 'Extinguish toxic smoke fires to clear environment',
+        type: 'extinguish',
+        target: 'toxic-smoke-main'
+      },
+      {
+        id: 'extinguish-north-toxic',
+        description: 'Extinguish north toxic fire',
+        type: 'extinguish',
+        target: 'toxic-smoke-north'
+      },
+      {
+        id: 'extinguish-south-toxic',
+        description: 'Extinguish south toxic fire',
+        type: 'extinguish',
+        target: 'toxic-smoke-south'
       }
     ],
     timeLimit: 300,

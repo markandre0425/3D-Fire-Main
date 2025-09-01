@@ -4,6 +4,8 @@ import { HazardState, InteractiveObject, Level, LevelData } from "../types";
 import { LEVELS, SAFETY_TIPS, GAME_CONSTANTS } from "../constants";
 import { usePlayer } from "./usePlayer";
 import { useAudio } from "./useAudio";
+import { getLevelConfig } from "../levelConfigs";
+import { HazardType, InteractiveObjectType } from "../types";
 
 interface FireSafetyState {
   currentLevel: Level;
@@ -45,12 +47,65 @@ export const useFireSafety = create<FireSafetyState>()(
     
     startLevel: (level: Level) => {
       const levelData = LEVELS[level];
+      const levelConfig = getLevelConfig(parseInt(level) || 1);
+      
+      // Merge level config with constants for enhanced fire management
+      let enhancedHazards = [...levelData.hazards];
+      let enhancedObjects = [...levelData.objects];
+      
+      if (levelConfig) {
+        // Add level-specific fires from levelConfigs
+        const levelFires = levelConfig.hazards
+          .filter((hazard: any) => hazard.type === 'fire')
+          .map((hazard: any) => {
+            // Map different fire types to appropriate HazardType enum values
+            let hazardType = HazardType.ClassAFire; // Default to Class A
+            
+            // You can add more specific mapping logic here if needed
+            // For now, all fires from level configs will use ClassAFire
+            
+            return {
+              id: hazard.id,
+              type: hazardType,
+              position: { 
+                x: hazard.position[0], 
+                y: hazard.position[1], 
+                z: hazard.position[2] 
+              },
+              isActive: true,
+              severity: hazard.intensity,
+              isSmoking: hazard.intensity > 1.5,
+              isExtinguished: false
+            };
+          });
+        
+        // Add level-specific items from levelConfigs
+        const levelItems = levelConfig.items
+          .filter((item: any) => item.type === 'extinguisher')
+          .map((item: any) => ({
+            id: item.id,
+            type: InteractiveObjectType.FireExtinguisher,
+            position: { 
+              x: item.position[0], 
+              y: item.position[1], 
+              z: item.position[2] 
+            },
+            isActive: true,
+            isCollected: false
+          }));
+        
+        enhancedHazards = [...enhancedHazards, ...levelFires];
+        enhancedObjects = [...enhancedObjects, ...levelItems];
+        
+        console.log(`Enhanced level ${level} with ${levelFires.length} fires and ${levelItems.length} items from levelConfigs`);
+      }
+      
       set({
         currentLevel: level,
         levelData,
-        levelTime: levelData.timeLimit > 0 ? levelData.timeLimit : 300, // Ensure a positive time limit with fallback
-        hazards: [...levelData.hazards],
-        interactiveObjects: [...levelData.objects],
+        levelTime: levelData.timeLimit > 0 ? levelData.timeLimit : 300,
+        hazards: enhancedHazards,
+        interactiveObjects: enhancedObjects,
         isPaused: false,
         isLevelComplete: false,
         activeTip: null
