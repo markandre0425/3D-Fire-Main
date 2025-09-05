@@ -4,6 +4,7 @@ import Fire from "./Fire";
 import { HazardState, HazardType } from "@/lib/types";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { SAFETY_TIPS } from "@/lib/constants";
+import Appliance from "./Appliance";
 
 interface HazardProps {
   hazard: HazardState;
@@ -72,6 +73,32 @@ export default function Hazard({ hazard }: HazardProps) {
     };
   }, [hazard.isActive, hazard.isExtinguished, hazard.type, showSafetyTip]);
   
+  // Check if this hazard should use the Appliance component
+  const shouldUseAppliance = hazard.id.toLowerCase().includes('microwave') ||
+                            hazard.id.toLowerCase().includes('toaster') ||
+                            hazard.id.toLowerCase().includes('coffee') ||
+                            hazard.id.toLowerCase().includes('tv') ||
+                            hazard.id.toLowerCase().includes('television') ||
+                            hazard.id.toLowerCase().includes('laptop') ||
+                            hazard.id.toLowerCase().includes('space-heater') ||
+                            hazard.id.toLowerCase().includes('lamp') ||
+                            hazard.id.toLowerCase().includes('printer') ||
+                            hazard.id.toLowerCase().includes('projector') ||
+                            hazard.id.toLowerCase().includes('vending') ||
+                            hazard.id.toLowerCase().includes('file-cabinet') ||
+                            hazard.id.toLowerCase().includes('conveyor') ||
+                            hazard.id.toLowerCase().includes('hydraulic') ||
+                            hazard.id.toLowerCase().includes('welding') ||
+                            hazard.id.toLowerCase().includes('forklift') ||
+                            hazard.id.toLowerCase().includes('compressor') ||
+                            hazard.id.toLowerCase().includes('generator') ||
+                            hazard.id.toLowerCase().includes('meat-grinder') ||
+                            hazard.id.toLowerCase().includes('meat_grinder') ||
+                            hazard.id.toLowerCase().includes('simple-wood') ||
+                            hazard.id.toLowerCase().includes('simple_wood') ||
+                            hazard.id.toLowerCase().includes('wooden-tabouret') ||
+                            hazard.id.toLowerCase().includes('wooden_tabouret');
+  
   // Check if this hazard should use the new Fire component
   // This includes both the original fire types and the new ones from level configs
   const shouldUseNewFire = hazard.type === HazardType.ClassAFire || 
@@ -87,8 +114,20 @@ export default function Hazard({ hazard }: HazardProps) {
                           hazard.type === HazardType.ElectricalOutlet ||
                           hazard.type === HazardType.CloggedDryer;
   
+  // Debug logging
+  console.log(`🔍 Hazard component for hazard: "${hazard.id}" (type: ${hazard.type})`);
+  console.log(`   shouldUseAppliance: ${shouldUseAppliance}`);
+  console.log(`   shouldUseNewFire: ${shouldUseNewFire}`);
+  
+  // Render appliance-type hazards using the Appliance component
+  if (shouldUseAppliance) {
+    console.log(`✅ Rendering Appliance component for: ${hazard.id}`);
+    return <Appliance hazard={hazard} />;
+  }
+  
   // Render fire-type hazards using the new Fire component
   if (shouldUseNewFire) {
+    console.log(`🔥 Rendering Fire component for: ${hazard.id}`);
     return (
       <Fire
         position={[hazard.position.x, hazard.position.y, hazard.position.z]}
@@ -100,5 +139,6 @@ export default function Hazard({ hazard }: HazardProps) {
   }
   
   // Render other hazard types using FireHazard
+  console.log(`⚠️ Rendering FireHazard component for: ${hazard.id}`);
   return <FireHazard hazard={hazard} />;
 }

@@ -15,6 +15,7 @@
   "dependencies": {
     "@fontsource/inter": "^5.2.5",
     "@jridgewell/trace-mapping": "^0.3.25",
+    "@loaders.gl/gltf": "^4.3.4",
     "@neondatabase/serverless": "^0.10.4",
     "@radix-ui/react-accordion": "^1.2.1",
     "@radix-ui/react-alert-dialog": "^1.1.2",
@@ -60,6 +61,7 @@
     "express-session": "^1.18.1",
     "framer-motion": "^11.13.1",
     "gl-matrix": "^3.4.3",
+    "gltfjsx": "^6.5.3",
     "gsap": "^3.12.5",
     "howler": "^2.2.4",
     "input-otp": "^1.2.4",

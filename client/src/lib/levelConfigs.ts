@@ -71,6 +71,30 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
         intensity: 0.8,
         smokeRadius: 1,
         damageRate: 8
+      },
+      {
+        id: 'microwave-fire',
+        type: 'fire',
+        position: [3, 0, -1],
+        intensity: 0.6,
+        smokeRadius: 1,
+        damageRate: 6
+      },
+      {
+        id: 'toaster-fire',
+        type: 'fire',
+        position: [-1, 0, 1],
+        intensity: 0.5,
+        smokeRadius: 0.8,
+        damageRate: 5
+      },
+      {
+        id: 'coffee-maker-fire',
+        type: 'fire',
+        position: [1, 0, -3],
+        intensity: 0.7,
+        smokeRadius: 1,
+        damageRate: 7
       }
     ],
     items: [
@@ -100,23 +124,44 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
         target: 'stove-fire'
       },
       {
+        id: 'extinguish-microwave',
+        description: 'Extinguish the microwave fire',
+        type: 'extinguish',
+        target: 'microwave-fire'
+      },
+      {
+        id: 'extinguish-toaster',
+        description: 'Extinguish the toaster fire',
+        type: 'extinguish',
+        target: 'toaster-fire'
+      },
+      {
+        id: 'extinguish-coffee-maker',
+        description: 'Extinguish the coffee maker fire',
+        type: 'extinguish',
+        target: 'coffee-maker-fire'
+      },
+      {
         id: 'collect-mask',
         description: 'Collect BFP breathing apparatus for smoke protection',
         type: 'collect',
         target: 'gas-mask-1'
       }
     ],
-    timeLimit: 120,
+    timeLimit: 150,
     bfpEducation: {
       preLevel: [
         "Class K fires involve cooking oils and fats",
         "Use wet chemical extinguishers for kitchen fires",
-        "Smoke inhalation is the leading cause of fire deaths"
+        "Smoke inhalation is the leading cause of fire deaths",
+        "Kitchen appliances can overheat and cause fires",
+        "Never leave cooking appliances unattended"
       ],
       postLevel: [
-        "Well done! You successfully contained a Class K fire",
+        "Well done! You successfully contained multiple kitchen fires",
         "The BFP responds to over 12,000 fire incidents annually",
-        "Proper ventilation and breathing apparatus save lives"
+        "Proper ventilation and breathing apparatus save lives",
+        "Kitchen fire safety is crucial for home protection"
       ]
     }
   },
@@ -148,7 +193,7 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
       },
       {
         id: 'electrical-fire',
-        type: 'fire', // Changed from 'electrical' to 'fire'
+        type: 'fire',
         position: [-3, 0, 2],
         intensity: 1.5,
         smokeRadius: 2,
@@ -156,11 +201,43 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
       },
       {
         id: 'candle-fire',
-        type: 'fire', // Changed from 'smoke' to 'fire'
+        type: 'fire',
         position: [0, 0, -3],
         intensity: 1,
         smokeRadius: 1.5,
         damageRate: 6
+      },
+      {
+        id: 'tv-fire',
+        type: 'fire',
+        position: [4, 0, 1],
+        intensity: 1.2,
+        smokeRadius: 1.8,
+        damageRate: 10
+      },
+      {
+        id: 'laptop-fire',
+        type: 'fire',
+        position: [-4, 0, -1],
+        intensity: 0.8,
+        smokeRadius: 1.2,
+        damageRate: 8
+      },
+      {
+        id: 'space-heater-fire',
+        type: 'fire',
+        position: [-2, 0, -3],
+        intensity: 1.3,
+        smokeRadius: 2,
+        damageRate: 11
+      },
+      {
+        id: 'lamp-fire',
+        type: 'fire',
+        position: [1, 0, 3],
+        intensity: 0.6,
+        smokeRadius: 1,
+        damageRate: 5
       }
     ],
     items: [
@@ -211,21 +288,48 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
         description: 'Extinguish candle fire to prevent spread',
         type: 'extinguish',
         target: 'candle-fire'
+      },
+      {
+        id: 'extinguish-tv',
+        description: 'Extinguish television fire',
+        type: 'extinguish',
+        target: 'tv-fire'
+      },
+      {
+        id: 'extinguish-laptop',
+        description: 'Extinguish laptop fire',
+        type: 'extinguish',
+        target: 'laptop-fire'
+      },
+      {
+        id: 'extinguish-space-heater',
+        description: 'Extinguish space heater fire',
+        type: 'extinguish',
+        target: 'space-heater-fire'
+      },
+      {
+        id: 'extinguish-lamp',
+        description: 'Extinguish lamp fire',
+        type: 'extinguish',
+        target: 'lamp-fire'
       }
     ],
-    timeLimit: 180,
+    timeLimit: 240,
     bfpEducation: {
       preLevel: [
         "Class C fires involve energized electrical equipment",
         "Never use water on electrical fires - use CO2 or dry chemical",
         "Smoke rises and spreads horizontally along ceilings",
-        "Breathing apparatus provides 30-45 minutes of clean air"
+        "Breathing apparatus provides 30-45 minutes of clean air",
+        "Electronic devices can overheat and cause fires",
+        "Space heaters should never be left unattended"
       ],
       postLevel: [
         "Excellent work following BFP protocols!",
         "You correctly identified fire classes and used appropriate extinguishers",
         "Smoke management is crucial in structure fires",
-        "BFP responds with 4-person firefighting teams to incidents"
+        "BFP responds with 4-person firefighting teams to incidents",
+        "Electrical fire safety is essential in modern homes"
       ]
     }
   },
@@ -252,7 +356,7 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
     hazards: [
       {
         id: 'server-room-fire',
-        type: 'fire', // Changed from 'electrical' to 'fire'
+        type: 'fire',
         position: [6, 0, -5],
         intensity: 3,
         smokeRadius: 3,
@@ -268,7 +372,7 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
       },
       {
         id: 'chemical-storage-fire',
-        type: 'fire', // Changed from 'chemical' to 'fire'
+        type: 'fire',
         position: [6, 0, 5],
         intensity: 2,
         smokeRadius: 4,
@@ -276,7 +380,7 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
       },
       {
         id: 'paper-fire',
-        type: 'fire', // Changed from 'smoke' to 'fire'
+        type: 'fire',
         position: [0, 0, 0],
         intensity: 1.5,
         smokeRadius: 2,
@@ -284,11 +388,51 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
       },
       {
         id: 'stairwell-fire',
-        type: 'fire', // Changed from 'smoke' to 'fire'
+        type: 'fire',
         position: [-6, 0, -5],
         intensity: 2,
         smokeRadius: 2.5,
         damageRate: 15
+      },
+      {
+        id: 'printer-fire',
+        type: 'fire',
+        position: [2, 0, -4],
+        intensity: 1.8,
+        smokeRadius: 2.2,
+        damageRate: 12
+      },
+      {
+        id: 'projector-fire',
+        type: 'fire',
+        position: [-2, 0, 4],
+        intensity: 1.3,
+        smokeRadius: 1.8,
+        damageRate: 9
+      },
+      {
+        id: 'coffee-machine-fire',
+        type: 'fire',
+        position: [4, 0, -1],
+        intensity: 1.1,
+        smokeRadius: 1.5,
+        damageRate: 8
+      },
+      {
+        id: 'vending-machine-fire',
+        type: 'fire',
+        position: [-4, 0, 1],
+        intensity: 1.6,
+        smokeRadius: 2,
+        damageRate: 11
+      },
+      {
+        id: 'file-cabinet-fire',
+        type: 'fire',
+        position: [0, 0, 4],
+        intensity: 1.4,
+        smokeRadius: 1.8,
+        damageRate: 10
       }
     ],
     items: [
@@ -362,23 +506,56 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
         description: 'Clear stairwell fire for safe evacuation',
         type: 'extinguish',
         target: 'stairwell-fire'
+      },
+      {
+        id: 'extinguish-printer',
+        description: 'Extinguish printer fire',
+        type: 'extinguish',
+        target: 'printer-fire'
+      },
+      {
+        id: 'extinguish-projector',
+        description: 'Extinguish projector fire',
+        type: 'extinguish',
+        target: 'projector-fire'
+      },
+      {
+        id: 'extinguish-coffee-machine',
+        description: 'Extinguish coffee machine fire',
+        type: 'extinguish',
+        target: 'coffee-machine-fire'
+      },
+      {
+        id: 'extinguish-vending-machine',
+        description: 'Extinguish vending machine fire',
+        type: 'extinguish',
+        target: 'vending-machine-fire'
+      },
+      {
+        id: 'extinguish-file-cabinet',
+        description: 'Extinguish file cabinet fire',
+        type: 'extinguish',
+        target: 'file-cabinet-fire'
       }
     ],
-    timeLimit: 240,
+    timeLimit: 300,
     bfpEducation: {
       preLevel: [
         "Office buildings present complex fire scenarios",
         "Server rooms require CO2 extinguishers to protect equipment",
         "Chemical fires may require special dry chemical agents",
         "Evacuation routes must be kept clear at all times",
-        "Breathing apparatus filters last 30-45 minutes under stress"
+        "Breathing apparatus filters last 30-45 minutes under stress",
+        "Office equipment can overheat and cause fires",
+        "Paper fires spread quickly in office environments"
       ],
       postLevel: [
         "Outstanding performance under pressure!",
         "You followed BFP incident command protocols",
         "Multi-hazard environments require systematic approach",
         "BFP teams coordinate with building security systems",
-        "Your actions prevented potential casualties"
+        "Your actions prevented potential casualties",
+        "Office fire safety requires attention to equipment"
       ]
     }
   },
@@ -405,7 +582,7 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
     hazards: [
       {
         id: 'chemical-tank-fire',
-        type: 'fire', // Changed from 'chemical' to 'fire'
+        type: 'fire',
         position: [-7, 0, -6],
         intensity: 4,
         smokeRadius: 6,
@@ -413,7 +590,7 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
       },
       {
         id: 'machinery-fire-1',
-        type: 'fire', // Changed from 'electrical' to 'fire'
+        type: 'fire',
         position: [7, 0, -6],
         intensity: 3.5,
         smokeRadius: 4,
@@ -429,7 +606,7 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
       },
       {
         id: 'machinery-fire-2',
-        type: 'fire', // Changed from 'electrical' to 'fire'
+        type: 'fire',
         position: [7, 0, 6],
         intensity: 3,
         smokeRadius: 3.5,
@@ -437,7 +614,7 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
       },
       {
         id: 'toxic-smoke-main',
-        type: 'fire', // Changed from 'smoke' to 'fire'
+        type: 'fire',
         position: [0, 0, 0],
         intensity: 2.5,
         smokeRadius: 4,
@@ -445,7 +622,7 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
       },
       {
         id: 'toxic-smoke-north',
-        type: 'fire', // Changed from 'smoke' to 'fire'
+        type: 'fire',
         position: [0, 0, -7],
         intensity: 2,
         smokeRadius: 3,
@@ -453,11 +630,59 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
       },
       {
         id: 'toxic-smoke-south',
-        type: 'fire', // Changed from 'smoke' to 'fire'
+        type: 'fire',
         position: [0, 0, 7],
         intensity: 2,
         smokeRadius: 3,
         damageRate: 18
+      },
+      {
+        id: 'conveyor-belt-fire',
+        type: 'fire',
+        position: [-3, 0, -2],
+        intensity: 2.8,
+        smokeRadius: 3.5,
+        damageRate: 22
+      },
+      {
+        id: 'hydraulic-press-fire',
+        type: 'fire',
+        position: [3, 0, 2],
+        intensity: 3.2,
+        smokeRadius: 4,
+        damageRate: 26
+      },
+      {
+        id: 'welding-station-fire',
+        type: 'fire',
+        position: [-5, 0, 0],
+        intensity: 2.5,
+        smokeRadius: 3,
+        damageRate: 20
+      },
+      {
+        id: 'forklift-fire',
+        type: 'fire',
+        position: [5, 0, 0],
+        intensity: 2.8,
+        smokeRadius: 3.5,
+        damageRate: 24
+      },
+      {
+        id: 'compressor-fire',
+        type: 'fire',
+        position: [0, 0, -5],
+        intensity: 2.2,
+        smokeRadius: 2.8,
+        damageRate: 18
+      },
+      {
+        id: 'generator-fire',
+        type: 'fire',
+        position: [0, 0, 5],
+        intensity: 3.5,
+        smokeRadius: 4.5,
+        damageRate: 30
       }
     ],
     items: [
@@ -549,9 +774,45 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
         description: 'Extinguish south toxic fire',
         type: 'extinguish',
         target: 'toxic-smoke-south'
+      },
+      {
+        id: 'extinguish-conveyor',
+        description: 'Extinguish conveyor belt fire',
+        type: 'extinguish',
+        target: 'conveyor-belt-fire'
+      },
+      {
+        id: 'extinguish-hydraulic',
+        description: 'Extinguish hydraulic press fire',
+        type: 'extinguish',
+        target: 'hydraulic-press-fire'
+      },
+      {
+        id: 'extinguish-welding',
+        description: 'Extinguish welding station fire',
+        type: 'extinguish',
+        target: 'welding-station-fire'
+      },
+      {
+        id: 'extinguish-forklift',
+        description: 'Extinguish forklift fire',
+        type: 'extinguish',
+        target: 'forklift-fire'
+      },
+      {
+        id: 'extinguish-compressor',
+        description: 'Extinguish compressor fire',
+        type: 'extinguish',
+        target: 'compressor-fire'
+      },
+      {
+        id: 'extinguish-generator',
+        description: 'Extinguish generator fire',
+        type: 'extinguish',
+        target: 'generator-fire'
       }
     ],
-    timeLimit: 300,
+    timeLimit: 360,
     bfpEducation: {
       preLevel: [
         "Industrial fires are among the most dangerous scenarios",
@@ -559,7 +820,9 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
         "Chemical tank fires can cause catastrophic explosions",
         "Electrical systems must be secured to prevent cascading failures",
         "BFP industrial response teams have specialized training",
-        "Breathing apparatus may need multiple filter changes"
+        "Breathing apparatus may need multiple filter changes",
+        "Industrial machinery fires require specialized extinguishing agents",
+        "Multiple fire types require systematic approach"
       ],
       postLevel: [
         "EXCEPTIONAL PERFORMANCE! You've mastered BFP protocols!",
@@ -567,7 +830,8 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
         "Your systematic approach prevented catastrophic escalation",
         "This level of competency qualifies for BFP specialist training",
         "Industrial fire response requires years of experience",
-        "You've demonstrated real understanding of fire science"
+        "You've demonstrated real understanding of fire science",
+        "Industrial firefighting requires coordination and strategy"
       ]
     }
   }

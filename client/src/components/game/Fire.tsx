@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Fire as WolffoFire } from '@wolffo/three-fire';
@@ -18,6 +18,25 @@ export default function Fire({
 }: FireProps) {
   const fireRef = useRef<THREE.Group>(null);
 
+  // Generate random fire color from orange to red
+  const fireColor = useMemo(() => {
+    const colors = [
+      new THREE.Color(0xFF4500), // Orange Red
+      new THREE.Color(0xFF6347), // Tomato
+      new THREE.Color(0xFF7F50), // Coral
+      new THREE.Color(0xFF8C00), // Dark Orange
+      new THREE.Color(0xFFA500), // Orange
+      new THREE.Color(0xFF6B35), // Red Orange
+      new THREE.Color(0xFF4500), // Orange Red
+      new THREE.Color(0xDC143C), // Crimson
+      new THREE.Color(0xB22222), // Fire Brick
+      new THREE.Color(0x8B0000), // Dark Red
+    ];
+    
+    // Pick a random color from the array
+    return colors[Math.floor(Math.random() * colors.length)];
+  }, []);
+
   // Animate the fire
   useFrame(() => {
     if (!isActive || !fireRef.current) return;
@@ -28,16 +47,14 @@ export default function Fire({
     const flicker = 1 + Math.sin(time * 3) * 0.2 * intensity;
     fireRef.current.scale.y = size * 2 * flicker;
 
-    // Gentle swaying motion
-    fireRef.current.rotation.z = Math.sin(time * 1.5) * 0.08;
-
-    // Slight rotation for dynamic effect
-    fireRef.current.rotation.y = Math.sin(time * 0.8) * 0.05;
-
-    // Scale variation based on intensity
-    const scaleVariation = 1 + Math.sin(time * 2) * 0.1 * intensity;
-    fireRef.current.scale.x = size * scaleVariation;
-    fireRef.current.scale.z = size * scaleVariation;
+    // Comment out or remove these lines to stop movement:
+    // fireRef.current.rotation.z = Math.sin(time * 0.2) * 0.08;  // No more swaying
+    // fireRef.current.rotation.y = Math.sin(time * 0.1) * 0.05;  // No more spinning
+    
+    // Comment out or remove these lines to stop scale bouncing:
+    // const scaleVariation = 1 + Math.sin(time * 2) * 0.1 * intensity;
+    // fireRef.current.scale.x = size * scaleVariation;
+    // fireRef.current.scale.z = size * scaleVariation;
   });
 
   if (!isActive) return null;
@@ -50,7 +67,7 @@ export default function Fire({
     >
       <WolffoFire
         texture="/fire.gif"
-        color={new THREE.Color(0xffffff)}
+        color={fireColor}
         iterations={Math.floor(intensity * 20) + 10} // 10-30 based on intensity
         octaves={3}
         noiseScale={[1, 2, 1, 0.3]}
