@@ -27,6 +27,13 @@ export default defineConfig({
   server: {
     hmr: {
       overlay: true
+    },
+    fs: {
+      allow: [
+        path.resolve(__dirname, "client"),
+        path.resolve(__dirname, "node_modules"),
+        path.resolve(__dirname, "shared")
+      ]
     }
   }
 });

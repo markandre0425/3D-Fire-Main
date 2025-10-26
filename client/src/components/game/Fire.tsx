@@ -1,21 +1,43 @@
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Fire as WolffoFire } from '@wolffo/three-fire';
+import ParticleFire from './ParticleFire';
+
+type FireShape = 'wide' | 'chaotic' | 'triangular';
 
 interface FireProps {
   position: [number, number, number];
   size?: number;
   intensity?: number;
   isActive?: boolean;
+  shape?: FireShape;
+  useParticles?: boolean; // Toggle between particle and volumetric fire
 }
 
 export default function Fire({
   position,
   size = 1,
   intensity = 1,
-  isActive = true
+  isActive = true,
+  shape = 'triangular',
+  useParticles = true // Default to particle system for better shape control
 }: FireProps) {
+  
+  // If using particles, render the particle fire instead
+  if (useParticles) {
+    return (
+      <ParticleFire
+        position={position}
+        size={size}
+        intensity={intensity}
+        isActive={isActive}
+        shape={shape}
+      />
+    );
+  }
+  
+  // Otherwise use the volumetric WolffoFire (will be circular)
   const fireRef = useRef<THREE.Group>(null);
 
   // Generate random fire color from orange to red
@@ -37,24 +59,53 @@ export default function Fire({
     return colors[Math.floor(Math.random() * colors.length)];
   }, []);
 
-  // Animate the fire
+  // Get shape-specific configuration
+  const shapeConfig = useMemo(() => {
+    switch (shape) {
+      case 'wide':
+        // Wide and Short (Spreading fire) - Much more dramatic
+        return {
+          scale: [size * 3, size * 0.5, size * 3] as [number, number, number],
+          noiseScale: [3, 0.5, 3, 0.4] as [number, number, number, number],
+          octaves: 4,
+          magnitude: 1.0,
+          lacunarity: 2.0,
+          gain: 0.6
+        };
+      case 'chaotic':
+        // Chaotic/Wild Fire - Irregular and turbulent
+        return {
+          scale: [size * 1.8, size * 1.5, size * 1.8] as [number, number, number],
+          noiseScale: [2.5, 1.2, 2.5, 0.7] as [number, number, number, number],
+          octaves: 6,
+          magnitude: 2.2,
+          lacunarity: 3.5,
+          gain: 1.5
+        };
+      case 'triangular':
+      default:
+        // Triangular/Pointed (Traditional flame) - Tall and narrow
+        return {
+          scale: [size * 0.6, size * 3, size * 0.6] as [number, number, number],
+          noiseScale: [0.4, 4, 0.4, 0.15] as [number, number, number, number],
+          octaves: 3,
+          magnitude: 2.5,
+          lacunarity: 3.5,
+          gain: 1.0
+        };
+    }
+  }, [shape, size]);
+
+  // Animate the fire with subtle pulsing (no floating)
   useFrame(() => {
     if (!isActive || !fireRef.current) return;
 
     const time = Date.now() * 0.001;
 
-    // Dynamic flickering effect
-    const flicker = 1 + Math.sin(time * 3) * 0.2 * intensity;
-    fireRef.current.scale.y = size * 2 * flicker;
-
-    // Comment out or remove these lines to stop movement:
-    // fireRef.current.rotation.z = Math.sin(time * 0.2) * 0.08;  // No more swaying
-    // fireRef.current.rotation.y = Math.sin(time * 0.1) * 0.05;  // No more spinning
-    
-    // Comment out or remove these lines to stop scale bouncing:
-    // const scaleVariation = 1 + Math.sin(time * 2) * 0.1 * intensity;
-    // fireRef.current.scale.x = size * scaleVariation;
-    // fireRef.current.scale.z = size * scaleVariation;
+    // Subtle pulsing effect on all axes
+    const pulse = 1 + Math.sin(time * 1.5) * 0.04 * intensity;
+    const [scaleX, scaleY, scaleZ] = shapeConfig.scale;
+    fireRef.current.scale.set(scaleX * pulse, scaleY * pulse, scaleZ * pulse);
   });
 
   if (!isActive) return null;
@@ -63,19 +114,21 @@ export default function Fire({
     <group
       ref={fireRef}
       position={position}
-      scale={[size, size * 2, size]}
     >
-      <WolffoFire
-        texture="/fire.gif"
-        color={fireColor}
-        iterations={Math.floor(intensity * 20) + 10} // 10-30 based on intensity
-        octaves={3}
-        noiseScale={[1, 2, 1, 0.3]}
-        magnitude={1.3 * intensity}
-        lacunarity={2}
-        gain={0.5}
-        autoUpdate={true}
-      />
+      {/* Apply shape-specific scaling to the fire container */}
+      <group scale={shapeConfig.scale}>
+        <WolffoFire
+          texture=""
+          color={fireColor}
+          iterations={Math.floor(intensity * 20) + 10} // 10-30 based on intensity
+          octaves={shapeConfig.octaves}
+          noiseScale={shapeConfig.noiseScale}
+          magnitude={shapeConfig.magnitude * intensity}
+          lacunarity={shapeConfig.lacunarity}
+          gain={shapeConfig.gain}
+          autoUpdate={true}
+        />
+      </group>
     </group>
   );
 }

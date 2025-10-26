@@ -26,7 +26,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
     if (containsAppliance(['microwave'])) {
       console.log(`✅ Found microwave appliance for hazard: ${id}`);
       return {
-        modelPath: '/models/microwave.glb',
+        modelPath: null, // Model not available, use fallback geometry
         scale: [0.8, 0.8, 0.8] as [number, number, number],
         position: [0, 0.2, 0] as [number, number, number],
         fireSize: 0.4,
@@ -48,7 +48,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
     if (containsAppliance(['coffee', 'coffee-maker'])) {
       console.log(`✅ Found coffee machine appliance for hazard: ${id}`);
       return {
-        modelPath: '/models/coffee_machine.glb',
+        modelPath: null, // Model not available, use fallback geometry
         scale: [0.7, 0.7, 0.7] as [number, number, number],
         position: [0, 0.25, 0] as [number, number, number],
         fireSize: 0.35,
@@ -81,7 +81,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
     if (containsAppliance(['space-heater', 'spaceheater'])) {
       console.log(`✅ Found space heater appliance for hazard: ${id}`);
       return {
-        modelPath: '/models/space_heater.glb',
+        modelPath: null, // Model not available, use fallback geometry
         scale: [0.6, 0.6, 0.6] as [number, number, number],
         position: [0, 0.2, 0] as [number, number, number],
         fireSize: 0.5,
@@ -92,7 +92,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
     if (containsAppliance(['lamp'])) {
       console.log(`✅ Found lamp appliance for hazard: ${id}`);
       return {
-        modelPath: '/models/lamp.glb',
+        modelPath: null, // Model not available, use fallback geometry
         scale: [0.4, 0.4, 0.4] as [number, number, number],
         position: [0, 0.15, 0] as [number, number, number],
         fireSize: 0.2,
@@ -103,7 +103,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
     if (containsAppliance(['printer'])) {
       console.log(`✅ Found printer appliance for hazard: ${id}`);
       return {
-        modelPath: '/models/printer.glb',
+        modelPath: null, // Model not available, use fallback geometry
         scale: [0.7, 0.7, 0.7] as [number, number, number],
         position: [0, 0.15, 0] as [number, number, number],
         fireSize: 0.4,
@@ -114,7 +114,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
     if (containsAppliance(['projector'])) {
       console.log(`✅ Found projector appliance for hazard: ${id}`);
       return {
-        modelPath: '/models/projector.glb',
+        modelPath: null, // Model not available, use fallback geometry
         scale: [0.5, 0.5, 0.5] as [number, number, number],
         position: [0, 0.1, 0] as [number, number, number],
         fireSize: 0.3,
@@ -125,7 +125,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
     if (containsAppliance(['vending', 'vending-machine'])) {
       console.log(`✅ Found vending machine appliance for hazard: ${id}`);
       return {
-        modelPath: '/models/vending_machine.glb',
+        modelPath: null, // Model not available, use fallback geometry
         scale: [1.2, 1.2, 1.2] as [number, number, number],
         position: [0, 0.75, 0] as [number, number, number],
         fireSize: 0.7,
@@ -136,7 +136,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
     if (containsAppliance(['file-cabinet', 'filecabinet'])) {
       console.log(`✅ Found file cabinet appliance for hazard: ${id}`);
       return {
-        modelPath: '/models/file_cabinet.glb',
+        modelPath: null, // Model not available, use fallback geometry
         scale: [0.8, 0.8, 0.8] as [number, number, number],
         position: [0, 0.6, 0] as [number, number, number],
         fireSize: 0.5,
@@ -147,7 +147,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
     if (containsAppliance(['conveyor', 'conveyor-belt'])) {
       console.log(`✅ Found conveyor belt appliance for hazard: ${id}`);
       return {
-        modelPath: '/models/conveyor_belt.glb',
+        modelPath: null, // Model not available, use fallback geometry
         scale: [1.5, 1.5, 1.5] as [number, number, number],
         position: [0, 0.15, 0] as [number, number, number],
         fireSize: 0.8,
@@ -158,7 +158,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
     if (containsAppliance(['hydraulic', 'hydraulic-press'])) {
       console.log(`✅ Found hydraulic press appliance for hazard: ${id}`);
       return {
-        modelPath: '/models/hydraulic_press.glb',
+        modelPath: null, // Model not available, use fallback geometry
         scale: [0.8, 0.8, 0.8] as [number, number, number],
         position: [0, 0.4, 0] as [number, number, number],
         fireSize: 0.6,
@@ -169,7 +169,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
     if (containsAppliance(['welding', 'welding-station'])) {
       console.log(`✅ Found welding station appliance for hazard: ${id}`);
       return {
-        modelPath: '/models/welding_station.glb',
+        modelPath: null, // Model not available, use fallback geometry
         scale: [0.7, 0.7, 0.7] as [number, number, number],
         position: [0, 0.15, 0] as [number, number, number],
         fireSize: 0.5,
@@ -180,7 +180,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
     if (containsAppliance(['forklift'])) {
       console.log(`✅ Found forklift appliance for hazard: ${id}`);
       return {
-        modelPath: '/models/forklift.glb',
+        modelPath: null, // Model not available, use fallback geometry
         scale: [1.0, 1.0, 1.0] as [number, number, number],
         position: [0, 0.3, 0] as [number, number, number],
         fireSize: 0.6,
@@ -191,7 +191,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
     if (containsAppliance(['compressor'])) {
       console.log(`✅ Found compressor appliance for hazard: ${id}`);
       return {
-        modelPath: '/models/compressor.glb',
+        modelPath: null, // Model not available, use fallback geometry
         scale: [0.6, 0.6, 0.6] as [number, number, number],
         position: [0, 0.3, 0] as [number, number, number],
         fireSize: 0.4,
@@ -202,7 +202,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
     if (containsAppliance(['generator'])) {
       console.log(`✅ Found generator appliance for hazard: ${id}`);
       return {
-        modelPath: '/models/generator.glb',
+        modelPath: null, // Model not available, use fallback geometry
         scale: [1.0, 1.0, 1.0] as [number, number, number],
         position: [0, 0.4, 0] as [number, number, number],
         fireSize: 0.8,
@@ -257,19 +257,12 @@ export default function Appliance({ hazard }: ApplianceProps) {
 
   const applianceProps = getApplianceProperties();
 
-  // Add subtle animation for appliances
-  useFrame(() => {
-    if (!applianceRef.current) return;
-    
-    // Very subtle floating effect
-    const time = Date.now() * 0.001;
-    applianceRef.current.position.y = hazard.position.y + applianceProps.position[1] + Math.sin(time * 0.5) * 0.02;
-  });
+  // Appliances are now positioned statically on surfaces
 
   return (
     <group
       ref={applianceRef}
-      position={[hazard.position.x, hazard.position.y, hazard.position.z]}
+      position={[hazard.position.x, hazard.position.y + applianceProps.position[1], hazard.position.z]}
       scale={applianceProps.scale}
     >
       {/* Render 3D model if available, otherwise fallback to basic geometry */}
@@ -292,39 +285,43 @@ export default function Appliance({ hazard }: ApplianceProps) {
         </mesh>
       )}
       
-      {/* Main fire effect on top of appliance */}
+      {/* Main fire effect on top of appliance - Traditional triangular flame */}
       <Fire
         position={[0, applianceProps.position[1] + 0.3, 0]}
         size={applianceProps.fireSize}
         intensity={applianceProps.fireIntensity}
         isActive={hazard.isActive && !hazard.isExtinguished}
+        shape="triangular"
       />
       
       {/* Additional smaller fires around the appliance for realism */}
       {hazard.isActive && !hazard.isExtinguished && (
         <>
-          {/* Side fire */}
+          {/* Side fire - Wide spreading fire */}
           <Fire
             position={[0.3, applianceProps.position[1] + 0.1, 0]}
             size={applianceProps.fireSize * 0.6}
             intensity={applianceProps.fireIntensity * 0.8}
             isActive={true}
+            shape="wide"
           />
           
-          {/* Opposite side fire */}
+          {/* Opposite side fire - Chaotic wild fire */}
           <Fire
             position={[-0.3, applianceProps.position[1] + 0.1, 0]}
             size={applianceProps.fireSize * 0.6}
             intensity={applianceProps.fireIntensity * 0.8}
             isActive={true}
+            shape="chaotic"
           />
           
-          {/* Back fire */}
+          {/* Back fire - Wide spreading fire */}
           <Fire
             position={[0, applianceProps.position[1] + 0.1, 0.3]}
             size={applianceProps.fireSize * 0.5}
             intensity={applianceProps.fireIntensity * 0.7}
             isActive={true}
+            shape="wide"
           />
         </>
       )}

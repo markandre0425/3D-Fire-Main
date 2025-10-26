@@ -8,6 +8,7 @@ interface FireSpawn {
   size: number;
   color: string;
   isActive: boolean;
+  shape: 'wide' | 'chaotic' | 'triangular';
 }
 
 interface RandomFireSpawnerProps {
@@ -54,7 +55,11 @@ export default function RandomFireSpawner({
     const colors = ['#FF4500', '#FF6347', '#FF8C00', '#FFA500', '#FF7F50'];
     const color = colors[Math.floor(Math.random() * colors.length)];
     
-    return { intensity, size, color };
+    // Random fire shape
+    const shapes: ('wide' | 'chaotic' | 'triangular')[] = ['wide', 'chaotic', 'triangular'];
+    const shape = shapes[Math.floor(Math.random() * shapes.length)];
+    
+    return { intensity, size, color, shape };
   }, []);
 
   // Spawn a new fire
@@ -62,7 +67,7 @@ export default function RandomFireSpawner({
     if (fires.length >= maxFires) return;
     
     const position = generateRandomPosition();
-    const { intensity, size, color } = generateFireProperties();
+    const { intensity, size, color, shape } = generateFireProperties();
     
     const newFire: FireSpawn = {
       id: `fire-${Date.now()}-${Math.random()}`,
@@ -70,11 +75,12 @@ export default function RandomFireSpawner({
       intensity,
       size,
       color,
-      isActive: true
+      isActive: true,
+      shape
     };
     
     setFires(prev => [...prev, newFire]);
-    console.log(`🔥 Fire spawned at [${position[0].toFixed(2)}, ${position[1].toFixed(2)}, ${position[2].toFixed(2)}]`);
+    console.log(`🔥 ${shape} fire spawned at [${position[0].toFixed(2)}, ${position[1].toFixed(2)}, ${position[2].toFixed(2)}]`);
   }, [fires.length, maxFires, generateRandomPosition, generateFireProperties]);
 
   // Extinguish a fire
@@ -132,6 +138,7 @@ export default function RandomFireSpawner({
           size={fire.size}
           intensity={fire.intensity}
           isActive={fire.isActive}
+          shape={fire.shape}
         />
       ))}
     </>

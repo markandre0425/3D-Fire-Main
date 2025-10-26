@@ -136,6 +136,7 @@ export default function FireHazard({ hazard }: FireHazardProps) {
           size={Math.max(0.3, hazard.severity * 0.6)}
           intensity={hazard.severity}
           isActive={true}
+          shape="triangular"
         />
       )}
       
