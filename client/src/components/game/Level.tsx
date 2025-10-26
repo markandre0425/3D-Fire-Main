@@ -5,7 +5,7 @@ import Lights from "./Lights";
 import HomeEnvironment from "./HomeEnvironment";
 import Hazard from "./Hazard";
 import ExtinguisherPickup from "./ExtinguisherPickup";
-import ExtinguisherEffect from "./ExtinguisherEffect";
+import ParticleSprayEffect from "./ParticleSprayEffect";
 import RandomFireSpawner from "./RandomFireSpawner";
 import Fire from "./Fire";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
@@ -25,8 +25,6 @@ export default function Level() {
     isPaused,
     currentLevel
   } = useFireSafety();
-
-  console.log("Level component - Interactive objects:", interactiveObjects);
   
   const playerState = usePlayer();
   const [isExtinguishing, setIsExtinguishing] = useState(false);
@@ -56,7 +54,6 @@ export default function Level() {
         }));
       
       setLevelFires(fires);
-      console.log(`Level ${currentLevel} initialized with ${fires.length} fires`);
     }
   }, [currentLevel]);
   
@@ -101,57 +98,71 @@ export default function Level() {
               obj.type === "WetChemicalExtinguisher") {
             collectObject(obj.id);
           }
-          console.log(`Interacted with ${obj.type}: ${obj.id}`);
         }
       });
     }
   }, [actionPressed, interactiveObjects, playerState.position, collectObject]);
   
-  // Handle fire extinguisher usage with enhanced effects
-  useEffect(() => {
-    if (extinguishPressed && playerState.hasExtinguisher && extinguishCooldown.current <= 0) {
+  // Handle fire extinguisher usage - optimized with useFrame
+  useFrame((_, delta) => {
+    if (isPaused) return;
+    
+    // Update cooldown
+    if (extinguishCooldown.current > 0) {
+      extinguishCooldown.current -= delta;
+    }
+    
+    // Show spray effect whenever button is pressed (regardless of cooldown)
+    if (extinguishPressed && playerState.hasExtinguisher) {
       setIsExtinguishing(true);
       
-      // Check for nearby hazards to extinguish
-      let extinguishedAny = false;
-      hazards.forEach(hazard => {
-        if (hazard.isExtinguished || !hazard.isActive) return;
+      // Only actually extinguish fires when cooldown is ready
+      if (extinguishCooldown.current <= 0) {
+        const playerX = playerState.position.x;
+        const playerZ = playerState.position.z;
+        const rangeSquared = GAME_CONSTANTS.EXTINGUISHER_RANGE * GAME_CONSTANTS.EXTINGUISHER_RANGE;
         
-        const dx = playerState.position.x - hazard.position.x;
-        const dz = playerState.position.z - hazard.position.z;
-        const distanceSquared = dx * dx + dz * dz;
-        
-        if (distanceSquared < GAME_CONSTANTS.EXTINGUISHER_RANGE * GAME_CONSTANTS.EXTINGUISHER_RANGE) {
-          extinguishHazard(hazard.id);
-          extinguishedAny = true;
-          console.log(`Extinguished hazard: ${hazard.id}`);
+        // Check hazards - only iterate once per spray
+        for (const hazard of hazards) {
+          if (hazard.isExtinguished || !hazard.isActive) continue;
+          
+          const dx = playerX - hazard.position.x;
+          const dz = playerZ - hazard.position.z;
+          const distanceSquared = dx * dx + dz * dz;
+          
+          if (distanceSquared < rangeSquared) {
+            extinguishHazard(hazard.id);
+            break; // Only extinguish one at a time to avoid lag
+          }
         }
-      });
 
-      // Check for nearby level fires to extinguish
-      setLevelFires(prev => prev.map(fire => {
-        const dx = playerState.position.x - fire.position[0];
-        const dz = playerState.position.z - fire.position[2];
-        const distanceSquared = dx * dx + dz * dz;
-        
-        if (distanceSquared < GAME_CONSTANTS.EXTINGUISHER_RANGE * GAME_CONSTANTS.EXTINGUISHER_RANGE) {
-          console.log(`Extinguished level fire: ${fire.id}`);
-          return { ...fire, isActive: false };
+        // Check level fires - optimized to modify only if needed
+        for (let i = 0; i < levelFires.length; i++) {
+          const fire = levelFires[i];
+          if (!fire.isActive) continue;
+          
+          const dx = playerX - fire.position[0];
+          const dz = playerZ - fire.position[2];
+          const distanceSquared = dx * dx + dz * dz;
+          
+          if (distanceSquared < rangeSquared) {
+            setLevelFires(prev => {
+              const newFires = [...prev];
+              newFires[i] = { ...fire, isActive: false };
+              return newFires;
+            });
+            break; // Only extinguish one at a time
+          }
         }
-        return fire;
-      }));
-      
-      // Set cooldown to prevent spam and allow for animation
-      extinguishCooldown.current = 0.5;
-      
-      // Stop extinguishing effect after a short duration
-      setTimeout(() => {
-        setIsExtinguishing(false);
-      }, 200);
-    } else if (!extinguishPressed) {
+        
+        // Set cooldown
+        extinguishCooldown.current = 0.3; // Reduced from 0.5 for better responsiveness
+      }
+    } else {
+      // Stop spray effect when button is released
       setIsExtinguishing(false);
     }
-  }, [extinguishPressed, playerState.hasExtinguisher, hazards, playerState.position, extinguishHazard]);
+  });
   
   return (
     <>
@@ -176,9 +187,9 @@ export default function Level() {
       
       {/* Random Fire Spawner for additional dynamic fires */}
       <RandomFireSpawner
-        maxFires={3}
-        spawnInterval={5000}
-        spawnChance={0.4}
+        maxFires={2}
+        spawnInterval={8000}
+        spawnChance={0.3}
         mapBounds={{
           minX: -8,
           maxX: 8,
@@ -189,20 +200,17 @@ export default function Level() {
       />
       
       {/* Render interactive objects */}
-      {interactiveObjects.map(obj => {
-        console.log("Rendering interactive object:", obj);
-        return (
-          <ExtinguisherPickup 
-            key={obj.id} 
-            object={obj} 
-            isCollected={obj.isCollected} 
-          />
-        );
-      })}
+      {interactiveObjects.map(obj => (
+        <ExtinguisherPickup 
+          key={obj.id} 
+          object={obj} 
+          isCollected={obj.isCollected} 
+        />
+      ))}
       
       {/* Fire extinguisher effects */}
       {playerState.hasExtinguisher && (
-        <ExtinguisherEffect
+        <ParticleSprayEffect
           isActive={isExtinguishing}
           playerPosition={playerState.position}
           playerRotation={playerState.rotation}

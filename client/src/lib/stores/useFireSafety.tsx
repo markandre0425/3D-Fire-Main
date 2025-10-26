@@ -97,7 +97,6 @@ export const useFireSafety = create<FireSafetyState>()(
         enhancedHazards = [...enhancedHazards, ...levelFires];
         enhancedObjects = [...enhancedObjects, ...levelItems];
         
-        console.log(`Enhanced level ${level} with ${levelFires.length} fires and ${levelItems.length} items from levelConfigs`);
       }
       
       set({
@@ -111,17 +110,14 @@ export const useFireSafety = create<FireSafetyState>()(
         activeTip: null
       });
       
-      console.log(`Starting level: ${level} with time limit: ${levelData.timeLimit}`);
     },
     
     pauseGame: () => {
       set({ isPaused: true });
-      console.log("Game paused");
     },
     
     resumeGame: () => {
       set({ isPaused: false });
-      console.log("Game resumed");
     },
     
     completeLevel: () => {
@@ -136,8 +132,7 @@ export const useFireSafety = create<FireSafetyState>()(
         set({ isLevelComplete: true });
       }
       
-      useAudio.getState().playSuccess();
-      console.log(`Level ${currentLevel} completed!`);
+      useAudio.getState().playLevelCompleted();
     },
     
     resetLevel: () => {
@@ -156,7 +151,6 @@ export const useFireSafety = create<FireSafetyState>()(
       // Reset player state
       usePlayer.getState().resetPlayer();
       
-      console.log(`Level ${currentLevel} reset`);
     },
     
     updateLevelTime: (delta: number) => {
@@ -202,7 +196,6 @@ export const useFireSafety = create<FireSafetyState>()(
       useAudio.getState().playHit();
       
       set({ hazards: updatedHazards });
-      console.log(`Hazard ${hazardId} extinguished`);
       
       // Check if all hazards are extinguished to complete level
       if (updatedHazards.every(h => h.isExtinguished)) {
@@ -235,7 +228,6 @@ export const useFireSafety = create<FireSafetyState>()(
         }
         
         useAudio.getState().playSuccess();
-        console.log(`Object ${objectId} collected`);
       }
     },
     
@@ -252,7 +244,6 @@ export const useFireSafety = create<FireSafetyState>()(
       set({ interactiveObjects: updatedObjects });
       
       useAudio.getState().playSuccess();
-      console.log(`Smoke detector ${detectorId} activated`);
     }
   }))
 );

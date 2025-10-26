@@ -80,19 +80,12 @@ export default function RandomFireSpawner({
     };
     
     setFires(prev => [...prev, newFire]);
-    console.log(`🔥 ${shape} fire spawned at [${position[0].toFixed(2)}, ${position[1].toFixed(2)}, ${position[2].toFixed(2)}]`);
   }, [fires.length, maxFires, generateRandomPosition, generateFireProperties]);
 
   // Extinguish a fire
   const extinguishFire = useCallback((fireId: string) => {
-    setFires(prev => prev.map(fire => 
-      fire.id === fireId ? { ...fire, isActive: false } : fire
-    ));
-    
-    // Remove extinguished fire after animation
-    setTimeout(() => {
-      setFires(prev => prev.filter(fire => fire.id !== fireId));
-    }, 2000);
+    // Immediately remove fire - no explosion/dispersion effect
+    setFires(prev => prev.filter(fire => fire.id !== fireId));
   }, []);
 
   // Spawn timer

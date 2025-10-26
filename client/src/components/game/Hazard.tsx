@@ -114,20 +114,13 @@ export default function Hazard({ hazard }: HazardProps) {
                           hazard.type === HazardType.ElectricalOutlet ||
                           hazard.type === HazardType.CloggedDryer;
   
-  // Debug logging
-  console.log(`🔍 Hazard component for hazard: "${hazard.id}" (type: ${hazard.type})`);
-  console.log(`   shouldUseAppliance: ${shouldUseAppliance}`);
-  console.log(`   shouldUseNewFire: ${shouldUseNewFire}`);
-  
   // Render appliance-type hazards using the Appliance component
   if (shouldUseAppliance) {
-    console.log(`✅ Rendering Appliance component for: ${hazard.id}`);
     return <Appliance hazard={hazard} />;
   }
   
   // Render fire-type hazards using the new Fire component
   if (shouldUseNewFire) {
-    console.log(`🔥 Rendering Fire component for: ${hazard.id}`);
     return (
       <Fire
         position={[hazard.position.x, hazard.position.y, hazard.position.z]}
@@ -139,6 +132,5 @@ export default function Hazard({ hazard }: HazardProps) {
   }
   
   // Render other hazard types using FireHazard
-  console.log(`⚠️ Rendering FireHazard component for: ${hazard.id}`);
   return <FireHazard hazard={hazard} />;
 }

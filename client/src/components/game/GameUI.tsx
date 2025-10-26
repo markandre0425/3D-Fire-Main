@@ -13,13 +13,15 @@ export default function GameUI() {
     resumeGame, 
     resetLevel,
     activeTip, 
-    levelData
+    levelData,
+    isLevelComplete
   } = useFireSafety();
   
   const { hasExtinguisher } = usePlayer();
   
   const [showTip, setShowTip] = useState(false);
   const [tipContent, setTipContent] = useState<{title: string, content: string} | null>(null);
+  const [showLevelComplete, setShowLevelComplete] = useState(false);
 
   useEffect(() => {
     if (activeTip) {
@@ -41,6 +43,19 @@ export default function GameUI() {
       setShowTip(false);
     }
   }, [activeTip]);
+
+  // Show level complete notification
+  useEffect(() => {
+    if (isLevelComplete) {
+      setShowLevelComplete(true);
+      
+      const completeTimeout = setTimeout(() => {
+        setShowLevelComplete(false);
+      }, 2000);
+      
+      return () => clearTimeout(completeTimeout);
+    }
+  }, [isLevelComplete]);
   
   return (
     <>
@@ -126,6 +141,16 @@ export default function GameUI() {
         <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-600 bg-opacity-90 p-4 rounded-md text-white max-w-md">
           <h3 className="text-xl font-bold mb-2">{tipContent.title}</h3>
           <p className="text-md">{tipContent.content}</p>
+        </div>
+      )}
+      
+      {/* Level Complete Notification */}
+      {showLevelComplete && (
+        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
+          <div className="bg-green-600 bg-opacity-95 p-8 rounded-lg text-white text-center shadow-2xl animate-bounce">
+            <h2 className="text-4xl font-bold mb-2">🎉 Level Completed! 🎉</h2>
+            <p className="text-xl">Great job Firefighter!</p>
+          </div>
         </div>
       )}
       

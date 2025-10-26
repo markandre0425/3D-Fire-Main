@@ -19,12 +19,10 @@ export default function GameScreen() {
   useEffect(() => {
     const gameOverCheckDelay = setTimeout(() => {
       if (health <= 0) {
-        console.log("Game over: Player health depleted");
         end();
       }
 
       if (levelTime <= 0 && levelTime !== undefined) {
-        console.log("Game over: Time ran out");
         end();
       }
     }, 1000);
@@ -34,8 +32,6 @@ export default function GameScreen() {
 
   useEffect(() => {
     if (isLevelComplete) {
-      console.log("Level completed!");
-
       const currentLevel = useFireSafety.getState().currentLevel;
       const completedLevels = useFireSafety.getState().completedLevels;
 

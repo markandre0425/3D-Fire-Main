@@ -30,12 +30,8 @@ export default function ParticleFire({
 }: ParticleFireProps) {
   const particlesRef = useRef<THREE.Points>(null);
   const particles = useRef<Particle[]>([]);
-  const particleCount = Math.floor(intensity * 80) + 60; // 60-140 particles for denser, more solid fire
+  const particleCount = Math.floor(intensity * 40) + 30; // 30-70 particles - optimized for performance
 
-  // Debug log
-  useEffect(() => {
-    console.log(`🔥 ParticleFire rendering with shape: ${shape}, size: ${size}, position:`, position);
-  }, [shape, size, position]);
 
   // Generate fire colors
   const fireColors = useMemo(() => [

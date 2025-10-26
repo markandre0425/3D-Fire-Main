@@ -51,7 +51,6 @@ export default function ModelLoader({
       },
       (progress) => {
         // Optional: Handle loading progress
-        console.log('Loading progress:', (progress.loaded / progress.total) * 100, '%');
       },
       (error) => {
         console.error('Error loading model:', error);

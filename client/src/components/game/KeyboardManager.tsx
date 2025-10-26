@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useKeyboardControls } from "@react-three/drei";
 import { Controls } from "@/lib/types";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
@@ -8,33 +8,27 @@ export default function KeyboardManager() {
   const { isPaused, pauseGame, resumeGame } = useFireSafety();
   const { phase } = useGame();
   
+  // Track previous pause key state to detect actual key presses
+  const prevPausePressed = useRef(false);
+  
   // Get pause key state
   const isPausePressed = useKeyboardControls<Controls>(state => state.pause);
   
-  // Handle pause key
+  // Handle pause key - only toggle when key is NEWLY pressed (not held)
   useEffect(() => {
-    if (isPausePressed && phase === "playing") {
+    if (isPausePressed && !prevPausePressed.current && phase === "playing") {
+      // Key was just pressed (not held)
       if (isPaused) {
         resumeGame();
-        console.log("Game resumed via keyboard");
       } else {
         pauseGame();
-        console.log("Game paused via keyboard");
       }
     }
+    
+    // Update previous state
+    prevPausePressed.current = isPausePressed;
   }, [isPausePressed, isPaused, pauseGame, resumeGame, phase]);
   
-  // Log key states in development mode
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      const controls = [
-        "forward", "backward", "leftward", "rightward", 
-        "action", "extinguish", "crouch", "run", "pause"
-      ];
-      
-      console.log("Keyboard controls registered:", controls);
-    }
-  }, []);
   
   return null;
 }

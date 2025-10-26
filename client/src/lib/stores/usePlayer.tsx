@@ -206,13 +206,11 @@ export const usePlayer = create<PlayerStateStore>()(
         hasExtinguisher: true,
         extinguisherType: extinguisherType || InteractiveObjectType.FireExtinguisher
       });
-      console.log(`Fire extinguisher picked up: ${extinguisherType || 'Standard'}`);
     },
     
     useExtinguisher: () => {
       // Logic for using the extinguisher
       // This is just a placeholder - the actual extinguishing is handled in FireSafety store
-      console.log("Using fire extinguisher");
     },
     
         addScore: (points: number) => {

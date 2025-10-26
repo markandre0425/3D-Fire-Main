@@ -35,7 +35,7 @@ function App() {
   const [showEndScreen, setShowEndScreen] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [loadingComplete, setLoadingComplete] = useState(false);
-  const { setBackgroundMusic, setHitSound, setSuccessSound } = useAudio();
+  const { setBackgroundMusic, setHitSound, setSuccessSound, setLevelCompletedSound } = useAudio();
 
   useEffect(() => {
     const bgMusic = new Howl({
@@ -53,6 +53,25 @@ function App() {
       src: ['/sounds/success.mp3'],
       volume: 0.5,
     });
+
+    const levelCompleted = new Howl({
+      src: ['/sounds/levelcompleted.mp3'],
+      volume: 0.7,
+      preload: true
+    });
+    
+    // Set up event listeners after creation
+    (levelCompleted as any).on('load', () => {
+      console.log('✅ Level completed sound loaded successfully!');
+      setLevelCompletedSound(levelCompleted);
+    });
+    
+    (levelCompleted as any).on('loaderror', (id: any, error: any) => {
+      console.error('❌ Failed to load level completed sound:', error);
+    });
+    
+    // Set the sound immediately (it will be ready when needed)
+    setLevelCompletedSound(levelCompleted);
     
     setBackgroundMusic(bgMusic);
     setHitSound(hit);
@@ -64,8 +83,9 @@ function App() {
       bgMusic.stop();
       hit.stop();
       success.stop();
+      levelCompleted.stop();
     };
-  }, [setBackgroundMusic, setHitSound, setSuccessSound]);
+  }, [setBackgroundMusic, setHitSound, setSuccessSound, setLevelCompletedSound]);
 
   // Update UI based on game phase
   useEffect(() => {

@@ -11,35 +11,21 @@ export default function SoundManager() {
   } = useAudio();
   const { phase } = useGame();
   const { isPaused } = useFireSafety();
-  const hasStartedMusic = useRef(false);
+  const isPlayingRef = useRef(false);
 
+  // Handle background music play/pause based on game state
   useEffect(() => {
-    if (phase === "playing" && !isPaused && backgroundMusic && !hasStartedMusic.current) {
-      if (!isMuted) {
-        backgroundMusic.play();
-      }
-      hasStartedMusic.current = true;
-      console.log("Background music started");
-    }
+    if (!backgroundMusic) return;
 
-    if ((isPaused || phase !== "playing") && backgroundMusic) {
+    const shouldPlay = phase === "playing" && !isPaused && !isMuted;
+
+    if (shouldPlay && !isPlayingRef.current) {
+      backgroundMusic.play();
+      isPlayingRef.current = true;
+    } else if (!shouldPlay && isPlayingRef.current) {
       backgroundMusic.pause();
-      console.log("Background music paused");
+      isPlayingRef.current = false;
     }
-
-    if (phase === "playing" && !isPaused && backgroundMusic && hasStartedMusic.current) {
-      if (!isMuted) {
-        backgroundMusic.play();
-      }
-      console.log("Background music resumed");
-    }
-
-    return () => {
-      if (backgroundMusic) {
-        backgroundMusic.pause();
-        console.log("Background music cleaned up");
-      }
-    };
   }, [phase, isPaused, backgroundMusic, isMuted]);
 
   const handleMuteToggle = () => {

@@ -21,11 +21,21 @@ export default function FireExtinguisher({ object, isCollected }: FireExtinguish
     scene: THREE.Group
   };
   
-  // Update loading state
+  // Update loading state and apply materials
   useEffect(() => {
     if (extinguisherModel) {
+      // Clone and traverse to ensure proper materials
+      extinguisherModel.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          // Ensure material is visible
+          if (child.material) {
+            child.material.needsUpdate = true;
+          }
+        }
+      });
       setModelLoaded(true);
-      console.log("Fire extinguisher model loaded successfully");
     }
   }, [extinguisherModel]);
   

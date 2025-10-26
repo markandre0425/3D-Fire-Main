@@ -9,12 +9,13 @@ import { Controls } from "@/lib/types";
 import { PLAYER_CONSTANTS, GAME_CONSTANTS } from "@/lib/constants";
 
 useGLTF.preload('/models/firefighter.glb');
+useGLTF.preload('/models/fire_extinguisher.glb');
 
 export default function Character() {
   const playerRef = useRef<THREE.Group>(null);
   const characterRef = useRef<THREE.Mesh>(null);
   const modelRef = useRef<THREE.Group>(null);
-  const extinguisherRef = useRef<THREE.Mesh>(null);
+  const extinguisherRef = useRef<THREE.Group>(null);
   const previousPosition = useRef<[number, number, number]>([0, 0, 0]);
   const [modelLoaded, setModelLoaded] = useState(false);
   const [isUsingExtinguisher, setIsUsingExtinguisher] = useState(false);
@@ -27,6 +28,11 @@ export default function Character() {
   
   // Load the character model
   const { scene: characterModel } = useGLTF('/models/firefighter.glb') as GLTF & {
+    scene: THREE.Group
+  };
+  
+  // Load the fire extinguisher model
+  const { scene: extinguisherModel } = useGLTF('/models/fire_extinguisher.glb') as GLTF & {
     scene: THREE.Group
   };
   
@@ -89,8 +95,6 @@ export default function Character() {
       }
     );
     
-    console.log("Keyboard controls registered:", Object.keys(getKeys()));
-    
     return () => {
       unsubscribe();
     };
@@ -136,7 +140,6 @@ export default function Character() {
     
     // Debug movement detection
     if (anyMovementKey) {
-      console.log("Movement keys pressed:", controls, "Position change:", {deltaX, deltaZ}, "Speed:", moveSpeed);
     }
     
     // Update player mesh position from state
@@ -163,7 +166,6 @@ export default function Character() {
     if (modelRef.current) {
       if (moving) {
         // Debug logging
-        console.log("Moving:", moving, "Running:", isRunning, "Speed:", moveSpeed);
         
         // Different animation speeds for walking vs running
         const animationSpeed = isRunning ? 12 : 8; // Running is faster
@@ -264,7 +266,6 @@ export default function Character() {
   useEffect(() => {
     if (characterModel) {
       setModelLoaded(true);
-      console.log("Character model loaded successfully");
     }
   }, [characterModel]);
   
@@ -307,19 +308,15 @@ export default function Character() {
           </group>
           
           {/* Fire extinguisher (if player has one) */}
-          {hasExtinguisher && (
-            <mesh 
+          {hasExtinguisher && extinguisherModel && (
+            <group 
               ref={extinguisherRef}
               position={[0.3, 0.5, 0.3]} 
-              scale={[0.2, 0.4, 0.15]}
-              castShadow
+              scale={[0.6, 0.6, 0.6]}
+              rotation={[0, 0, Math.PI / 2]}
             >
-              <boxGeometry />
-              <meshStandardMaterial 
-                color={isUsingExtinguisher ? "#FF6B6B" : "#C0392B"}
-                emissive={isUsingExtinguisher ? new THREE.Color(0x331100) : new THREE.Color(0x000000)}
-              />
-            </mesh>
+              <primitive object={extinguisherModel.clone()} castShadow receiveShadow />
+            </group>
           )}
           
           {/* Action indicator when using extinguisher */}
