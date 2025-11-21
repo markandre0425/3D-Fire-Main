@@ -99,15 +99,9 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
     ],
     items: [
       {
-        id: 'wet-chemical-ext-1',
-        type: 'extinguisher',
-        position: [-2, 0, -2],
-        extinguisherType: 'WetChemical'
-      },
-      {
         id: 'gas-mask-1',
         type: 'gasMask',
-        position: [-2, 0, 2]
+        position: [-2, 1.2, 2]
       }
     ],
     objectives: [
@@ -242,21 +236,9 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
     ],
     items: [
       {
-        id: 'co2-extinguisher-1',
-        type: 'extinguisher',
-        position: [-4, 0, -4],
-        extinguisherType: 'CO2'
-      },
-      {
-        id: 'water-extinguisher-1',
-        type: 'extinguisher',
-        position: [4, 0, 4],
-        extinguisherType: 'Water'
-      },
-      {
         id: 'gas-mask-2',
         type: 'gasMask',
-        position: [-5, 0, 0]
+        position: [-5, 1.2, 0]
       },
       {
         id: 'smoke-detector-1',
@@ -437,37 +419,19 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
     ],
     items: [
       {
-        id: 'foam-extinguisher-1',
-        type: 'extinguisher',
-        position: [-7, 0, -6],
-        extinguisherType: 'Foam'
-      },
-      {
-        id: 'co2-extinguisher-2',
-        type: 'extinguisher',
-        position: [2, 0, -6],
-        extinguisherType: 'CO2'
-      },
-      {
-        id: 'dry-chemical-ext-1',
-        type: 'extinguisher',
-        position: [7, 0, 0],
-        extinguisherType: 'DryChemical'
-      },
-      {
         id: 'gas-mask-3a',
         type: 'gasMask',
-        position: [-2, 0, -6]
+        position: [-2, 1.2, -6]
       },
       {
         id: 'gas-mask-3b',
         type: 'gasMask',
-        position: [2, 0, 6]
+        position: [2, 1.2, 6]
       },
       {
         id: 'first-aid-kit',
         type: 'firstAid',
-        position: [0, 0, -6]
+        position: [0, 1.2, -6]
       }
     ],
     objectives: [
@@ -687,43 +651,19 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
     ],
     items: [
       {
-        id: 'foam-extinguisher-2',
-        type: 'extinguisher',
-        position: [-9, 0, -8],
-        extinguisherType: 'Foam'
-      },
-      {
-        id: 'co2-extinguisher-3',
-        type: 'extinguisher',
-        position: [9, 0, -8],
-        extinguisherType: 'CO2'
-      },
-      {
-        id: 'dry-chemical-ext-2',
-        type: 'extinguisher',
-        position: [-9, 0, 8],
-        extinguisherType: 'DryChemical'
-      },
-      {
-        id: 'co2-extinguisher-4',
-        type: 'extinguisher',
-        position: [9, 0, 8],
-        extinguisherType: 'CO2'
-      },
-      {
         id: 'gas-mask-4a',
         type: 'gasMask',
-        position: [-8, 0, 0]
+        position: [-8, 1.2, 0]
       },
       {
         id: 'gas-mask-4b',
         type: 'gasMask',
-        position: [8, 0, 0]
+        position: [8, 1.2, 0]
       },
       {
         id: 'gas-mask-4c',
         type: 'gasMask',
-        position: [0, 0, -8]
+        position: [0, 1.2, -8]
       }
     ],
     objectives: [

@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { GLTF } from "three-stdlib";
 import { usePlayer } from "@/lib/stores/usePlayer";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
-import { Controls } from "@/lib/types";
+import { Controls, Level } from "@/lib/types";
 import { PLAYER_CONSTANTS, GAME_CONSTANTS } from "@/lib/constants";
 
 useGLTF.preload('/models/firefighter.glb');
@@ -43,6 +43,7 @@ export default function Character() {
     isCrouching,
     isRunning,
     hasExtinguisher,
+    hasGasMask,
     moveForward,
     moveBackward,
     moveLeft,
@@ -53,8 +54,8 @@ export default function Character() {
     replenishOxygen
   } = usePlayer();
   
-  // Get hazards and game pause state
-  const { hazards, isPaused } = useFireSafety();
+  // Get hazards, game pause state, and current level
+  const { hazards, isPaused, currentLevel } = useFireSafety();
   
   // Get keyboard controls at the component level
   const [subscribe, getKeys] = useKeyboardControls<Controls>();
@@ -152,12 +153,12 @@ export default function Character() {
     if (isUsingExtinguisher && extinguisherRef.current) {
       animationPhase.current += delta * 8; // Animation speed
       const shake = Math.sin(animationPhase.current) * 0.1;
-      extinguisherRef.current.position.set(0.3 + shake * 0.2, 0.5 + shake * 0.1, 0.3);
+      extinguisherRef.current.position.set(0.3 + shake * 0.2, 0.3 + shake * 0.1, 0.3);
       extinguisherRef.current.rotation.x = shake * 0.3;
       extinguisherRef.current.rotation.z = shake * 0.2;
     } else if (extinguisherRef.current) {
       // Reset to default position
-      extinguisherRef.current.position.set(0.3, 0.5, 0.3);
+      extinguisherRef.current.position.set(0.3, 0.3, 0.3);
       extinguisherRef.current.rotation.set(0, 0, 0);
       animationPhase.current = 0;
     }
@@ -214,27 +215,37 @@ export default function Character() {
       }
     }
 
-    const activeSmokingHazards = hazards.filter(h => h.isSmoking && !h.isExtinguished);
-    let inSmoke = false;
+    // Oxygen depletes constantly unless player has gas mask
+    // This simulates hazardous environment requiring breathing protection
+    if (!hasGasMask) {
+      // Constantly deplete oxygen if no gas mask
+      depleteOxygen(PLAYER_CONSTANTS.OXYGEN_DEPLETION_RATE * delta);
+    } else {
+      // Slowly replenish oxygen when gas mask is equipped
+      replenishOxygen(PLAYER_CONSTANTS.OXYGEN_DEPLETION_RATE * 0.3 * delta);
+    }
     
-    for (const hazard of activeSmokingHazards) {
-      const dx = position.x - hazard.position.x;
-      const dz = position.z - hazard.position.z;
-      const distanceSquared = dx * dx + dz * dz;
-      
-      if (distanceSquared < GAME_CONSTANTS.DAMAGE_DISTANCE * GAME_CONSTANTS.DAMAGE_DISTANCE) {
-        depleteOxygen(PLAYER_CONSTANTS.OXYGEN_DEPLETION_RATE * delta);
-        inSmoke = true;
-        break;
+    // Simple wall collision - keep player within the level bounds (dynamic based on room size)
+    const getBoundarySize = () => {
+      switch (currentLevel) {
+        case Level.Kitchen:
+        case Level.LivingRoom:
+        case Level.Bedroom:
+        case Level.BasicTraining:
+          return 9.5; // 20×20 rooms
+        case Level.FireClassification:
+        case Level.EmergencyResponse:
+          return 11.5; // 24×24 rooms
+        case Level.AdvancedRescue:
+          return 13.5; // 28×28 rooms
+        case Level.BFPCertification:
+          return 15.5; // 32×32 rooms
+        default:
+          return 9.5;
       }
-    }
-
-    if (!inSmoke) {
-      replenishOxygen(PLAYER_CONSTANTS.OXYGEN_DEPLETION_RATE * 0.5 * delta);
-    }
+    };
     
-    // Simple wall collision - keep player within the level bounds
-    const boundarySize = 4.5;
+    const boundarySize = getBoundarySize();
     
     if (playerRef.current.position.x > boundarySize) {
       playerRef.current.position.x = boundarySize;
@@ -271,9 +282,9 @@ export default function Character() {
   
   // Get animation scale based on movement type
   const getAnimationScale = (): [number, number, number] => {
-    if (isCrouching) return [0.5, 0.35, 0.5];
-    if (isRunning && isMoving) return [0.52, 0.52, 0.52]; // Slightly bigger when running
-    return [0.5, 0.5, 0.5];
+    if (isCrouching) return [1.5, 1.05, 1.5];
+    if (isRunning && isMoving) return [1.56, 1.56, 1.56]; // Slightly bigger when running
+    return [1.5, 1.5, 1.5];
   };
   
   return (
@@ -286,10 +297,10 @@ export default function Character() {
         <Suspense fallback={
           <mesh 
             ref={characterRef} 
-            position={[0, 0, 0]} 
+            position={[0, 2.5, 0]} 
             castShadow
           >
-            <boxGeometry args={[0.5, isCrouching ? 1 : 1.7, 0.5]} />
+            <boxGeometry args={[1.5, isCrouching ? 3 : 5.1, 1.5]} />
             <meshStandardMaterial 
               color={
                 isRunning && isMoving ? "#FF6B6B" : // Red when running
@@ -302,35 +313,24 @@ export default function Character() {
           <group 
             ref={modelRef} 
             scale={getAnimationScale()} 
-            position={[0, isCrouching ? -0.5 : 0, 0]}
+            position={[0, isCrouching ? -1.8 : -1.5, 0]}
           >
-            <primitive object={characterModel.clone()} castShadow receiveShadow />
+            <primitive object={characterModel} castShadow receiveShadow />
           </group>
           
           {/* Fire extinguisher (if player has one) */}
           {hasExtinguisher && extinguisherModel && (
             <group 
               ref={extinguisherRef}
-              position={[0.3, 0.5, 0.3]} 
-              scale={[0.6, 0.6, 0.6]}
+              position={[0.9, 0.9, 0.9]} 
+              scale={[1.8, 1.8, 1.8]}
               rotation={[0, 0, Math.PI / 2]}
             >
               <primitive object={extinguisherModel.clone()} castShadow receiveShadow />
             </group>
           )}
           
-          {/* Action indicator when using extinguisher */}
-          {isUsingExtinguisher && (
-            <mesh position={[0, 2.2, 0]}>
-              <ringGeometry args={[0.3, 0.4, 8]} />
-              <meshBasicMaterial 
-                color="#FFD700" 
-                transparent 
-                opacity={0.8}
-                side={THREE.DoubleSide}
-              />
-            </mesh>
-          )}
+          {/* Removed action indicator ring to avoid circle above player */}
           
 
         </Suspense>
@@ -338,10 +338,10 @@ export default function Character() {
         // Fallback while loading
         <mesh 
           ref={characterRef} 
-          position={[0, 0, 0]} 
+          position={[0, 2.5, 0]} 
           castShadow
         >
-          <boxGeometry args={[0.5, isCrouching ? 1 : 1.7, 0.5]} />
+          <boxGeometry args={[1.5, isCrouching ? 3 : 5.1, 1.5]} />
           <meshStandardMaterial 
             color={
               isRunning && isMoving ? "#FF6B6B" : // Red when running

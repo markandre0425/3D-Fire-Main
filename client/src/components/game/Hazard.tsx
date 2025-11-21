@@ -111,7 +111,6 @@ export default function Hazard({ hazard }: HazardProps) {
                           hazard.type === HazardType.StoveTop ||
                           hazard.type === HazardType.Candle ||
                           hazard.type === HazardType.SpacerHeater ||
-                          hazard.type === HazardType.ElectricalOutlet ||
                           hazard.type === HazardType.CloggedDryer;
   
   // Render appliance-type hazards using the Appliance component

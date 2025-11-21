@@ -8,25 +8,33 @@ export default function Floor() {
   const meshRef = useRef<Mesh>(null);
   const { currentLevel } = useFireSafety();
   
-  // Load the appropriate texture based on the current level
-  const getTextureUrl = () => {
+  // Get floor size based on current level (matching the 2x scaled rooms)
+  const getFloorSize = () => {
     switch (currentLevel) {
       case Level.Kitchen:
-        return "/textures/wood.jpg";
       case Level.LivingRoom:
-        return "/textures/wood.jpg";
       case Level.Bedroom:
-        return "/textures/wood.jpg";
+      case Level.BasicTraining:
+        return 20; // 20x20 rooms
+      case Level.FireClassification:
+      case Level.EmergencyResponse:
+        return 24; // 24x24 rooms
+      case Level.AdvancedRescue:
+        return 28; // 28x28 rooms
+      case Level.BFPCertification:
+        return 32; // 32x32 rooms
       default:
-        return "/textures/wood.jpg";
+        return 20;
     }
   };
   
-  const texture = useTexture(getTextureUrl());
+  // All levels use wood texture
+  const texture = useTexture("/textures/wood.jpg");
   
-  // Configure the texture
+  // Configure the texture with proper tiling based on room size
+  const floorSize = getFloorSize();
   texture.wrapS = texture.wrapT = RepeatWrapping;
-  texture.repeat.set(4, 4);
+  texture.repeat.set(floorSize / 2.5, floorSize / 2.5); // Scale texture repeat with room size
   
   return (
     <mesh 
@@ -35,7 +43,7 @@ export default function Floor() {
       rotation={[-Math.PI / 2, 0, 0]} 
       receiveShadow
     >
-      <planeGeometry args={[10, 10]} />
+      <planeGeometry args={[floorSize, floorSize]} />
       <meshStandardMaterial map={texture} side={DoubleSide} />
     </mesh>
   );

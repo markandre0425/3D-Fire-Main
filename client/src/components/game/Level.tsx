@@ -11,7 +11,7 @@ import Fire from "./Fire";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { usePlayer } from "@/lib/stores/usePlayer";
 import { useKeyboardControls } from "@react-three/drei";
-import { Controls } from "@/lib/types";
+import { Controls, Level as LevelEnum } from "@/lib/types";
 import { GAME_CONSTANTS } from "@/lib/constants";
 import { getLevelConfig } from "@/lib/levelConfigs";
 
@@ -95,7 +95,8 @@ export default function Level() {
               obj.type === "FoamExtinguisher" ||
               obj.type === "CO2Extinguisher" ||
               obj.type === "PowderExtinguisher" ||
-              obj.type === "WetChemicalExtinguisher") {
+              obj.type === "WetChemicalExtinguisher" ||
+              obj.type === "GasMask") {
             collectObject(obj.id);
           }
         }
@@ -171,13 +172,13 @@ export default function Level() {
       
       {/* Render hazards */}
       {hazards.map(hazard => (
-        <Hazard key={hazard.id} hazard={hazard} />
+        <Hazard key={`hazard-${hazard.id}`} hazard={hazard} />
       ))}
       
       {/* Render level-specific fires from levelConfigs */}
       {levelFires.map(fire => (
         <Fire
-          key={fire.id}
+          key={`levelfire-${fire.id}`}
           position={fire.position}
           size={fire.size}
           intensity={fire.intensity}
@@ -190,19 +191,35 @@ export default function Level() {
         maxFires={2}
         spawnInterval={8000}
         spawnChance={0.3}
-        mapBounds={{
-          minX: -8,
-          maxX: 8,
-          minZ: -8,
-          maxZ: 8,
-          y: 0.1
-        }}
+        environmentObjects={useFireSafety.getState().levelData.environmentObjects}
+        mapBounds={(() => {
+          // Dynamic map bounds based on room size (matching 2x scaled rooms)
+          const getBounds = () => {
+            switch (currentLevel) {
+              case LevelEnum.Kitchen:
+              case LevelEnum.LivingRoom:
+              case LevelEnum.Bedroom:
+              case LevelEnum.BasicTraining:
+                return { minX: -9, maxX: 9, minZ: -9, maxZ: 9, y: 0.1 }; // 20×20 rooms
+              case LevelEnum.FireClassification:
+              case LevelEnum.EmergencyResponse:
+                return { minX: -11, maxX: 11, minZ: -11, maxZ: 11, y: 0.1 }; // 24×24 rooms
+              case LevelEnum.AdvancedRescue:
+                return { minX: -13, maxX: 13, minZ: -13, maxZ: 13, y: 0.1 }; // 28×28 rooms
+              case LevelEnum.BFPCertification:
+                return { minX: -15, maxX: 15, minZ: -15, maxZ: 15, y: 0.1 }; // 32×32 rooms
+              default:
+                return { minX: -9, maxX: 9, minZ: -9, maxZ: 9, y: 0.1 };
+            }
+          };
+          return getBounds();
+        })()}
       />
       
       {/* Render interactive objects */}
       {interactiveObjects.map(obj => (
         <ExtinguisherPickup 
-          key={obj.id} 
+          key={`object-${obj.id}`} 
           object={obj} 
           isCollected={obj.isCollected} 
         />

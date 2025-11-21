@@ -28,9 +28,10 @@ export default function ParticleSprayEffect({
 }: ParticleSprayEffectProps) {
   const particlesRef = useRef<THREE.Points>(null);
   const particles = useRef<Particle[]>([]);
-  const particleCount = 60;
+  const particleCount = 20;
   const spraySound = useRef<HTMLAudioElement | null>(null);
   const { isMuted } = useAudio();
+  const velocityHelper = useRef(new THREE.Vector3());
 
   // Get spray colors based on extinguisher type
   const sprayColors = useMemo(() => {
@@ -224,7 +225,9 @@ export default function ParticleSprayEffect({
       }
 
       // Update position
-      particle.position.add(particle.velocity.clone().multiplyScalar(delta));
+      const step = velocityHelper.current;
+      step.copy(particle.velocity).multiplyScalar(delta);
+      particle.position.add(step);
       
       // Gravity
       particle.velocity.y -= 3 * delta;

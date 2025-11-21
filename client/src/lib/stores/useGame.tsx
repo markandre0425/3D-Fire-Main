@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
+import { usePlayer } from "./usePlayer";
+import { useFireSafety } from "./useFireSafety";
 
 export type GamePhase = "ready" | "playing" | "ended";
 
@@ -20,6 +22,8 @@ export const useGame = create<GameState>()(
       set((state) => {
         // Only transition from ready to playing
         if (state.phase === "ready") {
+          // Reset player state when starting a new game
+          usePlayer.getState().resetPlayer();
           return { phase: "playing" };
         }
         return {};
@@ -27,6 +31,9 @@ export const useGame = create<GameState>()(
     },
     
     restart: () => {
+      // Reset player and game state when restarting
+      usePlayer.getState().resetPlayer();
+      useFireSafety.getState().resetLevel();
       set(() => ({ phase: "ready" }));
     },
     

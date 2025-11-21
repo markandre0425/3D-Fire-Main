@@ -227,6 +227,11 @@ export const useFireSafety = create<FireSafetyState>()(
           usePlayer.getState().pickupExtinguisher(object.type);
         }
         
+        // If it's a gas mask, give it to the player
+        if (object.type === "GasMask") {
+          usePlayer.getState().pickupGasMask();
+        }
+        
         useAudio.getState().playSuccess();
       }
     },

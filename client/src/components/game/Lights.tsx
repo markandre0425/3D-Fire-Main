@@ -67,7 +67,7 @@ export default function Lights() {
         .filter(hazard => hazard.isActive && !hazard.isExtinguished)
         .map(hazard => (
           <pointLight
-            key={hazard.id}
+            key={`hazard-light-${hazard.id}`}
             position={[
               hazard.position.x,
               hazard.position.y + 0.5,

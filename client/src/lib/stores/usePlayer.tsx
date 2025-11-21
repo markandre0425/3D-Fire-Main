@@ -20,9 +20,7 @@ interface PlayerStateStore extends PlayerState {
   useExtinguisher: () => void;
   addScore: (points: number) => void;
   getMovementSpeed: () => number;
-  // Gas Mask functionality - temporarily disabled
-  // pickupGasMask: () => void;
-  // hasGasMask: boolean;
+  pickupGasMask: () => void;
 }
 
 export const usePlayer = create<PlayerStateStore>()(
@@ -32,6 +30,7 @@ export const usePlayer = create<PlayerStateStore>()(
     health: PLAYER_CONSTANTS.MAX_HEALTH,
     hasExtinguisher: false,
     extinguisherType: null,
+    hasGasMask: false,
     isCrouching: false,
     isRunning: false,
     oxygen: PLAYER_CONSTANTS.MAX_OXYGEN,
@@ -195,6 +194,7 @@ export const usePlayer = create<PlayerStateStore>()(
         health: PLAYER_CONSTANTS.MAX_HEALTH,
         hasExtinguisher: false,
         extinguisherType: null,
+        hasGasMask: false,
         isCrouching: false,
         isRunning: false,
         oxygen: PLAYER_CONSTANTS.MAX_OXYGEN
@@ -213,15 +213,13 @@ export const usePlayer = create<PlayerStateStore>()(
       // This is just a placeholder - the actual extinguishing is handled in FireSafety store
     },
     
-        addScore: (points: number) => {
+    addScore: (points: number) => {
       set(state => ({ score: state.score + points }));
     },
     
-    // pickupGasMask: () => {
-    //   console.log("BFP Breathing Apparatus pickup triggered - testing...");
-    //   // Temporarily comment out state change to debug
-    //   // set({ hasGasMask: true });
-    // },
+    pickupGasMask: () => {
+      set({ hasGasMask: true });
+    },
     
     getMovementSpeed: () => {
       const { isCrouching, isRunning } = get();

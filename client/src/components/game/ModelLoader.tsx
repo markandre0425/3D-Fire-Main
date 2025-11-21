@@ -53,8 +53,13 @@ export default function ModelLoader({
         // Optional: Handle loading progress
       },
       (error) => {
-        console.error('Error loading model:', error);
-        setError(error.message);
+        console.error(`Error loading model ${modelPath}:`, error);
+        console.error('Error details:', {
+          message: error.message,
+          type: error.type,
+          target: error.target
+        });
+        setError(error.message || 'Failed to load model');
         setLoading(false);
         onError?.(error);
       }
@@ -80,11 +85,19 @@ export default function ModelLoader({
   }
 
   if (error) {
+    console.error(`ModelLoader error for ${modelPath}:`, error);
     return (
-      <mesh position={position}>
-        <boxGeometry args={[0.5, 0.5, 0.5]} />
-        <meshStandardMaterial color="#ff0000" />
-      </mesh>
+      <group position={position}>
+        <mesh>
+          <boxGeometry args={[0.5, 0.5, 0.5]} />
+          <meshStandardMaterial color="#ff0000" />
+        </mesh>
+        {/* Debug text to identify which model failed */}
+        <mesh position={[0, 0.8, 0]}>
+          <boxGeometry args={[0.1, 0.1, 0.1]} />
+          <meshStandardMaterial color="#ffff00" />
+        </mesh>
+      </group>
     );
   }
 

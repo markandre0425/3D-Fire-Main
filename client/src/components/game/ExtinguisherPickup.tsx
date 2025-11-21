@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useThree } from "@react-three/fiber";
 import FireExtinguisher from "./FireExtinguisher";
 import ExitSign from "./ExitSign";
+import GasMaskPickup from "./GasMaskPickup";
 import { InteractiveObject, InteractiveObjectType } from "@/lib/types";
 
 interface ExtinguisherPickupProps {
@@ -18,6 +19,8 @@ export default function InteractiveObjectComponent({ object, isCollected }: Exti
         return <FireExtinguisher object={object} isCollected={isCollected} />;
       case InteractiveObjectType.EmergencyExit:
         return <ExitSign object={object} />;
+      case InteractiveObjectType.GasMask:
+        return <GasMaskPickup object={object} isCollected={isCollected} />;
       default:
         return null;
     }

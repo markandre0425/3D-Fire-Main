@@ -22,6 +22,7 @@ export interface PlayerState {
   health: number;
   hasExtinguisher: boolean;
   extinguisherType: InteractiveObjectType | null; // Track which type of extinguisher the player has
+  hasGasMask: boolean;
   isCrouching: boolean;
   isRunning: boolean;
   oxygen: number;
@@ -76,7 +77,8 @@ export enum InteractiveObjectType {
   WetChemicalExtinguisher = "WetChemicalExtinguisher", // For Class K fires
   EmergencyAlarm = "EmergencyAlarm",
   FirstAidKit = "FirstAidKit",
-  EscapeRope = "EscapeRope"
+  EscapeRope = "EscapeRope",
+  GasMask = "GasMask"
 }
 
 export enum Level {

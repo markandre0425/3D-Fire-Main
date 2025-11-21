@@ -12,7 +12,9 @@ interface FireHazardProps {
 
 export default function FireHazard({ hazard }: FireHazardProps) {
   const groupRef = useRef<THREE.Group>(null);
-  const sparkParticles = useRef<THREE.Mesh[]>([]);
+  const sparkGeometryRef = useRef<THREE.BufferGeometry | null>(null);
+  const sparkPositionsRef = useRef<Float32Array | null>(null);
+  const sparkVelocitiesRef = useRef<Float32Array | null>(null);
   
   const { updateHazard } = useFireSafety();
   
@@ -20,40 +22,46 @@ export default function FireHazard({ hazard }: FireHazardProps) {
   const shouldUseNewFire = hazard.type === HazardType.Fireplace || 
                           hazard.type === HazardType.StoveTop ||
                           hazard.type === HazardType.Candle ||
-                          hazard.type === HazardType.SpacerHeater;
+                          hazard.type === HazardType.SpacerHeater ||
+                          hazard.type === HazardType.CloggedDryer;
   
   // Generate random particles for spark effects (only for non-fire hazards)
   const numParticles = useMemo(() => {
     if (shouldUseNewFire) return 0;
-    return Math.floor(hazard.severity * 8) + 3;
+    return Math.max(4, Math.floor(hazard.severity * 4) + 2);
   }, [hazard.severity, shouldUseNewFire]);
   
-  // Initialize spark particles
+  // Initialize spark particle geometry buffers
   useEffect(() => {
-    if (shouldUseNewFire) return;
+    if (shouldUseNewFire || numParticles === 0) return;
     
-    sparkParticles.current = [];
+    const positions = new Float32Array(numParticles * 3);
+    const velocities = new Float32Array(numParticles * 3);
     
     for (let i = 0; i < numParticles; i++) {
-      const particle = new THREE.Mesh(
-        new THREE.SphereGeometry(0.02, 4, 4),
-        new THREE.MeshStandardMaterial({
-          color: "#FFDD00",
-          emissive: "#FFFF00",
-          emissiveIntensity: 2,
-          toneMapped: false
-        })
-      );
+      const idx = i * 3;
+      positions[idx] = Math.random() * 0.3 - 0.15;
+      positions[idx + 1] = Math.random() * 0.15;
+      positions[idx + 2] = Math.random() * 0.3 - 0.15;
       
-      // Random initial position
-      particle.position.set(
-        Math.random() * 0.4 - 0.2,
-        Math.random() * 0.2,
-        Math.random() * 0.4 - 0.2
-      );
-      
-      sparkParticles.current.push(particle);
+      velocities[idx] = (Math.random() - 0.5) * 0.2;
+      velocities[idx + 1] = Math.random() * 0.4;
+      velocities[idx + 2] = (Math.random() - 0.5) * 0.2;
     }
+    
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    
+    sparkPositionsRef.current = positions;
+    sparkVelocitiesRef.current = velocities;
+    sparkGeometryRef.current = geometry;
+    
+    return () => {
+      geometry.dispose();
+      sparkGeometryRef.current = null;
+      sparkPositionsRef.current = null;
+      sparkVelocitiesRef.current = null;
+    };
   }, [numParticles, shouldUseNewFire]);
   
   // Get hazard color based on type
@@ -98,20 +106,38 @@ export default function FireHazard({ hazard }: FireHazardProps) {
   
   // Animate particles (only for non-fire hazards)
   useFrame((_, delta) => {
-    if (hazard.isExtinguished || shouldUseNewFire) return;
+    if (
+      hazard.isExtinguished ||
+      shouldUseNewFire ||
+      !sparkPositionsRef.current ||
+      !sparkVelocitiesRef.current ||
+      !sparkGeometryRef.current
+    ) {
+      return;
+    }
     
-    // Animate particles
-    sparkParticles.current.forEach((particle, i) => {
-      const offset = i * 0.1;
-      particle.position.y += (Math.random() - 0.5) * delta * 2;
-      particle.position.x += Math.sin(Date.now() * 0.001 + offset) * delta * 0.5;
-      particle.position.z += Math.cos(Date.now() * 0.001 + offset) * delta * 0.5;
+    const positions = sparkPositionsRef.current;
+    const velocities = sparkVelocitiesRef.current;
+    
+    for (let i = 0; i < numParticles; i++) {
+      const idx = i * 3;
       
-      // Reset particles that go too high
-      if (particle.position.y > 2) {
-        particle.position.y = 0;
+      positions[idx] += velocities[idx] * delta;
+      positions[idx + 1] += velocities[idx + 1] * delta;
+      positions[idx + 2] += velocities[idx + 2] * delta;
+      
+      velocities[idx] += (Math.random() - 0.5) * delta * 0.5;
+      velocities[idx + 2] += (Math.random() - 0.5) * delta * 0.5;
+      velocities[idx + 1] -= delta * 0.3;
+      
+      if (positions[idx + 1] < 0 || positions[idx + 1] > 0.4) {
+        positions[idx + 1] = 0.1;
+        velocities[idx + 1] = Math.random() * 0.4;
       }
-    });
+    }
+    
+    const positionAttr = sparkGeometryRef.current.attributes.position as THREE.BufferAttribute;
+    positionAttr.needsUpdate = true;
   });
   
   return (
@@ -141,25 +167,18 @@ export default function FireHazard({ hazard }: FireHazardProps) {
       )}
       
       {/* Spark particles for non-fire hazards */}
-      {!shouldUseNewFire && hazard.isActive && !hazard.isExtinguished && sparkParticles.current.map((_, i) => (
-        <mesh 
-          key={`spark-${hazard.id}-${i}`}
-          position={[
-            Math.random() * 0.4 - 0.2,
-            getHazardDimensions()[1] / 2 + 0.2,
-            Math.random() * 0.4 - 0.2
-          ]}
-          scale={[0.05, 0.05, 0.05]}
-        >
-          <sphereGeometry args={[1, 4, 4]} />
-          <meshStandardMaterial 
-            color="#FFDD00" 
-            emissive="#FFFF00"
-            emissiveIntensity={2}
-            toneMapped={false}
+      {!shouldUseNewFire && hazard.isActive && !hazard.isExtinguished && sparkGeometryRef.current && (
+        <points geometry={sparkGeometryRef.current}>
+          <pointsMaterial
+            color="#FFF6A1"
+            size={0.05}
+            sizeAttenuation
+            transparent
+            opacity={0.85}
+            depthWrite={false}
           />
-        </mesh>
-      ))}
+        </points>
+      )}
     </group>
   );
 }

@@ -25,7 +25,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
       return {
         modelPath: null, // Model not available, use fallback geometry
         scale: [0.8, 0.8, 0.8] as [number, number, number],
-        position: [0, 0.2, 0] as [number, number, number],
+        position: [0, 0, 0] as [number, number, number],
         fireSize: 0.4,
         fireIntensity: 1.2
       };
@@ -33,9 +33,9 @@ export default function Appliance({ hazard }: ApplianceProps) {
     
     if (containsAppliance(['toaster'])) {
       return {
-        modelPath: '/models/toaster.glb',
+        modelPath: '/models/simple_wood.glb',
         scale: [0.6, 0.6, 0.6] as [number, number, number],
-        position: [0, 0.1, 0] as [number, number, number],
+        position: [0, 0, 0] as [number, number, number],
         fireSize: 0.3,
         fireIntensity: 1.0
       };
@@ -45,7 +45,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
       return {
         modelPath: null, // Model not available, use fallback geometry
         scale: [0.7, 0.7, 0.7] as [number, number, number],
-        position: [0, 0.25, 0] as [number, number, number],
+        position: [0, 0, 0] as [number, number, number],
         fireSize: 0.35,
         fireIntensity: 1.1
       };
@@ -53,9 +53,9 @@ export default function Appliance({ hazard }: ApplianceProps) {
     
     if (containsAppliance(['tv', 'television'])) {
       return {
-        modelPath: '/models/tv.glb',
+        modelPath: '/models/simple_wood.glb',
         scale: [1.0, 1.0, 1.0] as [number, number, number],
-        position: [0, 0.35, 0] as [number, number, number],
+        position: [0, 0, 0] as [number, number, number],
         fireSize: 0.6,
         fireIntensity: 1.3
       };
@@ -63,162 +63,32 @@ export default function Appliance({ hazard }: ApplianceProps) {
     
     if (containsAppliance(['laptop'])) {
       return {
-        modelPath: '/models/laptop.glb',
+        modelPath: '/models/simple_wood.glb',
         scale: [0.5, 0.5, 0.5] as [number, number, number],
-        position: [0, 0.025, 0] as [number, number, number],
+        position: [0, 0, 0] as [number, number, number],
         fireSize: 0.25,
         fireIntensity: 0.9
       };
     }
     
-    if (containsAppliance(['space-heater', 'spaceheater'])) {
-      return {
-        modelPath: null, // Model not available, use fallback geometry
-        scale: [0.6, 0.6, 0.6] as [number, number, number],
-        position: [0, 0.2, 0] as [number, number, number],
-        fireSize: 0.5,
-        fireIntensity: 1.4
-      };
-    }
-    
-    if (containsAppliance(['lamp'])) {
-      return {
-        modelPath: null, // Model not available, use fallback geometry
-        scale: [0.4, 0.4, 0.4] as [number, number, number],
-        position: [0, 0.15, 0] as [number, number, number],
-        fireSize: 0.2,
-        fireIntensity: 0.8
-      };
-    }
-    
-    if (containsAppliance(['printer'])) {
-      return {
-        modelPath: null, // Model not available, use fallback geometry
-        scale: [0.7, 0.7, 0.7] as [number, number, number],
-        position: [0, 0.15, 0] as [number, number, number],
-        fireSize: 0.4,
-        fireIntensity: 1.2
-      };
-    }
-    
-    if (containsAppliance(['projector'])) {
-      return {
-        modelPath: null, // Model not available, use fallback geometry
-        scale: [0.5, 0.5, 0.5] as [number, number, number],
-        position: [0, 0.1, 0] as [number, number, number],
-        fireSize: 0.3,
-        fireIntensity: 1.0
-      };
-    }
-    
-    if (containsAppliance(['vending', 'vending-machine'])) {
-      return {
-        modelPath: null, // Model not available, use fallback geometry
-        scale: [1.2, 1.2, 1.2] as [number, number, number],
-        position: [0, 0.75, 0] as [number, number, number],
-        fireSize: 0.7,
-        fireIntensity: 1.5
-      };
-    }
-    
-    if (containsAppliance(['file-cabinet', 'filecabinet'])) {
+    if (containsAppliance(['space-heater', 'spaceheater', 'lamp', 'printer', 'projector', 'vending', 'vending-machine', 'file-cabinet', 'filecabinet', 'conveyor', 'conveyor-belt', 'hydraulic', 'hydraulic-press', 'welding', 'welding-station', 'forklift', 'compressor', 'generator'])) {
       return {
         modelPath: null, // Model not available, use fallback geometry
         scale: [0.8, 0.8, 0.8] as [number, number, number],
-        position: [0, 0.6, 0] as [number, number, number],
+        position: [0, 0, 0] as [number, number, number],
         fireSize: 0.5,
         fireIntensity: 1.3
       };
     }
     
-    if (containsAppliance(['conveyor', 'conveyor-belt'])) {
-      return {
-        modelPath: null, // Model not available, use fallback geometry
-        scale: [1.5, 1.5, 1.5] as [number, number, number],
-        position: [0, 0.15, 0] as [number, number, number],
-        fireSize: 0.8,
-        fireIntensity: 1.6
-      };
-    }
-    
-    if (containsAppliance(['hydraulic', 'hydraulic-press'])) {
-      return {
-        modelPath: null, // Model not available, use fallback geometry
-        scale: [0.8, 0.8, 0.8] as [number, number, number],
-        position: [0, 0.4, 0] as [number, number, number],
-        fireSize: 0.6,
-        fireIntensity: 1.4
-      };
-    }
-    
-    if (containsAppliance(['welding', 'welding-station'])) {
-      return {
-        modelPath: null, // Model not available, use fallback geometry
-        scale: [0.7, 0.7, 0.7] as [number, number, number],
-        position: [0, 0.15, 0] as [number, number, number],
-        fireSize: 0.5,
-        fireIntensity: 1.5
-      };
-    }
-    
-    if (containsAppliance(['forklift'])) {
-      return {
-        modelPath: null, // Model not available, use fallback geometry
-        scale: [1.0, 1.0, 1.0] as [number, number, number],
-        position: [0, 0.3, 0] as [number, number, number],
-        fireSize: 0.6,
-        fireIntensity: 1.4
-      };
-    }
-    
-    if (containsAppliance(['compressor'])) {
-      return {
-        modelPath: null, // Model not available, use fallback geometry
-        scale: [0.6, 0.6, 0.6] as [number, number, number],
-        position: [0, 0.3, 0] as [number, number, number],
-        fireSize: 0.4,
-        fireIntensity: 1.2
-      };
-    }
-    
-    if (containsAppliance(['generator'])) {
-      return {
-        modelPath: null, // Model not available, use fallback geometry
-        scale: [1.0, 1.0, 1.0] as [number, number, number],
-        position: [0, 0.4, 0] as [number, number, number],
-        fireSize: 0.8,
-        fireIntensity: 1.7
-      };
-    }
-    
-    // New models added
-    if (containsAppliance(['meat-grinder', 'meat_grinder'])) {
-      return {
-        modelPath: '/models/meat_grinder.glb',
-        scale: [0.5, 0.5, 0.5] as [number, number, number],
-        position: [0, 0.25, 0] as [number, number, number],
-        fireSize: 0.3,
-        fireIntensity: 1.1
-      };
-    }
-    
-    if (containsAppliance(['simple-wood', 'simple_wood'])) {
+    // All appliances use simple_wood.glb
+    if (containsAppliance(['meat-grinder', 'meat_grinder', 'simple-wood', 'simple_wood', 'wooden-tabouret', 'wooden_tabouret'])) {
       return {
         modelPath: '/models/simple_wood.glb',
-        scale: [0.8, 0.8, 0.8] as [number, number, number],
-        position: [0, 0.4, 0] as [number, number, number],
-        fireSize: 0.5,
-        fireIntensity: 1.2
-      };
-    }
-    
-    if (containsAppliance(['wooden-tabouret', 'wooden_tabouret'])) {
-      return {
-        modelPath: '/models/wooden_tabouret.glb',
         scale: [0.6, 0.6, 0.6] as [number, number, number],
-        position: [0, 0.3, 0] as [number, number, number],
+        position: [0, 0, 0] as [number, number, number],
         fireSize: 0.4,
-        fireIntensity: 1.0
+        fireIntensity: 1.1
       };
     }
     
@@ -226,7 +96,7 @@ export default function Appliance({ hazard }: ApplianceProps) {
     return {
       modelPath: null,
       scale: [1, 1, 1] as [number, number, number],
-      position: [0, 0.15, 0] as [number, number, number],
+      position: [0, 0, 0] as [number, number, number],
       fireSize: 0.4,
       fireIntensity: 1.0
     };

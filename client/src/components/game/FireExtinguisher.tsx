@@ -1,9 +1,9 @@
 import { useRef, useState, useEffect, Suspense } from "react";
-import { useFrame } from "@react-three/fiber";
-import { useGLTF } from "@react-three/drei";
+import { useGLTF, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { GLTF } from "three-stdlib";
 import { InteractiveObject } from "@/lib/types";
+import { useFireSafety } from "@/lib/stores/useFireSafety";
 
 useGLTF.preload('/models/fire_extinguisher.glb');
 
@@ -15,6 +15,7 @@ interface FireExtinguisherProps {
 export default function FireExtinguisher({ object, isCollected }: FireExtinguisherProps) {
   const groupRef = useRef<THREE.Group>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
+  const { isPaused, isLevelComplete } = useFireSafety();
   
   // Load the model
   const { scene: extinguisherModel } = useGLTF('/models/fire_extinguisher.glb') as GLTF & {
@@ -39,19 +40,16 @@ export default function FireExtinguisher({ object, isCollected }: FireExtinguish
     }
   }, [extinguisherModel]);
   
-  // Simple animation for the fire extinguisher
-  useFrame((_, delta) => {
-    if (!isCollected && groupRef.current) {
-      // Make it hover slightly
-      groupRef.current.position.y = object.position.y + Math.sin(Date.now() * 0.002) * 0.05;
-      
-      // Rotate slowly
-      groupRef.current.rotation.y += delta * 0.5;
-    }
-  });
+  // No animation - fire extinguishers are wall-mounted and static
+  // useFrame is removed to prevent spinning/hovering
   
   // Don't render if already collected
   if (isCollected) return null;
+  
+  // Calculate offset to move text away from wall
+  // If on west wall (x < 0), offset towards positive X
+  // If on east wall (x > 0), offset towards negative X
+  const textOffsetX = object.position.x < 0 ? 1.5 : -1.5;
   
   return (
     <group
@@ -74,6 +72,48 @@ export default function FireExtinguisher({ object, isCollected }: FireExtinguish
           <cylinderGeometry args={[0.08, 0.08, 0.3, 16]} />
           <meshStandardMaterial color="#FF0000" />
         </mesh>
+      )}
+      
+      {/* HTML overlay labels - hide when paused or level complete */}
+      {!isPaused && !isLevelComplete && (
+        <Html
+          position={[textOffsetX, 0.6, 0]}
+          center
+          distanceFactor={8}
+          occlude={false}
+          zIndexRange={[1000, 0]}
+          style={{
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }}
+        >
+        <div style={{
+          background: 'rgba(0, 0, 0, 0.75)',
+          padding: '8px 16px',
+          borderRadius: '8px',
+          textAlign: 'center',
+          minWidth: '150px',
+          border: '2px solid rgba(255, 255, 255, 0.3)',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+        }}>
+          <div style={{
+            color: 'white',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            marginBottom: '4px',
+            textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)',
+          }}>
+            Fire Extinguisher
+          </div>
+          <div style={{
+            color: '#FFD700',
+            fontSize: '13px',
+            textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8)',
+          }}>
+            Press E to Collect
+          </div>
+        </div>
+      </Html>
       )}
     </group>
   );

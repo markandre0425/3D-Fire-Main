@@ -31,6 +31,7 @@ export default function ParticleFire({
   const particlesRef = useRef<THREE.Points>(null);
   const particles = useRef<Particle[]>([]);
   const particleCount = Math.floor(intensity * 40) + 30; // 30-70 particles - optimized for performance
+  const updateAccumulator = useRef(0);
 
 
   // Generate fire colors
@@ -108,6 +109,11 @@ export default function ParticleFire({
   // Update particles
   useFrame((_, delta) => {
     if (!isActive || !particlesRef.current) return;
+    
+    updateAccumulator.current += delta;
+    if (updateAccumulator.current < 1 / 90) return;
+    const dt = updateAccumulator.current;
+    updateAccumulator.current = 0;
 
     const geometry = particlesRef.current.geometry;
     const positions = geometry.attributes.position.array as Float32Array;
@@ -116,7 +122,7 @@ export default function ParticleFire({
 
     particles.current.forEach((particle, i) => {
       // Update particle life
-      particle.life -= delta / particle.maxLife;
+      particle.life -= dt / particle.maxLife;
 
       if (particle.life <= 0) {
         // Reset particle to bottom instead of making it disappear
@@ -138,7 +144,7 @@ export default function ParticleFire({
       }
 
       // Update position
-      particle.position.add(particle.velocity.clone().multiplyScalar(delta));
+      particle.position.add(particle.velocity.clone().multiplyScalar(dt));
 
       // Water-like horizontal spread - stays low, flows outward
       const distanceFromCenter = Math.sqrt(
@@ -151,12 +157,12 @@ export default function ParticleFire({
         const normalizedX = particle.position.x / distanceFromCenter;
         const normalizedZ = particle.position.z / distanceFromCenter;
         
-        particle.velocity.x += normalizedX * delta * 0.25; // Strong outward flow
-        particle.velocity.z += normalizedZ * delta * 0.25;
+        particle.velocity.x += normalizedX * dt * 0.25; // Strong outward flow
+        particle.velocity.z += normalizedZ * dt * 0.25;
       } else {
         // At center, give random initial direction
-        particle.velocity.x += (Math.random() - 0.5) * delta * 0.4;
-        particle.velocity.z += (Math.random() - 0.5) * delta * 0.4;
+        particle.velocity.x += (Math.random() - 0.5) * dt * 0.4;
+        particle.velocity.z += (Math.random() - 0.5) * dt * 0.4;
       }
       
       // Dampen vertical velocity to keep flames low
