@@ -1,7 +1,9 @@
-import { useRef } from "react";
-import { Mesh } from "three";
+import { useRef, useEffect } from "react";
+import { Mesh, Vector3 } from "three";
 import { useTexture } from "@react-three/drei";
 import ModelLoader from "./ModelLoader";
+import { useFireSafety } from "@/lib/stores/useFireSafety";
+import { createBoundingBox } from "@/lib/collision";
 
 interface FurnitureProps {
   type: string;
@@ -17,6 +19,17 @@ export default function Furniture({
   scale 
 }: FurnitureProps) {
   const meshRef = useRef<Mesh>(null);
+  const addCollidable = useFireSafety((state) => state.addCollidable);
+
+  useEffect(() => {
+    if (meshRef.current) {
+      const boundingBox = createBoundingBox(
+        new Vector3(...position),
+        new Vector3(...scale)
+      );
+      addCollidable(boundingBox);
+    }
+  }, [addCollidable]);
   
   // Special handling for bathroom cubicle
   if (type === "minimal_bathroom") {
