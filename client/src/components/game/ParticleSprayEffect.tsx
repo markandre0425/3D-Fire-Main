@@ -1,6 +1,7 @@
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { Howl } from 'howler';
 import { useAudio } from '@/lib/stores/useAudio';
 import { InteractiveObjectType } from '@/lib/types';
 
@@ -28,8 +29,8 @@ export default function ParticleSprayEffect({
 }: ParticleSprayEffectProps) {
   const particlesRef = useRef<THREE.Points>(null);
   const particles = useRef<Particle[]>([]);
-  const particleCount = 20;
-  const spraySound = useRef<HTMLAudioElement | null>(null);
+  const particleCount = 10;
+  const spraySound = useRef<Howl | null>(null);
   const { isMuted } = useAudio();
   const velocityHelper = useRef(new THREE.Vector3());
 
@@ -127,49 +128,23 @@ export default function ParticleSprayEffect({
 
   // Initialize spray sound
   useEffect(() => {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const sampleRate = audioContext.sampleRate;
-    const duration = 0.5;
-    const frameCount = sampleRate * duration;
-    const arrayBuffer = audioContext.createBuffer(1, frameCount, sampleRate);
-    const channelData = arrayBuffer.getChannelData(0);
-
-    for (let i = 0; i < frameCount; i++) {
-      const t = i / sampleRate;
-      let noise = (Math.random() * 2 - 1) * 0.3;
-      
-      if (extinguisherType === InteractiveObjectType.CO2Extinguisher) {
-        noise += Math.sin(t * 1200) * 0.15 * Math.exp(-t * 2);
-      } else if (extinguisherType === InteractiveObjectType.FoamExtinguisher) {
-        noise += Math.sin(t * 200 + Math.random() * 5) * 0.1;
-      }
-      
-      channelData[i] = noise;
-    }
-
-    const wavBuffer = audioBufferToWav(arrayBuffer);
-    const blob = new Blob([wavBuffer], { type: 'audio/wav' });
-    const url = URL.createObjectURL(blob);
-    
-    spraySound.current = new Audio(url);
-    spraySound.current.loop = true;
-    spraySound.current.volume = 0.5;
+    spraySound.current = new Howl({
+      src: ['/sounds/spray.mp3'],
+      loop: true,
+      volume: 0.5,
+    });
 
     return () => {
-      if (spraySound.current) {
-        spraySound.current.pause();
-        URL.revokeObjectURL(url);
-      }
+      spraySound.current?.unload();
     };
-  }, [extinguisherType]);
+  }, []);
 
   // Handle sound
   useEffect(() => {
-    if (isActive && !isMuted && spraySound.current) {
-      spraySound.current.play().catch(() => {});
-    } else if (spraySound.current) {
-      spraySound.current.pause();
-      spraySound.current.currentTime = 0;
+    if (isActive && !isMuted) {
+      spraySound.current?.play();
+    } else {
+      spraySound.current?.stop();
     }
   }, [isActive, isMuted]);
 
@@ -255,42 +230,6 @@ export default function ParticleSprayEffect({
     geometry.attributes.color.needsUpdate = true;
     geometry.attributes.size.needsUpdate = true;
   });
-
-  function audioBufferToWav(buffer: AudioBuffer): ArrayBuffer {
-    const length = buffer.length;
-    const arrayBuffer = new ArrayBuffer(44 + length * 2);
-    const view = new DataView(arrayBuffer);
-    const channelData = buffer.getChannelData(0);
-
-    const writeString = (offset: number, string: string) => {
-      for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
-      }
-    };
-
-    writeString(0, 'RIFF');
-    view.setUint32(4, 36 + length * 2, true);
-    writeString(8, 'WAVE');
-    writeString(12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, buffer.sampleRate, true);
-    view.setUint32(28, buffer.sampleRate * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeString(36, 'data');
-    view.setUint32(40, length * 2, true);
-
-    let offset = 44;
-    for (let i = 0; i < length; i++) {
-      const sample = Math.max(-1, Math.min(1, channelData[i]));
-      view.setInt16(offset, sample * 0x7FFF, true);
-      offset += 2;
-    }
-
-    return arrayBuffer;
-  }
 
   // Create geometry and material once - SAME AS FIRE
   const geometry = useMemo(() => {

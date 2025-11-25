@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
+import { BoundingBox } from "../collision";
 import { HazardState, InteractiveObject, Level, LevelData } from "../types";
 import { LEVELS, SAFETY_TIPS, GAME_CONSTANTS } from "../constants";
 import { usePlayer } from "./usePlayer";
@@ -15,10 +16,12 @@ interface FireSafetyState {
   isPaused: boolean;
   hazards: HazardState[];
   interactiveObjects: InteractiveObject[];
+  collidables: BoundingBox[];
   activeTip: string | null;
   isLevelComplete: boolean;
   
   // Actions
+  addCollidable: (collidable: BoundingBox) => void;
   startLevel: (level: Level) => void;
   pauseGame: () => void;
   resumeGame: () => void;
@@ -42,9 +45,16 @@ export const useFireSafety = create<FireSafetyState>()(
     isPaused: false,
     hazards: LEVELS[Level.Kitchen].hazards,
     interactiveObjects: LEVELS[Level.Kitchen].objects,
+    collidables: [],
     activeTip: null,
     isLevelComplete: false,
     
+    addCollidable: (collidable: BoundingBox) => {
+      set((state) => ({
+        collidables: [...state.collidables, collidable],
+      }));
+    },
+
     startLevel: (level: Level) => {
       const levelData = LEVELS[level];
       const levelConfig = getLevelConfig(parseInt(level) || 1);
@@ -105,6 +115,7 @@ export const useFireSafety = create<FireSafetyState>()(
         levelTime: levelData.timeLimit > 0 ? levelData.timeLimit : 300,
         hazards: enhancedHazards,
         interactiveObjects: enhancedObjects,
+        collidables: [],
         isPaused: false,
         isLevelComplete: false,
         activeTip: null

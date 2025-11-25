@@ -1557,7 +1557,8 @@ export const PLAYER_CONSTANTS = {
   MAX_OXYGEN: 100,
   OXYGEN_DEPLETION_RATE: 5,
   HEALTH_DEPLETION_RATE: 10,
-  STARTING_POSITION: { x: 0, y: 0, z: 4 }
+  STARTING_POSITION: { x: 0, y: 0, z: 4 },
+  CHARACTER_BOUNDING_BOX: { x: 1.5, y: 5.1, z: 1.5 },
 };
 
 export const GAME_CONSTANTS = {
