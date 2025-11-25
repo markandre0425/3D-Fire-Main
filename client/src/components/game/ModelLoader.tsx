@@ -1,7 +1,8 @@
 import { useRef, useEffect, useState } from 'react';
-import { useLoader, useFrame } from '@react-three/fiber';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as THREE from 'three';
+import { BoundingBox } from '../../lib/collision';
 
 interface ModelLoaderProps {
   modelPath: string;
@@ -12,6 +13,7 @@ interface ModelLoaderProps {
   receiveShadow?: boolean;
   onLoad?: () => void;
   onError?: (error: Error) => void;
+  onBoundingBoxReady?: (box: BoundingBox) => void;
 }
 
 export default function ModelLoader({
@@ -22,7 +24,8 @@ export default function ModelLoader({
   castShadow = true,
   receiveShadow = true,
   onLoad,
-  onError
+  onError,
+  onBoundingBoxReady
 }: ModelLoaderProps) {
   const [model, setModel] = useState<THREE.Group | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,49 +34,66 @@ export default function ModelLoader({
 
   useEffect(() => {
     const loader = new GLTFLoader();
-    
+
     loader.load(
       modelPath,
-      (gltf) => {
+      (gltf: GLTF) => {
         const loadedModel = gltf.scene;
-        
-        // Apply shadows to all meshes in the model
-        loadedModel.traverse((child) => {
+
+        loadedModel.traverse((child: THREE.Object3D) => {
           if (child instanceof THREE.Mesh) {
             child.castShadow = castShadow;
             child.receiveShadow = receiveShadow;
           }
         });
-        
+
         setModel(loadedModel);
         setLoading(false);
         onLoad?.();
       },
-      (progress) => {
-        // Optional: Handle loading progress
+      (progress: ProgressEvent<EventTarget>) => {
+        // Optional progress handling
       },
-      (error) => {
-        console.error(`Error loading model ${modelPath}:`, error);
-        console.error('Error details:', {
-          message: error.message,
-          type: error.type,
-          target: error.target
-        });
-        setError(error.message || 'Failed to load model');
+      (event: unknown) => {
+        const normalizedError =
+          event instanceof Error
+            ? event
+            : new Error(
+                typeof event === 'object' && event && 'message' in event
+                  ? String((event as { message?: string }).message)
+                  : 'Failed to load model'
+              );
+
+        console.error(`Error loading model ${modelPath}:`, event);
+        setError(normalizedError.message);
         setLoading(false);
-        onError?.(error);
+        onError?.(normalizedError);
       }
     );
   }, [modelPath, castShadow, receiveShadow, onLoad, onError]);
 
-  // Optional: Add subtle animation
-  useFrame(() => {
-    if (modelRef.current && model) {
-      // Very subtle floating effect
-      const time = Date.now() * 0.001;
-      modelRef.current.position.y = position[1] + Math.sin(time * 0.5) * 0.02;
-    }
-  });
+  useEffect(() => {
+    if (!modelRef.current || !onBoundingBoxReady) return;
+
+    modelRef.current.updateMatrixWorld(true);
+    const boundingBox = new THREE.Box3().setFromObject(modelRef.current);
+    onBoundingBoxReady({
+      min: boundingBox.min.clone(),
+      max: boundingBox.max.clone()
+    });
+  }, [
+    model,
+    onBoundingBoxReady,
+    position[0],
+    position[1],
+    position[2],
+    rotation[0],
+    rotation[1],
+    rotation[2],
+    scale[0],
+    scale[1],
+    scale[2]
+  ]);
 
   if (loading) {
     return (
@@ -92,11 +112,6 @@ export default function ModelLoader({
           <boxGeometry args={[0.5, 0.5, 0.5]} />
           <meshStandardMaterial color="#ff0000" />
         </mesh>
-        {/* Debug text to identify which model failed */}
-        <mesh position={[0, 0.8, 0]}>
-          <boxGeometry args={[0.1, 0.1, 0.1]} />
-          <meshStandardMaterial color="#ffff00" />
-        </mesh>
       </group>
     );
   }
@@ -110,6 +125,8 @@ export default function ModelLoader({
       position={position}
       scale={scale}
       rotation={rotation}
+      castShadow={castShadow}
+      receiveShadow={receiveShadow}
     />
   );
 }

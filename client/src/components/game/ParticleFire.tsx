@@ -31,7 +31,7 @@ export default function ParticleFire({
   const particlesRef = useRef<THREE.Points>(null);
   const particles = useRef<Particle[]>([]);
   const particleCount = Math.floor(intensity * 40) + 30; // 30-70 particles - optimized for performance
-  const updateAccumulator = useRef(0);
+  const lastUpdate = useRef(0);
 
 
   // Generate fire colors
@@ -107,13 +107,13 @@ export default function ParticleFire({
   };
 
   // Update particles
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     if (!isActive || !particlesRef.current) return;
-    
-    updateAccumulator.current += delta;
-    if (updateAccumulator.current < 1 / 90) return;
-    const dt = updateAccumulator.current;
-    updateAccumulator.current = 0;
+
+    const now = state.clock.getElapsedTime();
+    const dt = now - lastUpdate.current;
+    if (dt < 1 / 30) return;
+    lastUpdate.current = now;
 
     const geometry = particlesRef.current.geometry;
     const positions = geometry.attributes.position.array as Float32Array;

@@ -6,7 +6,8 @@ import { GLTF } from "three-stdlib";
 import { usePlayer } from "@/lib/stores/usePlayer";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { Controls, Level } from "@/lib/types";
-import { PLAYER_CONSTANTS, GAME_CONSTANTS } from "@/lib/constants";
+import { PLAYER_CONSTANTS, GAME_CONSTANTS } from "../../lib/constants";
+import { checkCollision, createBoundingBox } from "../../lib/collision";
 
 useGLTF.preload('/models/firefighter.glb');
 useGLTF.preload('/models/fire_extinguisher.glb');
@@ -55,7 +56,12 @@ export default function Character() {
   } = usePlayer();
   
   // Get hazards, game pause state, and current level
-  const { hazards, isPaused, currentLevel } = useFireSafety();
+  const {
+    hazards,
+    isPaused,
+    currentLevel,
+    collidables,
+  } = useFireSafety();
   
   // Get keyboard controls at the component level
   const [subscribe, getKeys] = useKeyboardControls<Controls>();
@@ -148,6 +154,27 @@ export default function Character() {
     playerRef.current.position.y = position.y;
     playerRef.current.position.z = position.z;
     playerRef.current.rotation.y = rotation.y;
+
+    // Check for collisions
+    const characterBoundingBox = createBoundingBox(
+      playerRef.current.position,
+      new THREE.Vector3(
+        PLAYER_CONSTANTS.CHARACTER_BOUNDING_BOX.x,
+        PLAYER_CONSTANTS.CHARACTER_BOUNDING_BOX.y,
+        PLAYER_CONSTANTS.CHARACTER_BOUNDING_BOX.z
+      ),
+      playerRef.current.rotation
+    );
+
+    for (const collidable of collidables) {
+      if (checkCollision(characterBoundingBox, collidable)) {
+        playerRef.current.position.set(...previousPosition.current);
+        position.x = previousPosition.current[0];
+        position.y = previousPosition.current[1];
+        position.z = previousPosition.current[2];
+        break;
+      }
+    }
     
     // Animate fire extinguisher usage
     if (isUsingExtinguisher && extinguisherRef.current) {

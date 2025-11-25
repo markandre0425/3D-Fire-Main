@@ -1,7 +1,9 @@
-import { useRef } from "react";
-import { Mesh } from "three";
+import { useRef, useEffect } from "react";
+import * as THREE from "three";
 import { useTexture } from "@react-three/drei";
 import ModelLoader from "./ModelLoader";
+import { useFireSafety } from "@/lib/stores/useFireSafety";
+import { createBoundingBox } from "../../lib/collision";
 
 interface FurnitureProps {
   type: string;
@@ -16,7 +18,22 @@ export default function Furniture({
   rotation = [0, 0, 0], 
   scale 
 }: FurnitureProps) {
-  const meshRef = useRef<Mesh>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
+  const addCollidable = useFireSafety((state) => state.addCollidable);
+
+  useEffect(() => {
+    // We use the meshRef to signal that this is a collidable object.
+    // ModelLoader doesn't forward the ref, so those won't have bounding boxes yet.
+    // This is a limitation we can address later if needed.
+    if (meshRef.current) {
+      const boundingBox = createBoundingBox(
+        new THREE.Vector3(...position),
+        new THREE.Vector3(...scale),
+        new THREE.Euler(...rotation)
+      );
+      addCollidable(boundingBox);
+    }
+  }, []);
   
   // Special handling for bathroom cubicle
   if (type === "minimal_bathroom") {
