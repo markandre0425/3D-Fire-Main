@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
-import Character from "./Character";
+import FirstPersonPlayer from "./FirstPersonPlayer";
 import Lights from "./Lights";
 import HomeEnvironment from "./HomeEnvironment";
 import Hazard from "./Hazard";
@@ -225,23 +225,19 @@ export default function Level() {
         />
       ))}
       
-      {/* Fire extinguisher effects */}
+      {/* Fire extinguisher effects (sound only in FP view) */}
       {playerState.hasExtinguisher && (
         <ParticleSprayEffect
           isActive={isExtinguishing}
           playerPosition={playerState.position}
           playerRotation={playerState.rotation}
           extinguisherType={playerState.extinguisherType || undefined}
+          renderParticles={false}
         />
       )}
       
-      {/* BFP Educational Content Modal */}
-      {/* <BFPEducationalContent
-        isVisible={showBFPEducation}
-        onClose={() => setShowBFPEducation(false)}
-      /> */}
-      
-      <Character />
+      {/* First-person player */}
+      <FirstPersonPlayer />
     </>
   );
 }

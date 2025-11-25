@@ -7,7 +7,21 @@ import { usePlayer } from "@/lib/stores/usePlayer";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { Controls, Level } from "@/lib/types";
 import { PLAYER_CONSTANTS, GAME_CONSTANTS } from "../../lib/constants";
-import { checkCollision, createBoundingBox } from "../../lib/collision";
+
+const PLAYER_SIZE = new THREE.Vector3(
+  PLAYER_CONSTANTS.CHARACTER_BOUNDING_BOX.x,
+  PLAYER_CONSTANTS.CHARACTER_BOUNDING_BOX.y,
+  PLAYER_CONSTANTS.CHARACTER_BOUNDING_BOX.z
+);
+const FORWARD_VECTOR = new THREE.Vector3();
+const RIGHT_VECTOR = new THREE.Vector3();
+const MOVEMENT_VECTOR = new THREE.Vector3();
+const MOVEMENT_DELTA = new THREE.Vector3();
+const CURRENT_POSITION = new THREE.Vector3();
+const PROPOSED_POSITION = new THREE.Vector3();
+const SLIDE_POSITION = new THREE.Vector3();
+const TEMP_BOX = new THREE.Box3();
+const TEMP_OBSTACLE_BOX = new THREE.Box3();
 
 useGLTF.preload('/models/firefighter.glb');
 useGLTF.preload('/models/fire_extinguisher.glb');
@@ -17,7 +31,6 @@ export default function Character() {
   const characterRef = useRef<THREE.Mesh>(null);
   const modelRef = useRef<THREE.Group>(null);
   const extinguisherRef = useRef<THREE.Group>(null);
-  const previousPosition = useRef<[number, number, number]>([0, 0, 0]);
   const [modelLoaded, setModelLoaded] = useState(false);
   const [isUsingExtinguisher, setIsUsingExtinguisher] = useState(false);
   const animationPhase = useRef(0);
@@ -45,10 +58,6 @@ export default function Character() {
     isRunning,
     hasExtinguisher,
     hasGasMask,
-    moveForward,
-    moveBackward,
-    moveLeft,
-    moveRight,
     setCrouching,
     setRunning,
     depleteOxygen,
@@ -79,6 +88,37 @@ export default function Character() {
     crouch: false,
     extinguish: false
   });
+
+  const getBoundarySize = () => {
+    switch (currentLevel) {
+      case Level.Kitchen:
+      case Level.LivingRoom:
+      case Level.Bedroom:
+      case Level.BasicTraining:
+        return 9.5;
+      case Level.FireClassification:
+      case Level.EmergencyResponse:
+        return 11.5;
+      case Level.AdvancedRescue:
+        return 13.5;
+      case Level.BFPCertification:
+        return 15.5;
+      default:
+        return 9.5;
+    }
+  };
+
+  const collidesAt = (center: THREE.Vector3) => {
+    TEMP_BOX.setFromCenterAndSize(center, PLAYER_SIZE);
+    for (const obstacle of collidables) {
+      TEMP_OBSTACLE_BOX.min.copy(obstacle.min);
+      TEMP_OBSTACLE_BOX.max.copy(obstacle.max);
+      if (TEMP_BOX.intersectsBox(TEMP_OBSTACLE_BOX)) {
+        return true;
+      }
+    }
+    return false;
+  };
   
   // Set up keyboard controls subscription once
   useEffect(() => {
@@ -111,184 +151,129 @@ export default function Character() {
   useFrame((_, delta) => {
     if (isPaused || !playerRef.current) return;
     
-    // Use our locally stored controls state
     const controls = controlsRef.current;
+    const hasInput = controls.forward || controls.backward || controls.leftward || controls.rightward;
     
-    // Save previous position for collision detection
-    previousPosition.current = [
-      playerRef.current.position.x,
-      playerRef.current.position.y,
-      playerRef.current.position.z
-    ];
+    camera.getWorldDirection(FORWARD_VECTOR);
+    FORWARD_VECTOR.y = 0;
+    if (FORWARD_VECTOR.lengthSq() === 0) {
+      FORWARD_VECTOR.set(0, 0, 1);
+    } else {
+      FORWARD_VECTOR.normalize();
+    }
+    RIGHT_VECTOR.crossVectors(FORWARD_VECTOR, new THREE.Vector3(0, 1, 0)).normalize();
     
-    // Calculate camera direction for movement
-    const cameraDirection = new THREE.Vector3();
-    camera.getWorldDirection(cameraDirection);
-    // Normalize to XZ plane (ignore Y component for ground movement)
-    cameraDirection.y = 0;
-    cameraDirection.normalize();
-
-    // Move character based on keyboard input with camera-relative movement
-    if (controls.forward) moveForward(delta, { x: cameraDirection.x, z: cameraDirection.z });
-    if (controls.backward) moveBackward(delta, { x: cameraDirection.x, z: cameraDirection.z });
-    if (controls.leftward) moveLeft(delta, { x: cameraDirection.x, z: cameraDirection.z });
-    if (controls.rightward) moveRight(delta, { x: cameraDirection.x, z: cameraDirection.z });
+    MOVEMENT_VECTOR.set(0, 0, 0);
+    if (controls.forward) MOVEMENT_VECTOR.add(FORWARD_VECTOR);
+    if (controls.backward) MOVEMENT_VECTOR.sub(FORWARD_VECTOR);
+    if (controls.leftward) MOVEMENT_VECTOR.sub(RIGHT_VECTOR);
+    if (controls.rightward) MOVEMENT_VECTOR.add(RIGHT_VECTOR);
     
-    // Calculate movement for animations
-    const deltaX = position.x - previousPosition.current[0];
-    const deltaZ = position.z - previousPosition.current[2];
-    const moveSpeed = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ) / delta;
-    setCurrentMoveSpeed(moveSpeed);
-    
-    // Check if character is moving based on controls OR movement
-    const anyMovementKey = controls.forward || controls.backward || controls.leftward || controls.rightward;
-    const moving = moveSpeed > 0.01 || anyMovementKey; // Lower threshold and check keys
-    setIsMoving(moving);
-    
-    // Debug movement detection
-    if (anyMovementKey) {
+    const moveSpeedScalar = (controls.run ? PLAYER_CONSTANTS.RUNNING_SPEED : PLAYER_CONSTANTS.MOVEMENT_SPEED) * delta;
+    if (MOVEMENT_VECTOR.lengthSq() > 0) {
+      MOVEMENT_VECTOR.normalize();
+      MOVEMENT_DELTA.copy(MOVEMENT_VECTOR).multiplyScalar(moveSpeedScalar);
+    } else {
+      MOVEMENT_DELTA.set(0, 0, 0);
     }
     
-    // Update player mesh position from state
-    playerRef.current.position.x = position.x;
-    playerRef.current.position.y = position.y;
-    playerRef.current.position.z = position.z;
-    playerRef.current.rotation.y = rotation.y;
-
-    // Check for collisions
-    const characterBoundingBox = createBoundingBox(
-      playerRef.current.position,
-      new THREE.Vector3(
-        PLAYER_CONSTANTS.CHARACTER_BOUNDING_BOX.x,
-        PLAYER_CONSTANTS.CHARACTER_BOUNDING_BOX.y,
-        PLAYER_CONSTANTS.CHARACTER_BOUNDING_BOX.z
-      ),
-      playerRef.current.rotation
-    );
-
-    for (const collidable of collidables) {
-      if (checkCollision(characterBoundingBox, collidable)) {
-        playerRef.current.position.set(...previousPosition.current);
-        position.x = previousPosition.current[0];
-        position.y = previousPosition.current[1];
-        position.z = previousPosition.current[2];
-        break;
+    CURRENT_POSITION.set(position.x, position.y, position.z);
+    PROPOSED_POSITION.copy(CURRENT_POSITION).add(MOVEMENT_DELTA);
+    
+    const boundary = getBoundarySize();
+    PROPOSED_POSITION.x = THREE.MathUtils.clamp(PROPOSED_POSITION.x, -boundary, boundary);
+    PROPOSED_POSITION.z = THREE.MathUtils.clamp(PROPOSED_POSITION.z, -boundary, boundary);
+    
+    let finalPosition = CURRENT_POSITION.clone();
+    if (MOVEMENT_DELTA.lengthSq() > 0) {
+      if (!collidesAt(PROPOSED_POSITION)) {
+        finalPosition.copy(PROPOSED_POSITION);
+      } else {
+        // try sliding along x
+        SLIDE_POSITION.set(CURRENT_POSITION.x + MOVEMENT_DELTA.x, CURRENT_POSITION.y, CURRENT_POSITION.z);
+        SLIDE_POSITION.x = THREE.MathUtils.clamp(SLIDE_POSITION.x, -boundary, boundary);
+        if (Math.abs(MOVEMENT_DELTA.x) > 1e-4 && !collidesAt(SLIDE_POSITION)) {
+          finalPosition.copy(SLIDE_POSITION);
+        } else {
+          SLIDE_POSITION.set(CURRENT_POSITION.x, CURRENT_POSITION.y, CURRENT_POSITION.z + MOVEMENT_DELTA.z);
+          SLIDE_POSITION.z = THREE.MathUtils.clamp(SLIDE_POSITION.z, -boundary, boundary);
+          if (Math.abs(MOVEMENT_DELTA.z) > 1e-4 && !collidesAt(SLIDE_POSITION)) {
+            finalPosition.copy(SLIDE_POSITION);
+          }
+        }
       }
+    }
+    
+    const displacement = finalPosition.clone().sub(CURRENT_POSITION);
+    const moveDistance = displacement.length();
+    const moveSpeed = moveDistance / Math.max(delta, 1e-5);
+    setCurrentMoveSpeed(moveSpeed);
+    const moving = moveDistance > 1e-3 || hasInput;
+    setIsMoving(moving);
+    
+    if (moveDistance > 0) {
+      playerRef.current.position.copy(finalPosition);
+      usePlayer.setState((state) => ({
+        position: { ...state.position, x: finalPosition.x, z: finalPosition.z }
+      }));
+    }
+    
+    if (moving && MOVEMENT_VECTOR.lengthSq() > 0) {
+      const heading = Math.atan2(MOVEMENT_VECTOR.x, MOVEMENT_VECTOR.z);
+      playerRef.current.rotation.y = heading;
+      usePlayer.setState((state) => ({
+        rotation: { ...state.rotation, y: heading }
+      }));
     }
     
     // Animate fire extinguisher usage
     if (isUsingExtinguisher && extinguisherRef.current) {
-      animationPhase.current += delta * 8; // Animation speed
+      animationPhase.current += delta * 8;
       const shake = Math.sin(animationPhase.current) * 0.1;
       extinguisherRef.current.position.set(0.3 + shake * 0.2, 0.3 + shake * 0.1, 0.3);
       extinguisherRef.current.rotation.x = shake * 0.3;
       extinguisherRef.current.rotation.z = shake * 0.2;
     } else if (extinguisherRef.current) {
-      // Reset to default position
       extinguisherRef.current.position.set(0.3, 0.3, 0.3);
       extinguisherRef.current.rotation.set(0, 0, 0);
       animationPhase.current = 0;
     }
     
-    // Enhanced character model animation based on movement and actions
+    // Character animations
     if (modelRef.current) {
       if (moving) {
-        // Debug logging
-        
-        // Different animation speeds for walking vs running
-        const animationSpeed = isRunning ? 12 : 8; // Running is faster
+        const animationSpeed = isRunning ? 12 : 8;
         walkAnimationPhase.current += delta * animationSpeed;
-        
-        // Walking/Running bob animation (increased intensity for visibility)
-        const bobIntensity = isRunning ? 0.15 : 0.08; // More visible bobbing
-        const bobFrequency = isRunning ? 3 : 2.5; // Faster frequency
-        
-        // Vertical bobbing
+        const bobIntensity = isRunning ? 0.15 : 0.08;
+        const bobFrequency = isRunning ? 3 : 2.5;
         modelRef.current.position.y = Math.sin(walkAnimationPhase.current * bobFrequency) * bobIntensity;
-        
-        // Side-to-side sway for realistic walking
         modelRef.current.rotation.z = Math.sin(walkAnimationPhase.current * bobFrequency) * (isRunning ? 0.15 : 0.1);
-        
-        // Arm swing simulation (shoulder rotation)
         modelRef.current.rotation.x = Math.sin(walkAnimationPhase.current * bobFrequency) * (isRunning ? 0.2 : 0.15);
-        
-        // Add slight forward lean when running
         if (isRunning) {
-          modelRef.current.rotation.x += -0.1; // Lean forward when running
+          modelRef.current.rotation.x += -0.1;
         }
-        
-        // Crouching affects the animation
         if (isCrouching) {
-          modelRef.current.position.y *= 0.5; // Reduce bob when crouching
-          modelRef.current.rotation.z *= 0.7; // Reduce sway when crouching
+          modelRef.current.position.y *= 0.5;
+          modelRef.current.rotation.z *= 0.7;
         }
       } else {
-        // Idle state - reset to neutral pose
         walkAnimationPhase.current = 0;
-        modelRef.current.position.y = 0;
+        modelRef.current.position.y = Math.sin(Date.now() * 0.001) * 0.005;
         modelRef.current.rotation.z = 0;
         modelRef.current.rotation.x = 0;
-        
-        // Subtle idle breathing animation
-        const breathingPhase = Date.now() * 0.001;
-        modelRef.current.position.y = Math.sin(breathingPhase) * 0.005;
       }
-      
-      // Special stance when using extinguisher (overrides walking animation)
       if (isUsingExtinguisher) {
-        modelRef.current.rotation.x = -0.2; // Lean forward when using extinguisher
-        modelRef.current.rotation.z = 0; // Stabilize when using tool
-        modelRef.current.position.y = 0; // No bobbing when focused on extinguishing
+        modelRef.current.rotation.x = -0.2;
+        modelRef.current.rotation.z = 0;
+        modelRef.current.position.y = 0;
       }
     }
 
-    // Oxygen depletes constantly unless player has gas mask
-    // This simulates hazardous environment requiring breathing protection
+    // Oxygen logic
     if (!hasGasMask) {
-      // Constantly deplete oxygen if no gas mask
       depleteOxygen(PLAYER_CONSTANTS.OXYGEN_DEPLETION_RATE * delta);
     } else {
-      // Slowly replenish oxygen when gas mask is equipped
       replenishOxygen(PLAYER_CONSTANTS.OXYGEN_DEPLETION_RATE * 0.3 * delta);
-    }
-    
-    // Simple wall collision - keep player within the level bounds (dynamic based on room size)
-    const getBoundarySize = () => {
-      switch (currentLevel) {
-        case Level.Kitchen:
-        case Level.LivingRoom:
-        case Level.Bedroom:
-        case Level.BasicTraining:
-          return 9.5; // 20×20 rooms
-        case Level.FireClassification:
-        case Level.EmergencyResponse:
-          return 11.5; // 24×24 rooms
-        case Level.AdvancedRescue:
-          return 13.5; // 28×28 rooms
-        case Level.BFPCertification:
-          return 15.5; // 32×32 rooms
-        default:
-          return 9.5;
-      }
-    };
-    
-    const boundarySize = getBoundarySize();
-    
-    if (playerRef.current.position.x > boundarySize) {
-      playerRef.current.position.x = boundarySize;
-      position.x = boundarySize;
-    }
-    if (playerRef.current.position.x < -boundarySize) {
-      playerRef.current.position.x = -boundarySize;
-      position.x = -boundarySize;
-    }
-    if (playerRef.current.position.z > boundarySize) {
-      playerRef.current.position.z = boundarySize;
-      position.z = boundarySize;
-    }
-    if (playerRef.current.position.z < -boundarySize) {
-      playerRef.current.position.z = -boundarySize;
-      position.z = -boundarySize;
     }
   });
   

@@ -115,21 +115,6 @@ export default function GameUI() {
       {/* Score and Time */}
       <ScoreDisplay />
       
-      {/* Controls Guide */}
-      <div className="absolute bottom-4 right-4 bg-black bg-opacity-50 p-3 rounded-md text-white">
-        <h3 className="text-lg font-bold mb-2">Controls</h3>
-        <ul className="text-sm space-y-1">
-          <li>WASD / Arrows: Move (Walk Animation)</li>
-          <li>Shift: Run (Running Animation)</li>
-          <li>C: Crouch (Crouch Animation)</li>
-          <li>E: Interact / Collect Items</li>
-          {hasExtinguisher && <li>F: Use Extinguisher (Action Animation)</li>}
-          <li>Esc: Pause</li>
-          <li>M: Toggle Sound</li>
-        </ul>
-
-      </div>
-      
       {/* Level Info */}
       <div className="absolute top-4 left-4 bg-black bg-opacity-50 p-3 rounded-md text-white">
         <h2 className="text-xl font-bold">{levelData.name}</h2>

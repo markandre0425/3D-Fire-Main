@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useEffect } from "react";
 import * as THREE from "three";
 import { useTexture } from "@react-three/drei";
 import ModelLoader from "./ModelLoader";
@@ -18,22 +18,88 @@ export default function Furniture({
   rotation = [0, 0, 0], 
   scale 
 }: FurnitureProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
   const addCollidable = useFireSafety((state) => state.addCollidable);
+  const collidableGeneration = useFireSafety((state) => state.collidableGeneration);
 
   useEffect(() => {
-    // We use the meshRef to signal that this is a collidable object.
-    // ModelLoader doesn't forward the ref, so those won't have bounding boxes yet.
-    // This is a limitation we can address later if needed.
-    if (meshRef.current) {
-      const boundingBox = createBoundingBox(
-        new THREE.Vector3(...position),
-        new THREE.Vector3(...scale),
-        new THREE.Euler(...rotation)
-      );
+    const rotationEuler = new THREE.Euler(...rotation);
+    const basePosition = new THREE.Vector3(...position);
+    const quaternion = new THREE.Quaternion().setFromEuler(rotationEuler);
+
+    const registerBox = (localCenter: THREE.Vector3, size: THREE.Vector3) => {
+      const worldCenter = basePosition.clone().add(localCenter.clone().applyQuaternion(quaternion));
+      const boundingBox = createBoundingBox(worldCenter, size, rotationEuler);
       addCollidable(boundingBox);
+    };
+
+    if (type === "minimal_bathroom") {
+      const wallThickness = 0.1;
+      const width = scale[0];
+      const height = scale[1];
+      const depth = scale[2];
+      const gapWidth = Math.min(width * 0.4, 2);
+      const segmentWidth = Math.max((width - gapWidth) / 2, wallThickness * 2);
+      const backOffset = depth / 2 - wallThickness / 2;
+
+      registerBox(
+        new THREE.Vector3(-(gapWidth / 2 + segmentWidth / 2), height / 2, -backOffset),
+        new THREE.Vector3(segmentWidth, height, wallThickness)
+      );
+      registerBox(
+        new THREE.Vector3(gapWidth / 2 + segmentWidth / 2, height / 2, -backOffset),
+        new THREE.Vector3(segmentWidth, height, wallThickness)
+      );
+      registerBox(
+        new THREE.Vector3(width / 2, height / 2, 0),
+        new THREE.Vector3(wallThickness, height, depth)
+      );
+
+      // Bathtub
+      registerBox(
+        new THREE.Vector3(4.5, -0.5, 1.5),
+        new THREE.Vector3(2.5, 1, 1.5)
+      );
+
+      // Toilet
+      registerBox(
+        new THREE.Vector3(4.5, -0.4, -1.5),
+        new THREE.Vector3(0.7, 1.4, 0.8)
+      );
+
+      // Washing machines
+      registerBox(
+        new THREE.Vector3(-5, -0.25, -1.5),
+        new THREE.Vector3(1.2, 1.5, 1.2)
+      );
+      registerBox(
+        new THREE.Vector3(-3.5, -0.25, -1.5),
+        new THREE.Vector3(1.2, 1.5, 1.2)
+      );
+      registerBox(
+        new THREE.Vector3(-2, -0.25, -1.5),
+        new THREE.Vector3(1.2, 1.5, 1.2)
+      );
+
+      // Shower stall remains decorative; no collider to keep doorway open
+    } else if (type === "curvedTV") {
+      const colliderHeight = scale[1] * 0.4;
+      registerBox(
+        new THREE.Vector3(0, colliderHeight / 2, 0),
+        new THREE.Vector3(scale[0] * 0.8, colliderHeight, scale[2] * 0.4)
+      );
+    } else if (type === "gas_stove") {
+      const stoveHeight = scale[1] * 0.6;
+      registerBox(
+        new THREE.Vector3(0, stoveHeight / 2 + 0.2, 0),
+        new THREE.Vector3(scale[0], stoveHeight, scale[2] * 0.9)
+      );
+    } else {
+      registerBox(
+        new THREE.Vector3(0, scale[1] / 2, 0),
+        new THREE.Vector3(...scale)
+      );
     }
-  }, []);
+  }, [addCollidable, position, rotation, scale, type, collidableGeneration]);
   
   // Special handling for bathroom cubicle
   if (type === "minimal_bathroom") {
@@ -65,7 +131,7 @@ export default function Furniture({
         
         <ModelLoader
           modelPath="/models/bathtub.glb"
-          position={[4.5, 0.4, 1.5]}
+          position={[4.5, 0, 1.5]}
           rotation={[0, Math.PI, 0]}
           scale={[1.2, 1.2, 1.2]}
         />
@@ -109,8 +175,6 @@ export default function Furniture({
       // Kitchen appliances
       case "gas_stove":
         return "/models/gas_stove.glb";
-      case "kitchen_exhaust":
-        return "/models/kitchen_exhaust.glb";
       case "fridge":
         return "/models/fridge.glb";
       case "retro_fridge":
@@ -188,7 +252,6 @@ export default function Furniture({
   
   return (
     <mesh 
-      ref={meshRef} 
       position={position} 
       rotation={rotation}
       castShadow 

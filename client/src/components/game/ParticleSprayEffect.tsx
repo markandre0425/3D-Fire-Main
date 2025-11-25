@@ -10,6 +10,7 @@ interface ParticleSprayEffectProps {
   playerPosition: { x: number; y: number; z: number };
   playerRotation: { y: number };
   extinguisherType?: InteractiveObjectType;
+  renderParticles?: boolean;
 }
 
 interface Particle {
@@ -25,7 +26,8 @@ export default function ParticleSprayEffect({
   isActive,
   playerPosition,
   playerRotation,
-  extinguisherType = InteractiveObjectType.FireExtinguisher
+  extinguisherType = InteractiveObjectType.FireExtinguisher,
+  renderParticles = true
 }: ParticleSprayEffectProps) {
   const particlesRef = useRef<THREE.Points>(null);
   const particles = useRef<Particle[]>([]);
@@ -140,7 +142,7 @@ export default function ParticleSprayEffect({
 
   // Update particles - SAME AS FIRE
   useFrame((_, delta) => {
-    if (!isActive || !particlesRef.current) return;
+    if (!renderParticles || !isActive || !particlesRef.current) return;
 
     const geometry = particlesRef.current.geometry;
     const positions = geometry.attributes.position.array as Float32Array;
@@ -223,6 +225,7 @@ export default function ParticleSprayEffect({
 
   // Create geometry and material once - SAME AS FIRE
   const geometry = useMemo(() => {
+    if (!renderParticles) return null;
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
@@ -243,9 +246,10 @@ export default function ParticleSprayEffect({
     geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
     return geo;
-  }, [particleCount]);
+  }, [particleCount, renderParticles]);
 
   const material = useMemo(() => {
+    if (!renderParticles) return null;
     return new THREE.PointsMaterial({
       size: 0.5,
       vertexColors: true,
@@ -256,7 +260,7 @@ export default function ParticleSprayEffect({
       sizeAttenuation: true,
       map: createCircleTexture()
     });
-  }, []);
+  }, [renderParticles]);
 
   // Helper function to create circular particle texture
   function createCircleTexture() {
@@ -279,7 +283,7 @@ export default function ParticleSprayEffect({
     return texture;
   }
 
-  if (!isActive) return null;
+  if (!isActive || !renderParticles || !geometry || !material) return null;
 
   // Calculate nozzle position (in front of player at chest height)
   const angle = playerRotation.y;

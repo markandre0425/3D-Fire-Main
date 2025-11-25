@@ -1,6 +1,8 @@
-import { useRef, useMemo, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useRef, useMemo, useEffect, useState } from 'react';
+import { useFrame, useLoader, useThree } from '@react-three/fiber';
+import { PositionalAudio } from '@react-three/drei';
 import * as THREE from 'three';
+import { useGame } from '@/lib/stores/useGame';
 
 type FireShape = 'wide' | 'chaotic' | 'triangular';
 
@@ -21,6 +23,41 @@ interface Particle {
   color: THREE.Color;
 }
 
+// OPTIMIZATION: Shared temporary vector to avoid creating new Vector3 objects in every frame
+const _tempVec = new THREE.Vector3();
+
+// OPTIMIZATION: Shared Color constants to avoid creating new THREE.Color objects in the loop
+const COLOR_YELLOW = new THREE.Color(0xFFFF00);
+const COLOR_ORANGE = new THREE.Color(0xFFA500);
+const COLOR_RED_ORANGE = new THREE.Color(0xFF4500);
+
+// OPTIMIZATION: Global texture cache to prevent creating a new canvas for every fire instance
+let _cachedCircleTexture: THREE.CanvasTexture | undefined;
+
+function getCircleTexture(): THREE.CanvasTexture | undefined {
+  if (_cachedCircleTexture) return _cachedCircleTexture;
+
+  if (typeof document === 'undefined') return undefined;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return undefined;
+
+  const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+  gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.5)');
+  gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 64, 64);
+  
+  _cachedCircleTexture = new THREE.CanvasTexture(canvas);
+  _cachedCircleTexture.needsUpdate = true;
+  return _cachedCircleTexture;
+}
+
 export default function ParticleFire({
   position,
   size = 1,
@@ -29,20 +66,64 @@ export default function ParticleFire({
   shape = 'triangular'
 }: ParticleFireProps) {
   const particlesRef = useRef<THREE.Points>(null);
-  const particles = useRef<Particle[]>([]);
-  const particleCount = Math.floor(intensity * 40) + 30; // 30-70 particles - optimized for performance
-  const lastUpdate = useRef(0);
+  const soundRef = useRef<THREE.PositionalAudio>(null!); 
+  const { camera } = useThree();
+  const [audioListener, setAudioListener] = useState<THREE.AudioListener | null>(null);
+  const gamePhase = useGame(state => state.phase);
+  const shouldPlay = isActive && gamePhase === "playing";
 
+  useEffect(() => {
+    if (!camera) return;
+    const listener = new THREE.AudioListener();
+    camera.add(listener);
+    setAudioListener(listener);
+
+    return () => {
+      camera.remove(listener);
+      setAudioListener(null);
+    };
+  }, [camera]);
+  
+  // 1. OPTIMIZED AUDIO LOADING
+  const audioBuffer = useLoader(THREE.AudioLoader, '/sounds/fire-sounds.mp3');
+
+  const particles = useRef<Particle[]>([]);
+  // OPTIMIZATION: Clamp max particles to prevent performance issues on low-end devices
+  const MAX_PARTICLES = 100;
+  const particleCount = Math.min(MAX_PARTICLES, Math.floor(intensity * 40) + 30);
+  
+  const lastUpdate = useRef(0);
 
   // Generate fire colors
   const fireColors = useMemo(() => [
-    new THREE.Color(0xFF4500), // Orange Red
-    new THREE.Color(0xFF6347), // Tomato
-    new THREE.Color(0xFF8C00), // Dark Orange
-    new THREE.Color(0xFFA500), // Orange
-    new THREE.Color(0xFFFF00), // Yellow
-    new THREE.Color(0xFF0000), // Red
+    COLOR_RED_ORANGE,
+    new THREE.Color(0xFF6347),
+    new THREE.Color(0xFF8C00),
+    COLOR_ORANGE,
+    COLOR_YELLOW,
+    new THREE.Color(0xFF0000),
   ], []);
+
+  // 2. CONFIGURE AUDIO BEHAVIOR
+  useEffect(() => {
+    if (soundRef.current && shouldPlay && audioBuffer) {
+      soundRef.current.setBuffer(audioBuffer);
+      soundRef.current.setRefDistance(2);  // Sound starts fading after 2 meters
+      soundRef.current.setMaxDistance(15); // Sound stops after 15 meters
+      soundRef.current.setLoop(true);
+      soundRef.current.setVolume(0.8);     // 80% Max Volume
+      
+      if (!soundRef.current.isPlaying) {
+        soundRef.current.play();
+      }
+    }
+    
+    return () => {
+      if (soundRef.current && soundRef.current.isPlaying) {
+        soundRef.current.stop();
+      }
+    };
+  }, [audioBuffer, shouldPlay]);
 
   // Initialize particles
   useEffect(() => {
@@ -52,33 +133,32 @@ export default function ParticleFire({
     }
   }, [particleCount]);
 
-  // Get shape-specific spawn parameters
   const getSpawnParams = () => {
     switch (shape) {
       case 'wide':
         return {
           spawnRadiusX: size * 1.2,
           spawnRadiusZ: size * 1.2,
-          upwardForce: 0.2, // Low upward force - stays close to ground
-          spreadForce: 0.6, // Strong horizontal spread - flows like water
-          height: size * 0.8 // Short flames
+          upwardForce: 0.2,
+          spreadForce: 0.6,
+          height: size * 0.8
         };
       case 'chaotic':
         return {
           spawnRadiusX: size * 0.6,
           spawnRadiusZ: size * 0.6,
-          upwardForce: 0.3, // Low upward force
-          spreadForce: 0.8, // Strong spread
-          height: size * 1.2 // Medium height
+          upwardForce: 0.3,
+          spreadForce: 0.8,
+          height: size * 1.2
         };
       case 'triangular':
       default:
         return {
           spawnRadiusX: size * 0.2,
           spawnRadiusZ: size * 0.2,
-          upwardForce: 0.4, // Reduced from 1.0 - shorter flame
-          spreadForce: 0.3, // Some spread
-          height: size * 1.5 // Much shorter than before (was 3)
+          upwardForce: 0.4,
+          spreadForce: 0.3,
+          height: size * 1.5
         };
     }
   };
@@ -106,9 +186,9 @@ export default function ParticleFire({
     };
   };
 
-  // Update particles
+  // Animation Loop
   useFrame((state, delta) => {
-    if (!isActive || !particlesRef.current) return;
+    if (!shouldPlay || !particlesRef.current) return;
 
     const now = state.clock.getElapsedTime();
     const dt = now - lastUpdate.current;
@@ -121,11 +201,9 @@ export default function ParticleFire({
     const sizes = geometry.attributes.size.array as Float32Array;
 
     particles.current.forEach((particle, i) => {
-      // Update particle life
       particle.life -= dt / particle.maxLife;
 
       if (particle.life <= 0) {
-        // Reset particle to bottom instead of making it disappear
         particle.life = 1.0;
         const params = getSpawnParams();
         const angle = Math.random() * Math.PI * 2;
@@ -143,56 +221,51 @@ export default function ParticleFire({
         );
       }
 
-      // Update position
-      particle.position.add(particle.velocity.clone().multiplyScalar(dt));
+      // OPTIMIZATION: Use shared vector instead of creating new ones with .clone()
+      _tempVec.copy(particle.velocity).multiplyScalar(dt);
+      particle.position.add(_tempVec);
 
-      // Water-like horizontal spread - stays low, flows outward
+      // Calculate spread
       const distanceFromCenter = Math.sqrt(
         particle.position.x * particle.position.x + 
         particle.position.z * particle.position.z
       );
       
       if (distanceFromCenter > 0.01) {
-        // Normalize and push outward linearly like flowing liquid
         const normalizedX = particle.position.x / distanceFromCenter;
         const normalizedZ = particle.position.z / distanceFromCenter;
-        
-        particle.velocity.x += normalizedX * dt * 0.25; // Strong outward flow
+        particle.velocity.x += normalizedX * dt * 0.25; 
         particle.velocity.z += normalizedZ * dt * 0.25;
       } else {
-        // At center, give random initial direction
         particle.velocity.x += (Math.random() - 0.5) * dt * 0.4;
         particle.velocity.z += (Math.random() - 0.5) * dt * 0.4;
       }
       
-      // Dampen vertical velocity to keep flames low
-      particle.velocity.y *= 0.95; // More dampening = lower flames
+      particle.velocity.y *= 0.95;
 
-      // Update geometry attributes
       const i3 = i * 3;
       positions[i3] = particle.position.x;
       positions[i3 + 1] = particle.position.y;
       positions[i3 + 2] = particle.position.z;
 
-      // Color cycle: yellow at bottom -> orange -> red at top (stays bright)
       const lifeRatio = particle.life;
+      
+      // OPTIMIZATION: Use shared Color constants to avoid 'new THREE.Color()' allocation per frame
       if (lifeRatio > 0.6) {
-        // Yellow to orange (bottom of flame)
-        particle.color.setHex(0xFFFF00).lerp(new THREE.Color(0xFFA500), (1 - lifeRatio) / 0.4);
+        // Yellow to orange (bottom)
+        particle.color.copy(COLOR_YELLOW).lerp(COLOR_ORANGE, (1 - lifeRatio) / 0.4);
       } else if (lifeRatio > 0.3) {
-        // Orange to red (middle of flame)
-        particle.color.setHex(0xFFA500).lerp(new THREE.Color(0xFF4500), (0.6 - lifeRatio) / 0.3);
+        // Orange to red (middle)
+        particle.color.copy(COLOR_ORANGE).lerp(COLOR_RED_ORANGE, (0.6 - lifeRatio) / 0.3);
       } else {
-        // Red (top of flame - stays bright, doesn't fade to black)
-        particle.color.setHex(0xFF4500);
+        // Red (top)
+        particle.color.copy(COLOR_RED_ORANGE);
       }
 
       colors[i3] = particle.color.r;
       colors[i3 + 1] = particle.color.g;
       colors[i3 + 2] = particle.color.b;
-
-      // Size stays consistent (doesn't shrink and disappear)
-      sizes[i] = particle.size * intensity * 0.9; // Slightly smaller at top for natural look
+      sizes[i] = particle.size * intensity * 0.9; 
     });
 
     geometry.attributes.position.needsUpdate = true;
@@ -200,7 +273,6 @@ export default function ParticleFire({
     geometry.attributes.size.needsUpdate = true;
   });
 
-  // Create geometry
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
@@ -224,45 +296,32 @@ export default function ParticleFire({
     return geo;
   }, [particleCount]);
 
-  // Create material
   const material = useMemo(() => {
     return new THREE.PointsMaterial({
-      size: 0.5 * size, // Increased from 0.2 to 0.5 for more visibility
+      size: 0.5 * size,
       vertexColors: true,
       transparent: true,
-      opacity: 1.0, // Increased from 0.8 to 1.0 for brightness
+      opacity: 1.0,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       sizeAttenuation: true,
-      map: createCircleTexture() // Add a circular texture for better particle appearance
+      map: getCircleTexture() // OPTIMIZATION: Use cached texture
     });
   }, [size]);
-
-  // Helper function to create a circular gradient texture
-  function createCircleTexture() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 64;
-    canvas.height = 64;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return undefined;
-
-    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-    gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.5)');
-    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 64, 64);
-    
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
-    return texture;
-  }
 
   if (!isActive) return null;
 
   return (
-    <points ref={particlesRef} position={position} geometry={geometry} material={material} />
+    <group position={position}>
+      <points 
+        ref={particlesRef} 
+        position={[0, 0, 0]} 
+        geometry={geometry} 
+        material={material} 
+      />
+      
+      {/* 3D Positional Audio Node */}
+      {audioListener && <positionalAudio ref={soundRef} args={[audioListener]} />}
+    </group>
   );
 }
-

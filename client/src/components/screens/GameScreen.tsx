@@ -1,5 +1,4 @@
 import { Suspense, useEffect } from "react";
-import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import Level from "../game/Level";
 import KeyboardManager from "../game/KeyboardManager";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
@@ -47,28 +46,9 @@ export default function GameScreen() {
   
   return (
     <>
-      {/* Camera */}
-      <PerspectiveCamera
-        makeDefault
-        position={[0, 5, 10]}
-        fov={50}
-      />
-      
-      {/* Controls - limit to prevent going below the floor */}
-      <OrbitControls 
-        enablePan={false}
-        minPolarAngle={Math.PI / 6}
-        maxPolarAngle={Math.PI / 2.2}
-        minDistance={5}
-        maxDistance={15}
-      />
-      
-      {/* Game level */}
       <Suspense fallback={null}>
         <Level />
       </Suspense>
-      
-      {/* Keyboard manager component to handle key presses */}
       <KeyboardManager />
     </>
   );

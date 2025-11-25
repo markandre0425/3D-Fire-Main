@@ -7,7 +7,8 @@ export enum Controls {
   extinguish = "extinguish",
   crouch = "crouch",
   run = "run",
-  pause = "pause"
+  pause = "pause",
+  jump = "jump"
 }
 
 export interface Vector3 {

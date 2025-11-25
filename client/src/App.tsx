@@ -13,6 +13,8 @@ import TutorialScreen from "./components/screens/TutorialScreen";
 import { useGame } from "./lib/stores/useGame";
 import SoundManager from "./components/game/SoundManager";
 import GameUI from "./components/game/GameUI";
+import ControlsHelp from "./components/ui/ControlsHelp";
+import Crosshair from "./components/ui/Crosshair";
 import { Howl } from "howler";
 
 const keyboardMap = [
@@ -24,6 +26,7 @@ const keyboardMap = [
   { name: Controls.extinguish, keys: ["KeyF"] },
   { name: Controls.crouch, keys: ["KeyC"] },
   { name: Controls.run, keys: ["ShiftLeft"] },
+  { name: Controls.jump, keys: ["Space"] },
   { name: Controls.pause, keys: ["Escape"] },
 ];
 
@@ -35,15 +38,9 @@ function App() {
   const [showEndScreen, setShowEndScreen] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [loadingComplete, setLoadingComplete] = useState(false);
-  const { setBackgroundMusic, setHitSound, setSuccessSound, setLevelCompletedSound } = useAudio();
+  const { setHitSound, setSuccessSound, setLevelCompletedSound } = useAudio();
 
   useEffect(() => {
-    const bgMusic = new Howl({
-      src: ['/sounds/background.mp3'],
-      loop: true,
-      volume: 0.4,
-    });
-
     const hit = new Howl({
       src: ['/sounds/hit.mp3'],
       volume: 0.5,
@@ -73,19 +70,17 @@ function App() {
     // Set the sound immediately (it will be ready when needed)
     setLevelCompletedSound(levelCompleted);
     
-    setBackgroundMusic(bgMusic);
     setHitSound(hit);
     setSuccessSound(success);
     
     setLoadingComplete(true);
     
     return () => {
-      bgMusic.stop();
       hit.stop();
       success.stop();
       levelCompleted.stop();
     };
-  }, [setBackgroundMusic, setHitSound, setSuccessSound, setLevelCompletedSound]);
+  }, [setHitSound, setSuccessSound, setLevelCompletedSound]);
 
   // Update UI based on game phase
   useEffect(() => {
@@ -151,6 +146,8 @@ function App() {
               </Canvas>
               <div className="absolute inset-0 pointer-events-none">
                 <GameUI />
+                <ControlsHelp />
+                <Crosshair />
               </div>
             </>
           )}

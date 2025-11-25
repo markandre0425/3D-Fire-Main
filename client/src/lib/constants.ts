@@ -131,13 +131,6 @@ export const LEVELS: Record<Level, LevelData> = {
         scale: { x: 2.5, y: 2.5, z: 2.5 }
       },
       {
-        id: "kitchen_exhaust_kitchen",
-        type: "kitchen_exhaust",
-        position: { x: -4, y: 4, z: -9 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 2.5, y: 2.5, z: 2.5 }
-      },
-      {
         id: "bathroom_kitchen",
         type: "minimal_bathroom",
         position: { x: 4, y: 0, z: -7.5 },
@@ -147,16 +140,16 @@ export const LEVELS: Record<Level, LevelData> = {
       {
         id: "sofa_kitchen",
         type: "office_sofa",
-        position: { x: -1.7, y: 0, z: 1.2 },
+        position: { x: -1.7, y: .1, z: 1.2 },
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 2, y: 0.7, z: 2 }
       },
       {
         id: "retro_fridge_kitchen",
         type: "retro_fridge",
-        position: { x: -8.5, y: 0, z: -8.5 },
+        position: { x: -8.5, y: 1.6, z: -8.5 },
         rotation: { x: 0, y: 4.7, z: 0 },
-        scale: { x: 3, y: 3, z: 3 }
+        scale: { x: 2, y: 2, z: 2 }
       },
       {
         id: "sink_kitchen",
@@ -168,7 +161,7 @@ export const LEVELS: Record<Level, LevelData> = {
       {
         id: "small_kitchen_oven_kitchen",
         type: "small_kitchen_with_oven",
-        position: { x: 9.85, y: 0, z: 2 },
+        position: { x: 9, y: 0, z: 2 },
         rotation: { x: 0, y: -Math.PI / 2, z: 0 },
         scale: { x: 2.2, y: 2, z: 3 }
       },
@@ -355,7 +348,7 @@ export const LEVELS: Record<Level, LevelData> = {
       {
         id: "coffeeTable",
         type: "table",
-        position: { x: 2, y: 0, z: 3 },
+        position: { x: 2, y: -2, z: 3 },
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 1.5, y: 0.6, z: 1 }
       },
@@ -540,13 +533,6 @@ export const LEVELS: Record<Level, LevelData> = {
         scale: { x: 2.5, y: 1.5, z: 2.5 }
       },
       {
-        id: "kitchen_exhaust_bedroom",
-        type: "kitchen_exhaust",
-        position: { x: 0, y: 4, z: -9 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 2.5, y: 2.5, z: 2.5 }
-      },
-      {
         id: "bathroom_bedroom",
         type: "minimal_bathroom",
         position: { x: 6, y: 0, z: -7.5 },
@@ -671,13 +657,6 @@ export const LEVELS: Record<Level, LevelData> = {
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 2.5, y: 2.5, z: 2.5 }
       },
-      {
-        id: "kitchen_exhaust_training",
-        type: "kitchen_exhaust",
-        position: { x: -6, y: 4, z: -8 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 2.5, y: 2.5, z: 2.5 }
-      }
     ],
     requiredScore: 150,
     timeLimit: 120,
@@ -830,13 +809,6 @@ export const LEVELS: Record<Level, LevelData> = {
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 2.5, y: 2.5, z: 2.5 }
       },
-      {
-        id: "kitchen_exhaust_classification",
-        type: "kitchen_exhaust",
-        position: { x: -8, y: 4, z: -10 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 2.5, y: 2.5, z: 2.5 }
-      }
     ],
     requiredScore: 600,
     timeLimit: 180,
@@ -1005,13 +977,6 @@ export const LEVELS: Record<Level, LevelData> = {
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 2.5, y: 2.5, z: 2.5 }
       },
-      {
-        id: "kitchen_exhaust_emergency",
-        type: "kitchen_exhaust",
-        position: { x: -4, y: 4, z: -10 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 2.5, y: 2.5, z: 2.5 }
-      }
     ],
     requiredScore: 800,
     timeLimit: 240,
@@ -1178,13 +1143,6 @@ export const LEVELS: Record<Level, LevelData> = {
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 3, y: 3, z: 3 }
       },
-      {
-        id: "kitchen_exhaust_advanced",
-        type: "kitchen_exhaust",
-        position: { x: -8, y: 4.5, z: -12 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 3, y: 3, z: 3 }
-      }
     ],
     requiredScore: 1000,
     timeLimit: 300,
@@ -1409,26 +1367,12 @@ export const LEVELS: Record<Level, LevelData> = {
         scale: { x: 3.5, y: 3.5, z: 3.5 }
       },
       {
-        id: "kitchen_exhaust_master_1",
-        type: "kitchen_exhaust",
-        position: { x: -10, y: 5, z: -14 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 3.5, y: 3.5, z: 3.5 }
-      },
-      {
         id: "gas_stove_master_2",
         type: "gas_stove",
         position: { x: 10, y: 0, z: -14 },
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 3.5, y: 3.5, z: 3.5 }
       },
-      {
-        id: "kitchen_exhaust_master_2",
-        type: "kitchen_exhaust",
-        position: { x: 10, y: 5, z: -14 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 3.5, y: 3.5, z: 3.5 }
-      }
     ],
     requiredScore: 1500,
     timeLimit: 420,
@@ -1558,7 +1502,7 @@ export const PLAYER_CONSTANTS = {
   OXYGEN_DEPLETION_RATE: 5,
   HEALTH_DEPLETION_RATE: 10,
   STARTING_POSITION: { x: 0, y: 0, z: 4 },
-  CHARACTER_BOUNDING_BOX: { x: 1.5, y: 5.1, z: 1.5 },
+  CHARACTER_BOUNDING_BOX: { x: 1.5, y: 5.1, z: 1.5 }
 };
 
 export const GAME_CONSTANTS = {
