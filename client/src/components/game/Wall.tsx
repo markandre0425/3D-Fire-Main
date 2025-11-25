@@ -18,7 +18,8 @@ export default function Wall({ position, rotation, scale }: WallProps) {
     if (meshRef.current) {
       const boundingBox = createBoundingBox(
         new Vector3(...position),
-        new Vector3(...scale)
+        new Vector3(...scale),
+        new THREE.Euler(...rotation)
       );
       addCollidable(boundingBox);
     }

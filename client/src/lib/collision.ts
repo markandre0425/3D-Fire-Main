@@ -7,19 +7,18 @@ export interface BoundingBox {
 
 export function createBoundingBox(
   position: THREE.Vector3,
-  size: THREE.Vector3
+  size: THREE.Vector3,
+  rotation: THREE.Euler
 ): BoundingBox {
+  const box = new THREE.Box3();
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(size.x, size.y, size.z));
+  mesh.position.copy(position);
+  mesh.rotation.copy(rotation);
+  mesh.updateMatrixWorld();
+  box.setFromObject(mesh);
   return {
-    min: new THREE.Vector3(
-      position.x - size.x / 2,
-      position.y - size.y / 2,
-      position.z - size.z / 2
-    ),
-    max: new THREE.Vector3(
-      position.x + size.x / 2,
-      position.y + size.y / 2,
-      position.z + size.z / 2
-    ),
+    min: box.min,
+    max: box.max,
   };
 }
 

@@ -25,7 +25,8 @@ export default function Furniture({
     if (meshRef.current) {
       const boundingBox = createBoundingBox(
         new Vector3(...position),
-        new Vector3(...scale)
+        new Vector3(...scale),
+        new THREE.Euler(...rotation)
       );
       addCollidable(boundingBox);
     }
