@@ -1,5 +1,6 @@
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Level from "../game/Level";
+import TutorialLevel from "../game/TutorialLevel";
 import KeyboardManager from "../game/KeyboardManager";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { usePlayer } from "@/lib/stores/usePlayer";
@@ -7,27 +8,33 @@ import { Level as LevelType } from "@/lib/types";
 import { useGame } from "@/lib/stores/useGame";
 
 export default function GameScreen() {
-  const { startLevel, levelTime, isLevelComplete } = useFireSafety();
-  const { health, score } = usePlayer();
+  const { startLevel, isLevelComplete } = useFireSafety();
+  const { health } = usePlayer();
   const { end } = useGame();
 
-  useEffect(() => {
+  // State to track if tutorial is active
+  const [showTutorial, setShowTutorial] = useState(true);
+
+  // Handle tutorial completion - transition to real game
+  const handleTutorialComplete = () => {
+    setShowTutorial(false);
+    // FIX: Start the Kitchen level only when tutorial finishes
     startLevel(LevelType.Kitchen);
-  }, [startLevel]);
+  };
+
+  // NOTE: do not call startLevel(Kitchen) here on mount. 
+  // If we did, it would overwrite the Tutorial data and break the pickups.
+  // TutorialLevel initializes its own data.
 
   useEffect(() => {
     const gameOverCheckDelay = setTimeout(() => {
       if (health <= 0) {
         end();
       }
-
-      if (levelTime <= 0 && levelTime !== undefined) {
-        end();
-      }
     }, 1000);
     
     return () => clearTimeout(gameOverCheckDelay);
-  }, [health, levelTime, end]);
+  }, [health, end]);
 
   useEffect(() => {
     if (isLevelComplete) {
@@ -47,10 +54,13 @@ export default function GameScreen() {
   return (
     <>
       <Suspense fallback={null}>
-        <Level />
+        {showTutorial ? (
+          <TutorialLevel onComplete={handleTutorialComplete} />
+        ) : (
+          <Level />
+        )}
       </Suspense>
       <KeyboardManager />
     </>
   );
 }
-

@@ -1,0 +1,11 @@
+{
+  "name": "3D Fire Safety Game",
+  "short_name": "Fire Safety",
+  "description": "3D Fire Safety Training Game",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#87CEEB",
+  "theme_color": "#87CEEB",
+  "icons": []
+}
+

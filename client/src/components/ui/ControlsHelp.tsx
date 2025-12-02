@@ -49,6 +49,7 @@ export default function ControlsHelp() {
         <ControlRow keyLabel="E" label="Interact" />
         <ControlRow keyLabel="F" label="Extinguish" />
         <ControlRow keyLabel="C" label="Crouch" />
+        <ControlRow keyLabel="R" label="Respawn / Unstuck" />
       </div>
 
       {/* MOVEMENT & PRIMARY ACTIONS CLUSTER */}

@@ -46,10 +46,8 @@ export default function FireExtinguisher({ object, isCollected }: FireExtinguish
   // Don't render if already collected
   if (isCollected) return null;
   
-  // Calculate offset to move text away from wall
-  // If on west wall (x < 0), offset towards positive X
-  // If on east wall (x > 0), offset towards negative X
-  const textOffsetX = object.position.x < 0 ? 1.5 : -1.5;
+  // Position HUD slightly above and in front of the model to avoid clipping
+  const labelPosition: [number, number, number] = [0, 1.35, 0.2];
   
   return (
     <group
@@ -77,7 +75,7 @@ export default function FireExtinguisher({ object, isCollected }: FireExtinguish
       {/* HTML overlay labels - hide when paused or level complete */}
       {!isPaused && !isLevelComplete && (
         <Html
-          position={[textOffsetX, 0.6, 0]}
+          position={labelPosition}
           center
           distanceFactor={8}
           occlude={false}

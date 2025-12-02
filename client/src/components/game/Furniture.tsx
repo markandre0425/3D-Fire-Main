@@ -4,6 +4,8 @@ import { useTexture } from "@react-three/drei";
 import ModelLoader from "./ModelLoader";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { createBoundingBox } from "../../lib/collision";
+import { HazardType } from "@/lib/types";
+import { ProceduralCounter, ProceduralStove } from "./ProceduralFurniture";
 
 interface FurnitureProps {
   type: string;
@@ -169,6 +171,56 @@ export default function Furniture({
     );
   }
   
+  // Procedural furniture components (no external files needed)
+  if (type === "counter") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralCounter />
+      </group>
+    );
+  }
+  
+  // Optional: Use procedural stove instead of GLB
+  if (type === "gas_stove") {
+    // You can choose to use procedural or GLB - uncomment to use procedural:
+    // return (
+    //   <group position={position} rotation={rotation} scale={scale}>
+    //     <ProceduralStove />
+    //   </group>
+    // );
+  }
+
+  // --- WHITELIST APPROACH: Only render types we explicitly know about ---
+  // This prevents mystery boxes from appearing for unknown types
+  
+  const SAFE_FURNITURE_TYPES = [
+    // Kitchen appliances
+    "gas_stove",
+    "fridge",
+    "retro_fridge",
+    "sink_with_faucet",
+    // Sofa models
+    "sofa",
+    "office_sofa",
+    // Table model
+    "table",
+    // TV model
+    "curvedTV",
+    // Procedural furniture
+    "counter",
+    // Special room types
+    "minimal_bathroom",
+    // Walls and floors (handled separately, but included for completeness)
+    "wall",
+    "floor"
+  ];
+
+  // If type is not in whitelist, return null (invisible)
+  // This includes all hazard types, spawn markers, and unknown types
+  if (!SAFE_FURNITURE_TYPES.includes(type)) {
+    return null;
+  }
+  
   // Get 3D model path (for furniture with actual models)
   const getModelPath = () => {
     switch (type) {
@@ -181,9 +233,6 @@ export default function Furniture({
         return "/models/retro_fridge.glb";
       case "sink_with_faucet":
         return "/models/sink_with_faucet.glb";
-      case "small_kitchen_with_oven":
-        return "/models/small_kitchen_with_oven.glb";
-      
       // Sofa model
       case "sofa":
       case "office_sofa":
@@ -197,13 +246,6 @@ export default function Furniture({
       case "curvedTV":
         return "/models/curvedTV.glb";
       
-      // Generic wooden furniture uses simple_wood.glb
-      case "counter":
-      case "bed":
-      case "stool":
-      case "dresser":
-        return "/models/simple_wood.glb";
-      
       // No model available - will use colored box geometry
       default:
         return null;
@@ -216,9 +258,6 @@ export default function Furniture({
   };
   
   const modelPath = getModelPath();
-  
-  // IMPORTANT: Call ALL hooks at the top before any conditional returns!
-  // This prevents "Rendered fewer hooks than expected" error
   const texture = useTexture(getTextureUrl());
   
   // If we have a 3D model, use ModelLoader
@@ -233,32 +272,9 @@ export default function Furniture({
     );
   }
   
-  // Otherwise, use box geometry with texture (fallback)
-  
-  const getColor = () => {
-    switch (type) {
-      case "sofa":
-        return "#3498DB";
-      case "bed":
-        return "#9B59B6";
-      case "dresser":
-        return "#8B4513";
-      case "counter":
-        return "#D35400";
-      default:
-        return "#A0522D";
-    }
-  };
-  
-  return (
-    <mesh 
-      position={position} 
-      rotation={rotation}
-      castShadow 
-      receiveShadow
-    >
-      <boxGeometry args={scale} />
-      <meshStandardMaterial map={texture} color={getColor()} />
-    </mesh>
-  );
+  // If we reach here, it's a whitelisted type but has no model
+  // This should only happen for types that have procedural components (like "counter")
+  // or types that were explicitly whitelisted but don't need rendering
+  // Return null to be safe
+  return null;
 }

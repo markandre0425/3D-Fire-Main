@@ -23,15 +23,15 @@ export default function HealthBar() {
   };
   
   return (
-    <div className="absolute bottom-4 left-4 w-64 bg-black bg-opacity-50 p-2 rounded-md">
-      <div className="mb-2">
+    <div className="absolute bottom-4 left-4 w-72 bg-gray-900/85 border-2 border-gray-500 rounded-2xl px-4 py-3 text-white shadow-[0_12px_25px_rgba(0,0,0,0.55)]">
+      <div className="mb-3">
         <div className="flex justify-between mb-1">
-          <span className="text-white font-bold text-sm">Health</span>
-          <span className="text-white text-sm">{Math.round(health)}%</span>
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-300">Health</span>
+          <span className="text-sm font-bold tracking-wide">{Math.round(health)}%</span>
         </div>
-        <div className="w-full h-4 bg-gray-700 rounded-full overflow-hidden">
+        <div className="w-full h-4 bg-neutral-700 rounded-full overflow-hidden">
           <div 
-            className="h-full rounded-full transition-all duration-300 ease-out"
+            className="h-full rounded-full transition-all duration-300 ease-out shadow-[0_0_12px_rgba(0,0,0,0.4)]"
             style={{ 
               width: `${healthPercentage}%`, 
               backgroundColor: getHealthColor() 
@@ -42,12 +42,12 @@ export default function HealthBar() {
       
       <div>
         <div className="flex justify-between mb-1">
-          <span className="text-white font-bold text-sm">Oxygen</span>
-          <span className="text-white text-sm">{Math.round(oxygen)}%</span>
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-300">Oxygen</span>
+          <span className="text-sm font-bold tracking-wide">{Math.round(oxygen)}%</span>
         </div>
-        <div className="w-full h-4 bg-gray-700 rounded-full overflow-hidden">
+        <div className="w-full h-4 bg-neutral-700 rounded-full overflow-hidden">
           <div 
-            className="h-full rounded-full transition-all duration-300 ease-out"
+            className="h-full rounded-full transition-all duration-300 ease-out shadow-[0_0_12px_rgba(0,0,0,0.4)]"
             style={{ 
               width: `${oxygenPercentage}%`, 
               backgroundColor: getOxygenColor() 

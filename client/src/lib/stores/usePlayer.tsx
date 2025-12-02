@@ -16,6 +16,8 @@ interface PlayerStateStore extends PlayerState {
   depleteOxygen: (amount: number) => void;
   replenishOxygen: (amount: number) => void;
   resetPlayer: () => void;
+  setSpawnPoint: (point: { x: number; y: number; z: number }) => void;
+  respawn: () => void;
   pickupExtinguisher: (extinguisherType?: InteractiveObjectType) => void;
   useExtinguisher: () => void;
   addScore: (points: number) => void;
@@ -26,6 +28,7 @@ interface PlayerStateStore extends PlayerState {
 export const usePlayer = create<PlayerStateStore>()(
   subscribeWithSelector((set, get) => ({
     position: { ...PLAYER_CONSTANTS.STARTING_POSITION },
+    spawnPoint: { ...PLAYER_CONSTANTS.STARTING_POSITION },
     rotation: { x: 0, y: 0, z: 0 },
     health: PLAYER_CONSTANTS.MAX_HEALTH,
     hasExtinguisher: false,
@@ -190,6 +193,7 @@ export const usePlayer = create<PlayerStateStore>()(
     resetPlayer: () => {
       set({
         position: { ...PLAYER_CONSTANTS.STARTING_POSITION },
+        spawnPoint: { ...PLAYER_CONSTANTS.STARTING_POSITION },
         rotation: { x: 0, y: 0, z: 0 },
         health: PLAYER_CONSTANTS.MAX_HEALTH,
         hasExtinguisher: false,
@@ -199,6 +203,18 @@ export const usePlayer = create<PlayerStateStore>()(
         isRunning: false,
         oxygen: PLAYER_CONSTANTS.MAX_OXYGEN
       });
+    },
+    
+    setSpawnPoint: (point: { x: number; y: number; z: number }) => {
+      set({ spawnPoint: { ...point } });
+    },
+    
+    respawn: () => {
+      const { spawnPoint } = get();
+      set(state => ({
+        position: { ...spawnPoint },
+        rotation: { ...state.rotation, x: 0, z: 0 }
+      }));
     },
     
     pickupExtinguisher: (extinguisherType?: InteractiveObjectType) => {

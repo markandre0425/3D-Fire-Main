@@ -3,7 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAudio } from "@/lib/stores/useAudio";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
-import { Shield, Flame, Home, Star, ChevronDown, ChevronUp, Play, Pause, ArrowLeft, Trophy, Clock } from "lucide-react";
+import {
+  Shield,
+  Flame,
+  Home,
+  Star,
+  ChevronDown,
+  ChevronUp,
+  Play,
+  Pause,
+  ArrowLeft,
+  Trophy,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { LEVELS } from "@/lib/constants";
 import { Level, DifficultyLevel } from "@/lib/types";
 
@@ -21,516 +34,328 @@ export default function MainMenu({ onStartTutorial, onStartGame }: MainMenuProps
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
   const { isMuted, toggleMute } = useAudio();
   const { startLevel } = useFireSafety();
-  
-  // Enhanced control guide with more details
+
   const controlGuide = [
-    { 
-      key: "WASD", 
-      action: "Move around", 
-      icon: "🏃", 
-      detail: "Use W-A-S-D keys to walk around the house and explore different rooms!",
+    {
+      key: "WASD",
+      action: "Move",
+      icon: "👣",
+      detail: "Walk around safely!",
       color: "blue",
-      testKeys: ["KeyW", "KeyA", "KeyS", "KeyD"]
+      testKeys: ["KeyW", "KeyA", "KeyS", "KeyD"],
     },
-    { 
-      key: "E", 
-      action: "Pick up items", 
-      icon: "🧯", 
-      detail: "Press E when you see a fire extinguisher or safety equipment to pick it up!",
+    {
+      key: "E",
+      action: "Grab",
+      icon: "✋",
+      detail: "Pick up items!",
       color: "red",
-      testKeys: ["KeyE"]
+      testKeys: ["KeyE"],
     },
-    { 
-      key: "F", 
-      action: "Use extinguisher", 
-      icon: "💨", 
-      detail: "Press F to spray the fire extinguisher and put out fires safely!",
+    {
+      key: "F",
+      action: "Spray",
+      icon: "💦",
+      detail: "Use Extinguisher!",
       color: "green",
-      testKeys: ["KeyF"]
+      testKeys: ["KeyF"],
     },
-    { 
-      key: "C", 
-      action: "Crouch (safety!)", 
-      icon: "🤲", 
-      detail: "Press C to crouch down and stay safe from smoke - remember, stay low!",
+    {
+      key: "C",
+      action: "Duck",
+      icon: "📉",
+      detail: "Crouch under smoke!",
       color: "purple",
-      testKeys: ["KeyC"]
+      testKeys: ["KeyC"],
     },
-    { 
-      key: "Shift", 
-      action: "Run faster", 
-      icon: "💨", 
-      detail: "Hold Shift while moving to run faster during emergencies!",
+    {
+      key: "R",
+      action: "Unstuck",
+      icon: "🔄",
+      detail: "Respawn at start!",
       color: "orange",
-      testKeys: ["ShiftLeft", "ShiftRight"]
+      testKeys: ["KeyR"],
     },
-    { 
-      key: "ESC", 
-      action: "Pause game", 
-      icon: "⏸️", 
-      detail: "Press Escape to pause the game anytime you need a break!",
+    {
+      key: "ESC",
+      action: "Pause",
+      icon: "⏸️",
+      detail: "Take a break!",
       color: "gray",
-      testKeys: ["Escape"]
-    }
+      testKeys: ["Escape"],
+    },
   ];
 
-  // Handle key testing with useCallback to maintain reference
-  const handleKeyTest = useCallback((event: KeyboardEvent) => {
-    if (!testingKeys) return;
-    
-    // Prevent default behavior for some keys
-    if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.code)) {
-      event.preventDefault();
-    }
-    
-    const pressedKey = event.code;
-    console.log('Key pressed:', pressedKey); // Debug log
-    
-    setPressedKeys(prev => new Set([...Array.from(prev), pressedKey]));
-    
-    // Find which control this key belongs to
-    const matchingControl = controlGuide.find(control => 
-      control.testKeys.includes(pressedKey)
-    );
-    
-    if (matchingControl) {
-      console.log('Matching control found:', matchingControl.key); // Debug log
-      setActiveControl(matchingControl.key);
-      setTimeout(() => setActiveControl(null), 1000);
-    }
-  }, [testingKeys, controlGuide]);
+  const handleKeyTest = useCallback(
+    (event: KeyboardEvent) => {
+      if (!testingKeys) return;
 
-  // Start/stop key testing
+      if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) {
+        event.preventDefault();
+      }
+
+      const pressedKey = event.code;
+      setPressedKeys((prev) => new Set([...Array.from(prev), pressedKey]));
+
+      const matchingControl = controlGuide.find((control) => control.testKeys.includes(pressedKey));
+
+      if (matchingControl) {
+        setActiveControl(matchingControl.key);
+        setTimeout(() => setActiveControl(null), 500);
+      }
+    },
+    [testingKeys, controlGuide]
+  );
+
   const toggleKeyTesting = useCallback(() => {
     if (testingKeys) {
       setTestingKeys(false);
       setPressedKeys(new Set());
       setActiveControl(null);
-      window.removeEventListener('keydown', handleKeyTest);
-      console.log('Key testing stopped'); // Debug log
+      window.removeEventListener("keydown", handleKeyTest);
     } else {
       setTestingKeys(true);
       setPressedKeys(new Set());
-      window.addEventListener('keydown', handleKeyTest);
-      console.log('Key testing started'); // Debug log
+      window.addEventListener("keydown", handleKeyTest);
     }
   }, [testingKeys, handleKeyTest]);
 
-  // Cleanup key listener with proper dependency
   useEffect(() => {
     return () => {
-      window.removeEventListener('keydown', handleKeyTest);
+      window.removeEventListener("keydown", handleKeyTest);
     };
   }, [handleKeyTest]);
 
-  // Helper function to get difficulty styling
   const getDifficultyStyle = (difficulty: DifficultyLevel) => {
     switch (difficulty) {
       case DifficultyLevel.Beginner:
-        return { color: "green", icon: "🌱", label: "Beginner" };
+        return { color: "green", icon: "🌱", label: "Rookie" };
       case DifficultyLevel.Intermediate:
-        return { color: "yellow", icon: "⭐", label: "Intermediate" };
+        return { color: "yellow", icon: "⭐", label: "Cadet" };
       case DifficultyLevel.Advanced:
-        return { color: "orange", icon: "🔥", label: "Advanced" };
+        return { color: "orange", icon: "🔥", label: "Hero" };
       case DifficultyLevel.Expert:
-        return { color: "red", icon: "💎", label: "Expert" };
+        return { color: "red", icon: "💎", label: "Captain" };
       case DifficultyLevel.Master:
-        return { color: "purple", icon: "👑", label: "Master" };
+        return { color: "purple", icon: "👑", label: "Chief" };
       default:
         return { color: "gray", icon: "⚫", label: "Unknown" };
     }
   };
 
-  // Handle level selection
   const handleLevelSelect = (level: Level) => {
     startLevel(level);
     onStartGame();
   };
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-400 via-purple-500 to-pink-400 z-50">
-      <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-      
-      {/* Fun floating fire safety icons */}
-      <div className="absolute inset-0 overflow-hidden">
-        <Shield className="absolute top-1/4 left-1/4 w-8 h-8 text-yellow-300 animate-bounce opacity-30" style={{animationDelay: '0s'}} />
-        <Flame className="absolute top-1/3 right-1/4 w-6 h-6 text-orange-300 animate-bounce opacity-30" style={{animationDelay: '1s'}} />
-        <Home className="absolute bottom-1/4 left-1/3 w-7 h-7 text-green-300 animate-bounce opacity-30" style={{animationDelay: '2s'}} />
-        <Star className="absolute top-1/2 right-1/3 w-5 h-5 text-yellow-300 animate-bounce opacity-30" style={{animationDelay: '3s'}} />
+    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-400 via-purple-500 to-pink-400 z-50 font-sans overflow-hidden">
+      <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10"></div>
+      <div className="absolute inset-0 bg-black bg-opacity-10"></div>
+
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <Shield
+          className="absolute top-10 left-10 w-12 h-12 text-yellow-300 animate-bounce opacity-40"
+          style={{ animationDuration: "3s" }}
+        />
+        <Flame
+          className="absolute bottom-20 right-20 w-16 h-16 text-orange-400 animate-pulse opacity-40"
+          style={{ animationDuration: "2s" }}
+        />
+        <Home
+          className="absolute top-1/3 right-10 w-10 h-10 text-green-300 animate-bounce opacity-40"
+          style={{ animationDuration: "4s" }}
+        />
+        <Star className="absolute bottom-10 left-1/4 w-8 h-8 text-yellow-200 animate-spin-slow opacity-40" />
       </div>
-      
-      <Card className="w-full max-w-3xl max-h-[90vh] bg-white bg-opacity-95 border-4 border-yellow-400 shadow-2xl relative z-10 flex flex-col">
-        <CardHeader className="text-center bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 text-white rounded-t-lg flex-shrink-0">
-          <div className="flex items-center justify-center mb-2">
-            <Shield className="w-12 h-12 mr-3 text-white animate-pulse" />
-            <div>
-              <CardTitle className="text-5xl font-bold tracking-tight text-white drop-shadow-lg">
-                🚒 APULA Fire Heroes! 🧯
-              </CardTitle>
-              <CardDescription className="text-2xl text-yellow-100 mt-2 font-semibold">
-                BFP-Certified Fire Safety Adventure for Kids!
-              </CardDescription>
-            </div>
-            <Flame className="w-12 h-12 ml-3 text-white animate-pulse" />
+
+      <Card className="w-full max-w-4xl h-[90vh] bg-white/95 border-8 border-yellow-400 shadow-2xl relative z-10 flex flex-col rounded-[2.5rem] overflow-hidden transform transition-all">
+        <CardHeader className="text-center bg-gradient-to-b from-red-500 to-orange-500 text-white p-6 shadow-md relative z-20">
+          <div className="absolute top-4 right-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleMute}
+              className="text-white hover:bg-white/20 rounded-full w-12 h-12"
+            >
+              {isMuted ? <VolumeX className="w-8 h-8" /> : <Volume2 className="w-8 h-8" />}
+            </Button>
           </div>
-          
-          {/* BFP Logo Section */}
-          <div className="bg-white bg-opacity-20 rounded-lg p-2 mt-4">
-            <p className="text-sm font-semibold text-yellow-100">
-              🏛️ Approved by Bureau of Fire Protection (BFP) Philippines
-            </p>
-            <p className="text-xs text-yellow-100">
-              Following RA 9514 - Revised Fire Code of the Philippines
-            </p>
+
+          <div className="flex flex-col items-center justify-center">
+            <div className="flex items-center gap-4 mb-2">
+              <span className="text-6xl filter drop-shadow-lg">🚒</span>
+              <CardTitle className="text-6xl font-black tracking-tight text-white drop-shadow-[0_4px_0_rgba(0,0,0,0.2)] stroke-black">
+                APULA HEROES
+              </CardTitle>
+              <span className="text-6xl filter drop-shadow-lg">🧯</span>
+            </div>
+            <CardDescription className="text-xl text-yellow-100 font-bold bg-black/10 px-6 py-2 rounded-full inline-block">
+              BFP Fire Safety Adventure
+            </CardDescription>
           </div>
         </CardHeader>
-        
-        <CardContent className="p-8 bg-gradient-to-b from-blue-50 to-purple-50 overflow-y-auto flex-1">
+
+        <CardContent className="p-6 bg-gradient-to-b from-blue-50 to-purple-50 overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent">
           {showLevelSelect ? (
-            <>
-              {/* Level Selection Interface */}
-              <div className="text-center mb-6">
-                <div className="flex items-center justify-center mb-2">
-                  <Button
-                    onClick={() => setShowLevelSelect(false)}
-                    className="mr-4 bg-gray-500 hover:bg-gray-600 text-white p-2 rounded-lg"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </Button>
-                  <h3 className="text-3xl font-bold text-red-600">🚨 Choose Your Mission!</h3>
-                </div>
-                <p className="text-gray-600">Select your fire safety challenge level with Captain Apoy!</p>
+            <div className="space-y-6 animate-in slide-in-from-right-8 duration-300">
+              <div className="flex items-center mb-4">
+                <Button
+                  onClick={() => setShowLevelSelect(false)}
+                  className="mr-4 bg-gray-400 hover:bg-gray-500 text-white w-12 h-12 rounded-full shadow-md"
+                >
+                  <ArrowLeft className="w-6 h-6" />
+                </Button>
+                <h3 className="text-3xl font-black text-red-600 uppercase tracking-wide">Select Mission</h3>
               </div>
-              
-              {/* BFP Training Levels */}
-              <div className="space-y-4 max-h-96 overflow-y-auto">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
                 {Object.values(LEVELS).map((level) => {
                   const difficultyStyle = getDifficultyStyle(level.difficulty);
-                  
                   return (
                     <div
                       key={level.id}
-                      className={`bg-white p-4 rounded-xl border-4 border-${difficultyStyle.color}-300 hover:border-${difficultyStyle.color}-500 transition-all duration-200 cursor-pointer transform hover:scale-105 shadow-lg`}
+                      className={`group bg-white p-4 rounded-2xl border-4 border-${difficultyStyle.color}-200 hover:border-${difficultyStyle.color}-500 transition-all duration-200 cursor-pointer shadow-md hover:shadow-xl hover:-translate-y-1`}
                       onClick={() => handleLevelSelect(level.id)}
                     >
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center">
-                          <span className="text-3xl mr-3">{difficultyStyle.icon}</span>
-                          <div>
-                            <h4 className={`text-xl font-bold text-${difficultyStyle.color}-600`}>
-                              {level.name}
-                            </h4>
-                            <div className={`text-sm font-semibold text-${difficultyStyle.color}-500 bg-${difficultyStyle.color}-100 px-2 py-1 rounded-lg inline-block`}>
-                              {difficultyStyle.label}
-                            </div>
-                          </div>
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="bg-gray-100 p-2 rounded-xl text-2xl group-hover:scale-110 transition-transform">
+                          {difficultyStyle.icon}
                         </div>
-                        <div className="text-right text-sm text-gray-600">
-                          <div className="flex items-center mb-1">
-                            <Trophy className="w-4 h-4 mr-1" />
-                            <span>{level.requiredScore} pts needed</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Clock className="w-4 h-4 mr-1" />
-                            <span>{Math.floor(level.timeLimit / 60)}:{(level.timeLimit % 60).toString().padStart(2, '0')}</span>
-                          </div>
+                        <div
+                          className={`px-3 py-1 rounded-full text-xs font-bold uppercase bg-${difficultyStyle.color}-100 text-${difficultyStyle.color}-700`}
+                        >
+                          {difficultyStyle.label}
                         </div>
                       </div>
-                      
-                      <p className="text-gray-700 mb-3">{level.description}</p>
-                      
-                      {/* Learning Objectives */}
-                      <div className="bg-gray-50 p-3 rounded-lg">
-                        <h5 className="font-bold text-gray-700 mb-2">🎯 Learning Objectives:</h5>
-                        <ul className="text-sm text-gray-600 space-y-1">
-                          {level.learningObjectives.map((objective, index) => (
-                            <li key={index} className="flex items-start">
-                              <span className="text-green-500 mr-2">•</span>
-                              <span>{objective}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      
-                      {/* Hazard and Equipment Preview */}
-                      <div className="mt-3 grid grid-cols-2 gap-3">
-                        <div className="bg-red-50 p-2 rounded border">
-                          <h6 className="font-bold text-red-600 text-xs mb-1">🔥 Fire Hazards:</h6>
-                          <p className="text-xs text-red-500">{level.hazards.length} hazard{level.hazards.length !== 1 ? 's' : ''} to extinguish</p>
-                        </div>
-                        <div className="bg-blue-50 p-2 rounded border">
-                          <h6 className="font-bold text-blue-600 text-xs mb-1">🧯 Equipment:</h6>
-                          <p className="text-xs text-blue-500">{level.objects.length} tool{level.objects.length !== 1 ? 's' : ''} available</p>
-                        </div>
+
+                      <h4 className="text-xl font-black text-gray-800 mb-1 group-hover:text-blue-600">{level.name}</h4>
+                      <p className="text-sm text-gray-500 leading-tight mb-3 line-clamp-2">{level.description}</p>
+
+                      <div className="flex gap-2 text-xs font-bold">
+                        <span className="bg-red-100 text-red-600 px-2 py-1 rounded-md">
+                          🔥 {level.hazards.length} Hazards
+                        </span>
+                        <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded-md">
+                          🧯 {level.objects.length} Tools
+                        </span>
                       </div>
                     </div>
                   );
                 })}
               </div>
-              
-              {/* Captain Apoy Encouragement */}
-              <div className="mt-6 bg-gradient-to-r from-yellow-200 to-orange-200 rounded-xl p-4 border-4 border-yellow-400">
-                <div className="flex items-center">
-                  <div className="text-4xl mr-3">🚒</div>
-                  <div>
-                    <h4 className="text-lg font-bold text-red-600">Captain Apoy says:</h4>
-                    <p className="text-gray-700">"Start with Basic Training if you're new, or jump to any level that interests you! Every mission makes you a better fire safety hero! 🦸‍♂️"</p>
-                  </div>
-                </div>
-              </div>
-            </>
+            </div>
           ) : !showOptions ? (
-            <>
-              {/* Fun mascot welcome message */}
-              <div className="bg-gradient-to-r from-yellow-200 to-orange-200 rounded-xl p-6 mb-6 border-4 border-yellow-400">
-                <div className="flex items-center mb-4">
-                  <div className="text-6xl mr-4">🚒</div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-red-600">Hi there, Fire Safety Hero! 👋</h3>
-                    <p className="text-lg text-gray-700 font-medium">I'm Captain Apoy, your BFP Fire Safety Guide!</p>
-                  </div>
+            <div className="flex flex-col items-center justify-center h-full space-y-6 animate-in zoom-in-95 duration-300">
+              <div className="bg-white p-6 rounded-3xl border-4 border-orange-200 shadow-lg max-w-2xl text-center relative overflow-visible">
+                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white px-6 py-1 rounded-full font-bold text-sm shadow-sm border-2 border-white">
+                  CAPTAIN BERONG BUMBERO SAYS:
                 </div>
-                <p className="text-gray-700 text-lg leading-relaxed">
-                  🌟 Ready for an amazing adventure? Let's explore fire safety together! You'll learn how to identify fire hazards, 
-                  use fire extinguishers safely, and become a real fire safety hero just like our brave BFP firefighters! 🦸‍♂️
+                <p className="text-xl text-gray-700 font-medium mt-2">
+                  "Welcome to the team, Recruit! Before we fight fires, let's learn the basics in the Training Course!"
                 </p>
               </div>
-              
-              {/* BFP Learning Highlights */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-green-100 p-4 rounded-lg border-2 border-green-300">
-                  <h4 className="font-bold text-green-700 mb-2">🎯 You'll Learn:</h4>
-                  <ul className="text-sm text-green-600 space-y-1">
-                    <li>• Fire Tetrahedron (Heat, Fuel, Oxygen, Reaction)</li>
-                    <li>• PASS Technique (Pull, Aim, Squeeze, Sweep)</li>
-                    <li>• Fire Classes A, B, C, D, K</li>
-                    <li>• Emergency Response Procedures</li>
-                  </ul>
-                </div>
-                
-                <div className="bg-blue-100 p-4 rounded-lg border-2 border-blue-300">
-                  <h4 className="font-bold text-blue-700 mb-2">🏆 Fun Features:</h4>
-                  <ul className="text-sm text-blue-600 space-y-1">
-                    <li>• Interactive Fire Brigade Training</li>
-                    <li>• BFP-Certified Safety Scenarios</li>
-                    <li>• Fire Drill Simulations</li>
-                    <li>• Achievement Badges System</li>
-                  </ul>
-                </div>
-              </div>
-              
-              <div className="flex flex-col space-y-4">
-                <Button 
-                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-6 text-2xl font-bold rounded-xl border-4 border-green-300 shadow-lg transform hover:scale-105 transition-all duration-200"
+
+              <div className="grid grid-cols-1 w-full max-w-md gap-4">
+                <Button
+                  className="group relative overflow-hidden bg-green-500 hover:bg-green-400 text-white h-24 text-2xl font-black rounded-3xl border-b-8 border-green-700 active:border-b-0 active:translate-y-2 transition-all shadow-xl"
                   onClick={onStartTutorial}
                 >
-                  🎓 Start Fire Safety Training! 
+                  <span className="relative z-10 flex items-center justify-center gap-3">
+                    <span className="text-4xl group-hover:animate-bounce">🎓</span>
+                    START TRAINING
+                  </span>
                 </Button>
-                
-                <Button 
-                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-6 text-2xl font-bold rounded-xl border-4 border-red-300 shadow-lg transform hover:scale-105 transition-all duration-200"
+
+                <Button
+                  className="group bg-blue-500 hover:bg-blue-400 text-white h-20 text-xl font-black rounded-3xl border-b-8 border-blue-700 active:border-b-0 active:translate-y-2 transition-all shadow-xl"
                   onClick={() => setShowLevelSelect(true)}
                 >
-                  🚨 Choose Your Fire Safety Mission! 🚨
+                  <span className="flex items-center justify-center gap-3">
+                    <span className="text-3xl">🗺️</span>
+                    MISSION SELECT
+                  </span>
                 </Button>
-                
-                <Button 
-                  className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white py-4 text-lg font-bold rounded-xl border-4 border-purple-300 shadow-lg transform hover:scale-105 transition-all duration-200"
-                  onClick={() => setShowOptions(true)}
-                >
-                  ⚙️ Game Settings
-                </Button>
-              </div>
-              
-              {/* Enhanced Interactive How to Play */}
-              <div className="mt-6 bg-yellow-100 rounded-xl border-4 border-yellow-300 overflow-hidden">
-                <button
-                  onClick={() => setExpandedHowToPlay(!expandedHowToPlay)}
-                  className="w-full p-4 flex items-center justify-between hover:bg-yellow-200 transition-colors duration-200"
-                >
-                  <h4 className="text-lg font-bold text-yellow-800 flex items-center">
-                    🎮 <span className="ml-2">How to Play - Interactive Guide</span>
-                  </h4>
-                  {expandedHowToPlay ? 
-                    <ChevronUp className="w-6 h-6 text-yellow-800" /> : 
-                    <ChevronDown className="w-6 h-6 text-yellow-800" />
-                  }
-                </button>
-                
-                {expandedHowToPlay && (
-                  <div className="p-4 pt-0">
-                    {/* Key Testing Section */}
-                    <div className="mb-4 p-4 bg-white rounded-lg border-2 border-yellow-300">
-                      <div className="flex items-center justify-between mb-3">
-                        <h5 className="font-bold text-gray-700">🔍 Test Your Keyboard!</h5>
-                        <Button
-                          onClick={toggleKeyTesting}
-                          className={`text-sm px-4 py-2 rounded-lg font-bold ${
-                            testingKeys 
-                              ? "bg-red-500 hover:bg-red-600 text-white" 
-                              : "bg-green-500 hover:bg-green-600 text-white"
-                          }`}
-                        >
-                          {testingKeys ? (
-                            <>
-                              <Pause className="w-4 h-4 mr-1" />
-                              Stop Testing
-                            </>
-                          ) : (
-                            <>
-                              <Play className="w-4 h-4 mr-1" />
-                              Start Testing
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                      {testingKeys && (
-                        <p className="text-sm text-gray-600 bg-blue-50 p-2 rounded border">
-                          🎯 Press any game key to test it! Your key presses will light up below.
-                        </p>
-                      )}
-                    </div>
-                    
-                    {/* Control Guide Grid */}
-                    <div className="grid grid-cols-2 gap-3">
-                      {controlGuide.map((control, index) => {
-                        const isActive = activeControl === control.key;
-                        const hasBeenPressed = control.testKeys.some(key => pressedKeys.has(key));
-                        
-                        return (
-                          <div 
-                            key={index} 
-                            className={`bg-white p-3 rounded-lg border-2 transition-all duration-300 ${
-                              isActive 
-                                ? `border-${control.color}-500 bg-${control.color}-50 shadow-lg scale-105` 
-                                : hasBeenPressed && testingKeys
-                                  ? `border-${control.color}-300 bg-${control.color}-25`
-                                  : "border-gray-300"
-                            }`}
-                          >
-                            <div className="flex items-center mb-2">
-                              <span className={`text-2xl mr-2 ${isActive ? 'animate-bounce' : ''}`}>
-                                {control.icon}
-                              </span>
-                              <div className="flex-1">
-                                <div className={`font-bold text-${control.color}-600`}>
-                                  {control.key}
-                                  {hasBeenPressed && testingKeys && (
-                                    <span className="ml-2 text-green-600">✓</span>
-                                  )}
-                                </div>
-                                <div className="text-sm text-gray-600">{control.action}</div>
-                              </div>
-                            </div>
-                            <p className="text-xs text-gray-500 leading-relaxed">
-                              {control.detail}
-                            </p>
-                            {isActive && (
-                              <div className="mt-2 text-xs font-bold text-green-600 animate-pulse">
-                                ✨ Great! You pressed {control.key}!
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                    
-                    {/* PASS Technique Demo */}
-                    <div className="mt-4 p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-lg border-2 border-red-300">
-                      <h5 className="font-bold text-red-700 mb-2 flex items-center">
-                        🧯 <span className="ml-2">Remember the PASS Technique!</span>
-                      </h5>
-                      <div className="grid grid-cols-4 gap-2 text-xs">
-                        <div className="text-center p-2 bg-white rounded border">
-                          <div className="font-bold text-red-600">P</div>
-                          <div className="text-gray-600">Pull</div>
-                        </div>
-                        <div className="text-center p-2 bg-white rounded border">
-                          <div className="font-bold text-orange-600">A</div>
-                          <div className="text-gray-600">Aim</div>
-                        </div>
-                        <div className="text-center p-2 bg-white rounded border">
-                          <div className="font-bold text-yellow-600">S</div>
-                          <div className="text-gray-600">Squeeze</div>
-                        </div>
-                        <div className="text-center p-2 bg-white rounded border">
-                          <div className="font-bold text-green-600">S</div>
-                          <div className="text-gray-600">Sweep</div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {testingKeys && pressedKeys.size > 0 && (
-                      <div className="mt-4 p-3 bg-green-100 rounded-lg border-2 border-green-300">
-                        <h6 className="font-bold text-green-700 mb-1">🎉 Keys You've Tested:</h6>
-                        <div className="text-sm text-green-600">
-                          {Array.from(pressedKeys).map(key => {
-                            const control = controlGuide.find(c => c.testKeys.includes(key));
-                            return control ? `${control.key} ` : '';
-                          }).filter(Boolean).join('• ')}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="text-center mb-6">
-                <h3 className="text-3xl font-bold text-purple-600 mb-2">⚙️ Game Settings</h3>
-                <p className="text-gray-600">Customize your fire safety experience!</p>
-              </div>
-              
-              <div className="bg-gradient-to-r from-blue-100 to-purple-100 p-6 rounded-xl mb-6 border-4 border-blue-300">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <span className="text-2xl mr-3">🔊</span>
-                    <span className="text-xl font-bold text-blue-700">Sound Effects</span>
-                  </div>
+
+                <div className="grid grid-cols-2 gap-4">
                   <Button
-                    variant="outline"
-                    onClick={toggleMute}
-                    className={`text-xl font-bold border-2 px-6 py-2 rounded-xl ${
-                      isMuted 
-                        ? "bg-red-200 border-red-400 text-red-700 hover:bg-red-300" 
-                        : "bg-green-200 border-green-400 text-green-700 hover:bg-green-300"
-                    }`}
+                    className="bg-purple-500 hover:bg-purple-400 text-white h-16 font-bold rounded-2xl border-b-6 border-purple-700 active:border-b-0 active:translate-y-2 transition-all"
+                    onClick={() => setShowOptions(true)}
                   >
-                    {isMuted ? "🔇 Muted" : "🔊 On"}
+                    ⚙️ SETTINGS
+                  </Button>
+                  <Button
+                    className="bg-yellow-400 hover:bg-yellow-300 text-yellow-900 h-16 font-bold rounded-2xl border-b-6 border-yellow-600 active:border-b-0 active:translate-y-2 transition-all"
+                    onClick={() => setExpandedHowToPlay(!expandedHowToPlay)}
+                  >
+                    🎮 CONTROLS
                   </Button>
                 </div>
               </div>
-              
-              <div className="bg-gradient-to-r from-green-100 to-blue-100 p-6 rounded-xl mb-6 border-4 border-green-300">
-                <h4 className="text-2xl font-bold text-green-700 mb-4 flex items-center">
-                  🎮 <span className="ml-2">Game Controls Guide</span>
-                </h4>
-                <div className="grid grid-cols-2 gap-3">
-                  {controlGuide.map((control, index) => (
-                    <div key={index} className="bg-white p-3 rounded-lg border-2 border-gray-300">
-                      <div className="flex items-center">
-                        <span className="text-2xl mr-2">{control.icon}</span>
-                        <div>
-                          <div className={`font-bold text-${control.color}-600`}>{control.key}</div>
-                          <div className="text-sm text-gray-600">{control.action}</div>
-                        </div>
+
+              {expandedHowToPlay && (
+                <div className="w-full max-w-2xl bg-white rounded-2xl border-4 border-yellow-300 p-4 animate-in slide-in-from-bottom-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="font-black text-xl text-yellow-800">🎮 CONTROLS</h4>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={toggleKeyTesting}
+                      className={testingKeys ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"}
+                    >
+                      {testingKeys ? "Stop Test" : "Test Keys"}
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {controlGuide.map((c, i) => (
+                      <div
+                        key={i}
+                        className={`p-2 rounded-lg border-2 text-center transition-all ${
+                          activeControl === c.key ? `border-${c.color}-500 bg-${c.color}-50 scale-110` : "border-gray-100 bg-gray-50"
+                        }`}
+                      >
+                        <div className={`font-black text-lg text-${c.color}-600`}>{c.key}</div>
+                        <div className="text-xs text-gray-500 font-bold">{c.action}</div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="animate-in slide-in-from-right-8 duration-300">
+              <div className="flex items-center mb-6">
+                <Button onClick={() => setShowOptions(false)} className="mr-4 bg-gray-400 rounded-full w-10 h-10 p-0">
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
+                <h3 className="text-3xl font-black text-purple-600">SETTINGS</h3>
+              </div>
+
+              <div className="bg-white p-6 rounded-3xl border-4 border-purple-200 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-800">Sound Effects</h4>
+                    <p className="text-sm text-gray-500">Enable audio for maximum immersion</p>
+                  </div>
+                  <Button
+                    onClick={toggleMute}
+                    className={`w-32 h-12 text-lg font-bold rounded-xl transition-colors ${
+                      isMuted ? "bg-red-100 text-red-600 hover:bg-red-200" : "bg-green-100 text-green-600 hover:bg-green-200"
+                    }`}
+                  >
+                    {isMuted ? "OFF" : "ON"}
+                  </Button>
+                </div>
+                <div className="p-4 bg-blue-50 rounded-xl border-2 border-blue-100 text-center">
+                  <p className="text-blue-800 font-medium">More settings coming soon!</p>
                 </div>
               </div>
-              
-              <Button 
-                className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white py-4 text-xl font-bold rounded-xl border-4 border-purple-300 shadow-lg"
-                onClick={() => setShowOptions(false)}
-              >
-                🔙 Back to Main Menu
-              </Button>
-            </>
+            </div>
           )}
         </CardContent>
       </Card>
     </div>
   );
 }
+
+

@@ -19,6 +19,7 @@ export interface Vector3 {
 
 export interface PlayerState {
   position: Vector3;
+  spawnPoint: Vector3;
   rotation: Vector3;
   health: number;
   hasExtinguisher: boolean;
@@ -101,7 +102,6 @@ export interface LevelData {
   objects: InteractiveObject[];
   environmentObjects: EnvironmentObject[];
   requiredScore: number;
-  timeLimit: number;
   difficulty: DifficultyLevel;
   learningObjectives: string[];
 }

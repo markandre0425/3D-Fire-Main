@@ -5,13 +5,23 @@ export interface BoundingBox {
   max: THREE.Vector3;
 }
 
+const DEFAULT_COLLISION_SCALE = 0.7;
+
 export function createBoundingBox(
   position: THREE.Vector3,
   size: THREE.Vector3,
-  rotation: THREE.Euler
+  rotation: THREE.Euler,
+  scale: number = DEFAULT_COLLISION_SCALE
 ): BoundingBox {
   const box = new THREE.Box3();
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(size.x, size.y, size.z));
+  const scaledSize = new THREE.Vector3(
+    size.x * scale,
+    size.y * scale,
+    size.z * scale
+  );
+  const mesh = new THREE.Mesh(
+    new THREE.BoxGeometry(scaledSize.x, scaledSize.y, scaledSize.z)
+  );
   mesh.position.copy(position);
   mesh.rotation.copy(rotation);
   mesh.updateMatrixWorld();

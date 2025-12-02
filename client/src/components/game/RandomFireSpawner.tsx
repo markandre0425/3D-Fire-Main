@@ -1,16 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import Fire from './Fire';
-import { EnvironmentObject } from '@/lib/types';
-
-interface FireSpawn {
-  id: string;
-  position: [number, number, number];
-  intensity: number;
-  size: number;
-  color: string;
-  isActive: boolean;
-  shape: 'wide' | 'chaotic' | 'triangular';
-}
+import { useEffect, useCallback } from 'react';
+import { EnvironmentObject, HazardState, HazardType } from '@/lib/types';
+import { useFireSafety } from '@/lib/stores/useFireSafety';
 
 interface RandomFireSpawnerProps {
   maxFires?: number;
@@ -39,7 +29,7 @@ export default function RandomFireSpawner({
     y: 0.1
   }
 }: RandomFireSpawnerProps) {
-  const [fires, setFires] = useState<FireSpawn[]>([]);
+  const addHazard = useFireSafety(state => state.addHazard);
 
   // Filter furniture models (exclude walls, floors, and special types)
   const furnitureModels = environmentObjects.filter(obj => 
@@ -64,47 +54,27 @@ export default function RandomFireSpawner({
     }
   }, [furnitureModels, mapBounds]);
 
-  // Generate random fire properties
-  const generateFireProperties = useCallback(() => {
-    const intensity = Math.random() * 0.8 + 0.2; // 0.2 to 1.0
-    const size = Math.random() * 0.6 + 0.4; // 0.4 to 1.0
-    
-    // Random fire colors
-    const colors = ['#FF4500', '#FF6347', '#FF8C00', '#FFA500', '#FF7F50'];
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    
-    // Random fire shape
-    const shapes: ('wide' | 'chaotic' | 'triangular')[] = ['wide', 'chaotic', 'triangular'];
-    const shape = shapes[Math.floor(Math.random() * shapes.length)];
-    
-    return { intensity, size, color, shape };
-  }, []);
-
-  // Spawn a new fire
+  // Spawn a new hazard-backed fire into the global store
   const spawnFire = useCallback(() => {
-    if (fires.length >= maxFires) return;
-    
-    const position = generateRandomPosition();
-    const { intensity, size, color, shape } = generateFireProperties();
-    
-    const newFire: FireSpawn = {
-      id: `fire-${Date.now()}-${Math.random()}`,
-      position,
-      intensity,
-      size,
-      color,
-      isActive: true,
-      shape
-    };
-    
-    setFires(prev => [...prev, newFire]);
-  }, [fires.length, maxFires, generateRandomPosition, generateFireProperties]);
+    // Limit number of dynamic fires by checking current hazards in the store
+    const currentHazards = useFireSafety.getState().hazards;
+    const dynamicFires = currentHazards.filter(h => h.id.startsWith('random-fire-'));
+    if (dynamicFires.length >= maxFires) return;
 
-  // Extinguish a fire
-  const extinguishFire = useCallback((fireId: string) => {
-    // Immediately remove fire - no explosion/dispersion effect
-    setFires(prev => prev.filter(fire => fire.id !== fireId));
-  }, []);
+    const position = generateRandomPosition();
+    const intensity = Math.random() * 0.8 + 0.2; // 0.2 to 1.0
+
+    const newHazard: HazardState = {
+      id: `random-fire-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      type: HazardType.ClassAFire,
+      position: { x: position[0], y: position[1], z: position[2] },
+      isActive: true,
+      severity: intensity,
+      isSmoking: intensity > 1.0,
+      isExtinguished: false,
+    };
+    addHazard(newHazard);
+  }, [addHazard, generateRandomPosition, maxFires]);
 
   // Spawn timer
   useEffect(() => {
@@ -117,42 +87,7 @@ export default function RandomFireSpawner({
     return () => clearInterval(spawnTimer);
   }, [spawnFire, spawnInterval, spawnChance]);
 
-  // Clean up fires that are too close to each other
-  useEffect(() => {
-    const minDistance = 2; // Minimum distance between fires
-    
-    setFires(prev => {
-      const validFires = prev.filter((fire, index) => {
-        for (let i = 0; i < index; i++) {
-          const otherFire = prev[i];
-          const distance = Math.sqrt(
-            Math.pow(fire.position[0] - otherFire.position[0], 2) +
-            Math.pow(fire.position[2] - otherFire.position[2], 2)
-          );
-          if (distance < minDistance) {
-            return false;
-          }
-        }
-        return true;
-      });
-      
-      return validFires;
-    });
-  }, [fires]);
-
-  return (
-    <>
-      {fires.map(fire => (
-        <Fire
-          key={fire.id}
-          position={fire.position}
-          size={fire.size}
-          intensity={fire.intensity}
-          isActive={fire.isActive}
-          shape={fire.shape}
-        />
-      ))}
-    </>
-  );
+  // Rendering is handled by the main Level/Hazard system via the global store
+  return null;
 }
 

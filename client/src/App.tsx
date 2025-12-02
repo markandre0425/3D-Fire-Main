@@ -12,6 +12,7 @@ import EndScreen from "./components/screens/EndScreen";
 import TutorialScreen from "./components/screens/TutorialScreen";
 import { useGame } from "./lib/stores/useGame";
 import SoundManager from "./components/game/SoundManager";
+import AudioUnlocker from "./components/game/AudioUnlocker";
 import GameUI from "./components/game/GameUI";
 import ControlsHelp from "./components/ui/ControlsHelp";
 import Crosshair from "./components/ui/Crosshair";
@@ -41,20 +42,26 @@ function App() {
   const { setHitSound, setSuccessSound, setLevelCompletedSound } = useAudio();
 
   useEffect(() => {
+    // Configure Howl to use Web Audio API and prevent auto-initialization warnings
     const hit = new Howl({
       src: ['/sounds/hit.mp3'],
       volume: 0.5,
+      html5: false, // Use Web Audio API instead of HTML5 audio
+      preload: false, // Don't preload to avoid AudioContext initialization
     });
     
     const success = new Howl({
       src: ['/sounds/success.mp3'],
       volume: 0.5,
+      html5: false,
+      preload: false,
     });
 
     const levelCompleted = new Howl({
       src: ['/sounds/levelcompleted.mp3'],
       volume: 0.7,
-      preload: true
+      html5: false,
+      preload: true, // Keep preload for this one as it's used for level completion
     });
     
     // Set up event listeners after creation
@@ -155,6 +162,7 @@ function App() {
           {showEndScreen && <EndScreen />}
           
           <SoundManager />
+          <AudioUnlocker />
         </KeyboardControls>
       </div>
     </QueryClientProvider>

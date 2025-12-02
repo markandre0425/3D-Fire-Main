@@ -112,29 +112,42 @@ export default function GameUI() {
         </div>
       </div> */}
       
-      {/* Score and Time */}
+      {/* Score */}
       <ScoreDisplay />
       
       {/* Level Info */}
-      <div className="absolute top-4 left-4 bg-black bg-opacity-50 p-3 rounded-md text-white">
-        <h2 className="text-xl font-bold">{levelData.name}</h2>
-        <p className="text-sm mt-1">{levelData.description}</p>
+      <div className="absolute top-4 left-4 pointer-events-none">
+        <div className="bg-gray-900/85 border-2 border-gray-500 rounded-2xl px-5 py-4 text-white shadow-[0_12px_25px_rgba(0,0,0,0.55)] max-w-sm">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-gray-300">
+            Current Mission
+          </h2>
+          <p className="text-xl font-bold mt-1 tracking-wide">{levelData.name}</p>
+          <p className="text-sm mt-2 text-gray-200 leading-snug">
+            {levelData.description}
+          </p>
+        </div>
       </div>
       
       {/* Safety Tip */}
       {showTip && tipContent && (
-        <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-600 bg-opacity-90 p-4 rounded-md text-white max-w-md">
-          <h3 className="text-xl font-bold mb-2">{tipContent.title}</h3>
-          <p className="text-md">{tipContent.content}</p>
+        <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-6 py-5 bg-gray-900/95 border-2 border-yellow-400 rounded-2xl text-white max-w-md shadow-[0_16px_40px_rgba(0,0,0,0.65)]">
+          <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-yellow-300 mb-2">
+            Safety Tip
+          </h3>
+          <p className="text-xl font-bold">{tipContent.title}</p>
+          <p className="text-md text-gray-200 mt-2 leading-snug">{tipContent.content}</p>
         </div>
       )}
       
       {/* Level Complete Notification */}
       {showLevelComplete && (
         <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
-          <div className="bg-green-600 bg-opacity-95 p-8 rounded-lg text-white text-center shadow-2xl animate-bounce">
-            <h2 className="text-4xl font-bold mb-2">🎉 Level Completed! 🎉</h2>
-            <p className="text-xl">Great job Firefighter!</p>
+          <div className="bg-gray-900/95 border-2 border-green-400 px-10 py-8 rounded-3xl text-white text-center shadow-[0_25px_65px_rgba(0,0,0,0.7)] animate-bounce">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-green-300 mb-3">
+              Mission Complete
+            </p>
+            <h2 className="text-4xl font-bold mb-2 tracking-wide">Great Work!</h2>
+            <p className="text-lg text-gray-200">All hazards handled like a pro firefighter.</p>
           </div>
         </div>
       )}

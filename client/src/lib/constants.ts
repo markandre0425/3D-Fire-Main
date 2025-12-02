@@ -27,7 +27,7 @@ export const LEVELS: Record<Level, LevelData> = {
       {
         id: "outlet2",
         type: HazardType.ElectricalOutlet,
-        position: { x: 9.9, y: 0.4, z: 6 },
+        position: { x: 9.9, y: 0.4, z: 3 },
         isActive: true,
         severity: 1,
         isSmoking: false,
@@ -159,13 +159,6 @@ export const LEVELS: Record<Level, LevelData> = {
         scale: { x: 3, y: 2, z: 3 }
       },
       {
-        id: "small_kitchen_oven_kitchen",
-        type: "small_kitchen_with_oven",
-        position: { x: 9, y: 0, z: 2 },
-        rotation: { x: 0, y: -Math.PI / 2, z: 0 },
-        scale: { x: 2.2, y: 2, z: 3 }
-      },
-      {
         id: "curvedTV_kitchen",
         type: "curvedTV",
         position: { x: -9.9, y: 1.2, z: 1 },
@@ -174,7 +167,6 @@ export const LEVELS: Record<Level, LevelData> = {
       }
     ],
     requiredScore: 300,
-    timeLimit: 180,
     difficulty: DifficultyLevel.Beginner,
     learningObjectives: [
       "Learn to identify common kitchen fire hazards",
@@ -348,7 +340,7 @@ export const LEVELS: Record<Level, LevelData> = {
       {
         id: "coffeeTable",
         type: "table",
-        position: { x: 2, y: -2, z: 3 },
+        position: { x: 2, y: 0, z: 3 },
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 1.5, y: 0.6, z: 1 }
       },
@@ -361,7 +353,6 @@ export const LEVELS: Record<Level, LevelData> = {
       }
     ],
     requiredScore: 400,
-    timeLimit: 210,
     difficulty: DifficultyLevel.Intermediate,
     learningObjectives: [
       "Identify multiple fire sources in one room",
@@ -537,11 +528,10 @@ export const LEVELS: Record<Level, LevelData> = {
         type: "minimal_bathroom",
         position: { x: 6, y: 0, z: -7.5 },
         rotation: { x: 0, y: Math.PI, z: 0 }, // Rotated 180° to face into room (mounted on north wall)
-        scale: { x: 8, y: 3, z: 5 } // Depth reduced to fit within walls (z: -10 to -5)
+        scale: { x: 8, y: 3, z: 5 } // Depth reduced to fit within walls (z: -10 to -5)PORT
       }
     ],
     requiredScore: 500,
-    timeLimit: 240,
     difficulty: DifficultyLevel.Advanced,
     learningObjectives: [
       "Handle high-severity hazards like clogged dryers",
@@ -659,7 +649,6 @@ export const LEVELS: Record<Level, LevelData> = {
       },
     ],
     requiredScore: 150,
-    timeLimit: 120,
     difficulty: DifficultyLevel.Beginner,
     learningObjectives: [
       "Master the PASS technique (Pull, Aim, Squeeze, Sweep)",
@@ -811,7 +800,6 @@ export const LEVELS: Record<Level, LevelData> = {
       },
     ],
     requiredScore: 600,
-    timeLimit: 180,
     difficulty: DifficultyLevel.Intermediate,
     learningObjectives: [
       "Classify fire types: A (solids), B (liquids), C (electrical)",
@@ -979,7 +967,6 @@ export const LEVELS: Record<Level, LevelData> = {
       },
     ],
     requiredScore: 800,
-    timeLimit: 240,
     difficulty: DifficultyLevel.Advanced,
     learningObjectives: [
       "Manage Class K fires (cooking oils) with wet chemical extinguisher",
@@ -1145,7 +1132,6 @@ export const LEVELS: Record<Level, LevelData> = {
       },
     ],
     requiredScore: 1000,
-    timeLimit: 300,
     difficulty: DifficultyLevel.Expert,
     learningObjectives: [
       "Handle Class D fires (metals) with powder extinguisher",
@@ -1375,7 +1361,6 @@ export const LEVELS: Record<Level, LevelData> = {
       },
     ],
     requiredScore: 1500,
-    timeLimit: 420,
     difficulty: DifficultyLevel.Master,
     learningObjectives: [
       "Master all fire classes and appropriate extinguisher types",

@@ -12,7 +12,6 @@ interface FireSafetyState {
   currentLevel: Level;
   levelData: LevelData;
   completedLevels: Level[];
-  levelTime: number;
   isPaused: boolean;
   hazards: HazardState[];
   interactiveObjects: InteractiveObject[];
@@ -23,18 +22,19 @@ interface FireSafetyState {
   
   // Actions
   addCollidable: (collidable: BoundingBox) => void;
+  clearCollidables: () => void;
   startLevel: (level: Level) => void;
   pauseGame: () => void;
   resumeGame: () => void;
   completeLevel: () => void;
   resetLevel: () => void;
-  updateLevelTime: (delta: number) => void;
   updateHazard: (hazardId: string, updates: Partial<HazardState>) => void;
   updateInteractiveObject: (objectId: string, updates: Partial<InteractiveObject>) => void;
   showSafetyTip: (tipId: string | null) => void;
-  extinguishHazard: (hazardId: string) => void;
+  extinguishHazard: (hazardId: string, amount?: number) => void;
   collectObject: (objectId: string) => void;
   activateSmokeDetector: (detectorId: string) => void;
+  addHazard: (hazard: HazardState) => void;
 }
 
 export const useFireSafety = create<FireSafetyState>()(
@@ -42,7 +42,6 @@ export const useFireSafety = create<FireSafetyState>()(
     currentLevel: Level.Kitchen,
     levelData: LEVELS[Level.Kitchen],
     completedLevels: [],
-    levelTime: 0,
     isPaused: false,
     hazards: LEVELS[Level.Kitchen].hazards,
     interactiveObjects: LEVELS[Level.Kitchen].objects,
@@ -55,6 +54,14 @@ export const useFireSafety = create<FireSafetyState>()(
       set((state) => ({
         collidables: [...state.collidables, collidable],
       }));
+    },
+
+    clearCollidables: () => {
+      const { collidableGeneration } = get();
+      set({
+        collidables: [],
+        collidableGeneration: collidableGeneration + 1,
+      });
     },
 
     startLevel: (level: Level) => {
@@ -115,7 +122,6 @@ export const useFireSafety = create<FireSafetyState>()(
       set({
         currentLevel: level,
         levelData,
-        levelTime: levelData.timeLimit > 0 ? levelData.timeLimit : 300,
         hazards: enhancedHazards,
         interactiveObjects: enhancedObjects,
         collidables: [],
@@ -156,7 +162,6 @@ export const useFireSafety = create<FireSafetyState>()(
       const { collidableGeneration } = get();
       
       set({
-        levelTime: levelData.timeLimit,
         hazards: [...levelData.hazards],
         interactiveObjects: [...levelData.objects],
         collidables: [],
@@ -169,14 +174,6 @@ export const useFireSafety = create<FireSafetyState>()(
       // Reset player state
       usePlayer.getState().resetPlayer();
       
-    },
-    
-    updateLevelTime: (delta: number) => {
-      const { levelTime, isPaused } = get();
-      
-      if (!isPaused && levelTime > 0) {
-        set({ levelTime: Math.max(0, levelTime - delta) });
-      }
     },
     
     updateHazard: (hazardId: string, updates: Partial<HazardState>) => {
@@ -201,22 +198,46 @@ export const useFireSafety = create<FireSafetyState>()(
       set({ activeTip: tipId });
     },
     
-    extinguishHazard: (hazardId: string) => {
+    // Gradual extinguishing: reduce severity over time instead of instant kill
+    extinguishHazard: (hazardId: string, amount: number = 1.0) => {
       const { hazards } = get();
-      const updatedHazards = hazards.map(hazard => 
-        hazard.id === hazardId ? { ...hazard, isExtinguished: true, isSmoking: false } : hazard
-      );
+
+      let awardedScore = false;
+
+      const updatedHazards = hazards.map((hazard) => {
+        if (hazard.id !== hazardId) return hazard;
+
+        const previousExtinguished = hazard.isExtinguished;
+        const currentSeverity = typeof hazard.severity === "number" ? hazard.severity : 1.0;
+
+        const newSeverity = Math.max(0, currentSeverity - amount);
+        const isNowExtinguished = newSeverity <= 0;
+
+        if (!previousExtinguished && isNowExtinguished) {
+          awardedScore = true;
+        }
+
+        return {
+          ...hazard,
+          severity: newSeverity,
+          isExtinguished: isNowExtinguished,
+          // Keep smoking only while severity is above a threshold
+          isSmoking: newSeverity > 1.0 ? hazard.isSmoking : false,
+          // Optionally keep active until fully extinguished so visuals can shrink
+          isActive: !isNowExtinguished,
+        };
+      });
       
-      // Add points for extinguishing a hazard
+      // Only award points / play sound when a hazard actually becomes extinguished
+      if (awardedScore) {
       usePlayer.getState().addScore(GAME_CONSTANTS.POINTS_FOR_EXTINGUISHING);
-      
-      // Play sound effect
       useAudio.getState().playHit();
+      }
       
       set({ hazards: updatedHazards });
       
       // Check if all hazards are extinguished to complete level
-      if (updatedHazards.every(h => h.isExtinguished)) {
+      if (updatedHazards.length > 0 && updatedHazards.every((h) => h.isExtinguished)) {
         setTimeout(() => get().completeLevel(), 1500);
       }
     },
@@ -267,7 +288,15 @@ export const useFireSafety = create<FireSafetyState>()(
       set({ interactiveObjects: updatedObjects });
       
       useAudio.getState().playSuccess();
-    }
+    },
+
+    // Allow systems like RandomFireSpawner to inject new hazards into the store
+    addHazard: (hazard: HazardState) => {
+      const { hazards } = get();
+      set({
+        hazards: [...hazards, hazard],
+      });
+    },
   }))
 );
 

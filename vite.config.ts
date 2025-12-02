@@ -16,12 +16,25 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "client", "src"),
       "@shared": path.resolve(__dirname, "shared"),
+      // Force all Three.js imports to use the same instance
+      "three": path.resolve(__dirname, "node_modules/three"),
+      // Ensure React is always resolved from the root node_modules
+      "react": path.resolve(__dirname, "node_modules/react"),
+      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
     },
+    dedupe: ["react", "react-dom"],
+  },
+  optimizeDeps: {
+    include: ["three", "react", "react-dom"],
+    force: true,
   },
   root: path.resolve(__dirname, "client"),
   build: {
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
+    commonjsOptions: {
+      include: [/three/, /node_modules/],
+    },
   },
   assetsInclude: ["**/*.gltf", "**/*.glb", "**/*.mp3", "**/*.ogg", "**/*.wav"],
   server: {

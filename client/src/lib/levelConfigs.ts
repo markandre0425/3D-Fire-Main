@@ -32,7 +32,6 @@ export interface LevelConfig {
     target?: string;
     duration?: number;
   }>;
-  timeLimit?: number;
   bfpEducation: {
     preLevel: string[];
     postLevel: string[];
@@ -142,7 +141,6 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
         target: 'gas-mask-1'
       }
     ],
-    timeLimit: 150,
     bfpEducation: {
       preLevel: [
         "Class K fires involve cooking oils and fats",
@@ -296,7 +294,6 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
         target: 'lamp-fire'
       }
     ],
-    timeLimit: 240,
     bfpEducation: {
       preLevel: [
         "Class C fires involve energized electrical equipment",
@@ -502,7 +499,6 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
         target: 'file-cabinet-fire'
       }
     ],
-    timeLimit: 300,
     bfpEducation: {
       preLevel: [
         "Office buildings present complex fire scenarios",
@@ -752,7 +748,6 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
         target: 'generator-fire'
       }
     ],
-    timeLimit: 360,
     bfpEducation: {
       preLevel: [
         "Industrial fires are among the most dangerous scenarios",
