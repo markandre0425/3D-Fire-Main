@@ -43,7 +43,7 @@ function ControlRow({ keyLabel, label }: { keyLabel: string; label: string }) {
 
 export default function ControlsHelp() {
   return (
-    <div className="absolute bottom-8 right-8 pointer-events-none select-none flex flex-col items-end gap-6">
+    <div className="pointer-events-none select-none flex flex-col items-end gap-6">
       {/* SECONDARY ACTIONS LIST */}
       <div className="flex flex-col items-start gap-2">
         <ControlRow keyLabel="E" label="Interact" />

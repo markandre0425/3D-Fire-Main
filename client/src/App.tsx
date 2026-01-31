@@ -11,11 +11,12 @@ import MainMenu from "./components/screens/MainMenu";
 import EndScreen from "./components/screens/EndScreen";
 import TutorialScreen from "./components/screens/TutorialScreen";
 import { useGame } from "./lib/stores/useGame";
+import { useFireSafety } from "./lib/stores/useFireSafety";
+import { Level } from "./lib/types";
 import SoundManager from "./components/game/SoundManager";
 import AudioUnlocker from "./components/game/AudioUnlocker";
 import GameUI from "./components/game/GameUI";
-import ControlsHelp from "./components/ui/ControlsHelp";
-import Crosshair from "./components/ui/Crosshair";
+import GameHUD from "./components/game/GameHUD";
 import { Howl } from "howler";
 
 const keyboardMap = [
@@ -123,13 +124,19 @@ function App() {
     setShowTutorial(false);
   };
 
+  // When user completes the tutorial steps, set level to Basic Training so GameScreen shows TutorialLevel (3D)
+  const startTutorialLevel = () => {
+    useFireSafety.getState().startLevel(Level.BasicTraining);
+    startGame();
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <div className="w-screen h-screen relative overflow-hidden">
         <KeyboardControls map={keyboardMap}>
-          {showMenu && <MainMenu onStartTutorial={startTutorial} onStartGame={startGame} />}
+          {showMenu && <MainMenu onStartTutorial={startTutorialLevel} onStartGame={startGame} />}
           
-          {showTutorial && <TutorialScreen onComplete={startGame} />}
+          {showTutorial && <TutorialScreen onComplete={startTutorialLevel} />}
           
           {showCanvas && (
             <>
@@ -153,8 +160,7 @@ function App() {
               </Canvas>
               <div className="absolute inset-0 pointer-events-none">
                 <GameUI />
-                <ControlsHelp />
-                <Crosshair />
+                <GameHUD />
               </div>
             </>
           )}

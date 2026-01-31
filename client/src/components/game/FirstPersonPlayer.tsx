@@ -4,7 +4,7 @@ import * as THREE from "three";
 import { useKeyboardControls, useGLTF } from "@react-three/drei";
 import { usePlayer } from "@/lib/stores/usePlayer";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
-import { Controls, InteractiveObjectType } from "@/lib/types";
+import { Controls, InteractiveObjectType, Level } from "@/lib/types";
 // Added GAME_CONSTANTS to imports for interaction distance
 import { PLAYER_CONSTANTS, GAME_CONSTANTS } from "@/lib/constants";
 import { GLTF } from "three-stdlib";
@@ -103,6 +103,15 @@ export default function FirstPersonPlayer() {
     positionRef.current.set(startPos.x, startPos.y, startPos.z);
   }, []);
 
+  // Log player position every 2 seconds (for debugging)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const pos = usePlayer.getState().position;
+      console.log("Player position:", { x: pos.x, y: pos.y, z: pos.z });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
   // --- INTERACTION HANDLER ---
   useEffect(() => {
     return subscribeKeys(
@@ -113,7 +122,7 @@ export default function FirstPersonPlayer() {
           const playerPos = usePlayer.getState().position;
           const objects = state.interactiveObjects;
           const collect = state.collectObject;
-          
+            
           // Interaction distance logic
           const interactDistSq = ((GAME_CONSTANTS?.INTERACTION_DISTANCE || 2.5) + 0.5) ** 2;
 
@@ -144,7 +153,7 @@ export default function FirstPersonPlayer() {
       }
     );
   }, [subscribeKeys]);
-
+      
   // Respawn Handler
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -316,18 +325,18 @@ export default function FirstPersonPlayer() {
     const isSpraying = controls.extinguish && hasExtinguisher;
 
     if (extinguisherGroup.current && hasExtinguisher) {
-      camera.updateMatrixWorld(true);
-      const handWorld = HAND_OFFSET.clone();
+        camera.updateMatrixWorld(true);
+        const handWorld = HAND_OFFSET.clone();
       if (isCrouching) handWorld.y += 0.2;
       
-      camera.localToWorld(handWorld);
-      extinguisherGroup.current.position.copy(handWorld);
-      extinguisherGroup.current.quaternion.copy(camera.quaternion);
+        camera.localToWorld(handWorld);
+        extinguisherGroup.current.position.copy(handWorld);
+        extinguisherGroup.current.quaternion.copy(camera.quaternion);
 
-      if (sprayGroup.current) {
-        const handleWorld = HANDLE_CAMERA_OFFSET.clone();
-        camera.localToWorld(handleWorld);
-        sprayGroup.current.position.copy(handleWorld);
+        if (sprayGroup.current) {
+          const handleWorld = HANDLE_CAMERA_OFFSET.clone();
+          camera.localToWorld(handleWorld);
+          sprayGroup.current.position.copy(handleWorld);
         sprayGroup.current.quaternion.copy(camera.quaternion);
       }
       
@@ -341,24 +350,37 @@ export default function FirstPersonPlayer() {
       }
 
       if (isSpraying && extinguishCooldown.current <= 0) {
-        const px = nextPos.x;
-        const pz = nextPos.z;
         const rangeSq = 4 * 4; // 4 meters range
+        const aimConeThreshold = 0.7; // ~45° cone in front (1 = straight, 0 = side, -1 = behind)
 
-        // Amount of severity to remove this tick
+        camera.getWorldDirection(FORWARD_VECTOR);
+
         const damageAmount = EXTINGUISH_RATE * checkInterval;
-
         const hazards = useFireSafety.getState().hazards;
 
         for (const hazard of hazards) {
           if (hazard.isExtinguished || !hazard.isActive) continue;
 
           const hx = hazard.position.x;
+          const hy = hazard.position.y;
           const hz = hazard.position.z;
-          const distSq = (px - hx) ** 2 + (pz - hz) ** 2;
+          const distSq =
+            (nextPos.x - hx) ** 2 +
+            (nextPos.y - hy) ** 2 +
+            (nextPos.z - hz) ** 2;
 
-          if (distSq < rangeSq) {
-            // Gradually reduce the fire's severity over time
+          if (distSq >= rangeSq) continue;
+
+          // Cone check: only extinguish if aiming at the fire (not behind or to the side)
+          const toFireX = hx - camera.position.x;
+          const toFireY = hy - camera.position.y;
+          const toFireZ = hz - camera.position.z;
+          const len = Math.sqrt(toFireX * toFireX + toFireY * toFireY + toFireZ * toFireZ);
+          if (len < 0.001) continue;
+          const alignment =
+            (FORWARD_VECTOR.x * toFireX + FORWARD_VECTOR.y * toFireY + FORWARD_VECTOR.z * toFireZ) / len;
+
+          if (alignment > aimConeThreshold) {
             extinguishHazard(hazard.id, damageAmount);
           }
         }
@@ -366,7 +388,7 @@ export default function FirstPersonPlayer() {
       }
     }
   });
-
+      
   // FIX: Use the state-based 'extinguishPressed' for visual toggling
   const isSprayingVisual = extinguishPressed && hasExtinguisher;
 

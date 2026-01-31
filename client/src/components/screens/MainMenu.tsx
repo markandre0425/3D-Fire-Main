@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ControlsCard } from "@/components/ui/ControlsCard";
 import { useAudio } from "@/lib/stores/useAudio";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import {
@@ -8,14 +9,10 @@ import {
   Flame,
   Home,
   Star,
-  ChevronDown,
-  ChevronUp,
-  Play,
-  Pause,
   ArrowLeft,
-  Trophy,
   Volume2,
   VolumeX,
+  HelpCircle,
 } from "lucide-react";
 import { LEVELS } from "@/lib/constants";
 import { Level, DifficultyLevel } from "@/lib/types";
@@ -28,103 +25,10 @@ interface MainMenuProps {
 export default function MainMenu({ onStartTutorial, onStartGame }: MainMenuProps) {
   const [showOptions, setShowOptions] = useState(false);
   const [showLevelSelect, setShowLevelSelect] = useState(false);
+  const [showFAQ, setShowFAQ] = useState(false);
   const [expandedHowToPlay, setExpandedHowToPlay] = useState(false);
-  const [activeControl, setActiveControl] = useState<string | null>(null);
-  const [testingKeys, setTestingKeys] = useState(false);
-  const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
   const { isMuted, toggleMute } = useAudio();
   const { startLevel } = useFireSafety();
-
-  const controlGuide = [
-    {
-      key: "WASD",
-      action: "Move",
-      icon: "👣",
-      detail: "Walk around safely!",
-      color: "blue",
-      testKeys: ["KeyW", "KeyA", "KeyS", "KeyD"],
-    },
-    {
-      key: "E",
-      action: "Grab",
-      icon: "✋",
-      detail: "Pick up items!",
-      color: "red",
-      testKeys: ["KeyE"],
-    },
-    {
-      key: "F",
-      action: "Spray",
-      icon: "💦",
-      detail: "Use Extinguisher!",
-      color: "green",
-      testKeys: ["KeyF"],
-    },
-    {
-      key: "C",
-      action: "Duck",
-      icon: "📉",
-      detail: "Crouch under smoke!",
-      color: "purple",
-      testKeys: ["KeyC"],
-    },
-    {
-      key: "R",
-      action: "Unstuck",
-      icon: "🔄",
-      detail: "Respawn at start!",
-      color: "orange",
-      testKeys: ["KeyR"],
-    },
-    {
-      key: "ESC",
-      action: "Pause",
-      icon: "⏸️",
-      detail: "Take a break!",
-      color: "gray",
-      testKeys: ["Escape"],
-    },
-  ];
-
-  const handleKeyTest = useCallback(
-    (event: KeyboardEvent) => {
-      if (!testingKeys) return;
-
-      if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) {
-        event.preventDefault();
-      }
-
-      const pressedKey = event.code;
-      setPressedKeys((prev) => new Set([...Array.from(prev), pressedKey]));
-
-      const matchingControl = controlGuide.find((control) => control.testKeys.includes(pressedKey));
-
-      if (matchingControl) {
-        setActiveControl(matchingControl.key);
-        setTimeout(() => setActiveControl(null), 500);
-      }
-    },
-    [testingKeys, controlGuide]
-  );
-
-  const toggleKeyTesting = useCallback(() => {
-    if (testingKeys) {
-      setTestingKeys(false);
-      setPressedKeys(new Set());
-      setActiveControl(null);
-      window.removeEventListener("keydown", handleKeyTest);
-    } else {
-      setTestingKeys(true);
-      setPressedKeys(new Set());
-      window.addEventListener("keydown", handleKeyTest);
-    }
-  }, [testingKeys, handleKeyTest]);
-
-  useEffect(() => {
-    return () => {
-      window.removeEventListener("keydown", handleKeyTest);
-    };
-  }, [handleKeyTest]);
 
   const getDifficultyStyle = (difficulty: DifficultyLevel) => {
     switch (difficulty) {
@@ -168,7 +72,7 @@ export default function MainMenu({ onStartTutorial, onStartGame }: MainMenuProps
         />
         <Star className="absolute bottom-10 left-1/4 w-8 h-8 text-yellow-200 animate-spin-slow opacity-40" />
       </div>
-
+      
       <Card className="w-full max-w-4xl h-[90vh] bg-white/95 border-8 border-yellow-400 shadow-2xl relative z-10 flex flex-col rounded-[2.5rem] overflow-hidden transform transition-all">
         <CardHeader className="text-center bg-gradient-to-b from-red-500 to-orange-500 text-white p-6 shadow-md relative z-20">
           <div className="absolute top-4 right-4">
@@ -195,20 +99,21 @@ export default function MainMenu({ onStartTutorial, onStartGame }: MainMenuProps
             </CardDescription>
           </div>
         </CardHeader>
-
+        
         <CardContent className="p-6 bg-gradient-to-b from-blue-50 to-purple-50 overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent">
+          {/* --- VIEW 1: MISSION SELECT --- */}
           {showLevelSelect ? (
             <div className="space-y-6 animate-in slide-in-from-right-8 duration-300">
               <div className="flex items-center mb-4">
-                <Button
-                  onClick={() => setShowLevelSelect(false)}
+                  <Button
+                    onClick={() => setShowLevelSelect(false)}
                   className="mr-4 bg-gray-400 hover:bg-gray-500 text-white w-12 h-12 rounded-full shadow-md"
-                >
+                  >
                   <ArrowLeft className="w-6 h-6" />
-                </Button>
+                  </Button>
                 <h3 className="text-3xl font-black text-red-600 uppercase tracking-wide">Select Mission</h3>
               </div>
-
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
                 {Object.values(LEVELS).map((level) => {
                   const difficultyStyle = getDifficultyStyle(level.difficulty);
@@ -228,7 +133,7 @@ export default function MainMenu({ onStartTutorial, onStartGame }: MainMenuProps
                           {difficultyStyle.label}
                         </div>
                       </div>
-
+                      
                       <h4 className="text-xl font-black text-gray-800 mb-1 group-hover:text-blue-600">{level.name}</h4>
                       <p className="text-sm text-gray-500 leading-tight mb-3 line-clamp-2">{level.description}</p>
 
@@ -243,86 +148,9 @@ export default function MainMenu({ onStartTutorial, onStartGame }: MainMenuProps
                     </div>
                   );
                 })}
-              </div>
-            </div>
-          ) : !showOptions ? (
-            <div className="flex flex-col items-center justify-center h-full space-y-6 animate-in zoom-in-95 duration-300">
-              <div className="bg-white p-6 rounded-3xl border-4 border-orange-200 shadow-lg max-w-2xl text-center relative overflow-visible">
-                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white px-6 py-1 rounded-full font-bold text-sm shadow-sm border-2 border-white">
-                  CAPTAIN BERONG BUMBERO SAYS:
-                </div>
-                <p className="text-xl text-gray-700 font-medium mt-2">
-                  "Welcome to the team, Recruit! Before we fight fires, let's learn the basics in the Training Course!"
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 w-full max-w-md gap-4">
-                <Button
-                  className="group relative overflow-hidden bg-green-500 hover:bg-green-400 text-white h-24 text-2xl font-black rounded-3xl border-b-8 border-green-700 active:border-b-0 active:translate-y-2 transition-all shadow-xl"
-                  onClick={onStartTutorial}
-                >
-                  <span className="relative z-10 flex items-center justify-center gap-3">
-                    <span className="text-4xl group-hover:animate-bounce">🎓</span>
-                    START TRAINING
-                  </span>
-                </Button>
-
-                <Button
-                  className="group bg-blue-500 hover:bg-blue-400 text-white h-20 text-xl font-black rounded-3xl border-b-8 border-blue-700 active:border-b-0 active:translate-y-2 transition-all shadow-xl"
-                  onClick={() => setShowLevelSelect(true)}
-                >
-                  <span className="flex items-center justify-center gap-3">
-                    <span className="text-3xl">🗺️</span>
-                    MISSION SELECT
-                  </span>
-                </Button>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <Button
-                    className="bg-purple-500 hover:bg-purple-400 text-white h-16 font-bold rounded-2xl border-b-6 border-purple-700 active:border-b-0 active:translate-y-2 transition-all"
-                    onClick={() => setShowOptions(true)}
-                  >
-                    ⚙️ SETTINGS
-                  </Button>
-                  <Button
-                    className="bg-yellow-400 hover:bg-yellow-300 text-yellow-900 h-16 font-bold rounded-2xl border-b-6 border-yellow-600 active:border-b-0 active:translate-y-2 transition-all"
-                    onClick={() => setExpandedHowToPlay(!expandedHowToPlay)}
-                  >
-                    🎮 CONTROLS
-                  </Button>
                 </div>
               </div>
-
-              {expandedHowToPlay && (
-                <div className="w-full max-w-2xl bg-white rounded-2xl border-4 border-yellow-300 p-4 animate-in slide-in-from-bottom-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-black text-xl text-yellow-800">🎮 CONTROLS</h4>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={toggleKeyTesting}
-                      className={testingKeys ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"}
-                    >
-                      {testingKeys ? "Stop Test" : "Test Keys"}
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {controlGuide.map((c, i) => (
-                      <div
-                        key={i}
-                        className={`p-2 rounded-lg border-2 text-center transition-all ${
-                          activeControl === c.key ? `border-${c.color}-500 bg-${c.color}-50 scale-110` : "border-gray-100 bg-gray-50"
-                        }`}
-                      >
-                        <div className={`font-black text-lg text-${c.color}-600`}>{c.key}</div>
-                        <div className="text-xs text-gray-500 font-bold">{c.action}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
+          ) : showOptions ? (
             <div className="animate-in slide-in-from-right-8 duration-300">
               <div className="flex items-center mb-6">
                 <Button onClick={() => setShowOptions(false)} className="mr-4 bg-gray-400 rounded-full w-10 h-10 p-0">
@@ -330,7 +158,6 @@ export default function MainMenu({ onStartTutorial, onStartGame }: MainMenuProps
                 </Button>
                 <h3 className="text-3xl font-black text-purple-600">SETTINGS</h3>
               </div>
-
               <div className="bg-white p-6 rounded-3xl border-4 border-purple-200 space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -351,6 +178,99 @@ export default function MainMenu({ onStartTutorial, onStartGame }: MainMenuProps
                 </div>
               </div>
             </div>
+          ) : showFAQ ? (
+            <div className="space-y-6 animate-in slide-in-from-right-8 duration-300">
+              <div className="flex items-center mb-4">
+                <Button
+                  onClick={() => setShowFAQ(false)}
+                  className="mr-4 bg-gray-400 hover:bg-gray-500 text-white w-12 h-12 rounded-full shadow-md"
+                >
+                  <ArrowLeft className="w-6 h-6" />
+                </Button>
+                <h3 className="text-3xl font-black text-slate-700 uppercase tracking-wide flex items-center gap-2">
+                  <HelpCircle className="w-8 h-8 text-yellow-500" />
+                  Field Manual / FAQ
+                </h3>
+              </div>
+              <Card className="p-6 bg-slate-50 border-2 border-slate-200 rounded-2xl text-left">
+                <CardContent className="p-0 space-y-6">
+                  <div>
+                    <p className="font-semibold text-slate-800">How do I jump to a specific level (e.g. Level 2 – Living Room)?</p>
+                    <p className="text-slate-600 text-sm mt-1">Use <strong>MISSION SELECT</strong> to choose any level, including Living Room Safety (Level 2).</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-800">What does START TRAINING do?</p>
+                    <p className="text-slate-600 text-sm mt-1">It takes you straight into the in-game tutorial (Basic Training) so you can learn controls and safety in the 3D environment.</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-800">Where can I see controls?</p>
+                    <p className="text-slate-600 text-sm mt-1">Click <strong>CONTROLS</strong> for a summary, or check the on-screen hints during play.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full space-y-6 animate-in zoom-in-95 duration-300">
+              <div className="bg-white p-6 rounded-3xl border-4 border-orange-200 shadow-lg max-w-2xl text-center relative overflow-visible">
+                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white px-6 py-1 rounded-full font-bold text-sm shadow-sm border-2 border-white">
+                  CAPTAIN BERONG BUMBERO SAYS:
+                </div>
+                <p className="text-xl text-gray-700 font-medium mt-2">
+                  "Welcome to the team, Recruit! Before we fight fires, let's learn the basics in the Training Course!"
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 w-full max-w-md gap-4">
+                <Button 
+                  className="group relative overflow-hidden bg-green-500 hover:bg-green-400 text-white h-24 text-2xl font-black rounded-3xl border-b-8 border-green-700 active:border-b-0 active:translate-y-2 transition-all shadow-xl"
+                  onClick={onStartTutorial}
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-3">
+                    <span className="text-4xl group-hover:animate-bounce">🎓</span>
+                    START TRAINING
+                  </span>
+                </Button>
+                
+                <Button 
+                  className="group bg-blue-500 hover:bg-blue-400 text-white h-20 text-xl font-black rounded-3xl border-b-8 border-blue-700 active:border-b-0 active:translate-y-2 transition-all shadow-xl"
+                  onClick={() => setShowLevelSelect(true)}
+                >
+                  <span className="flex items-center justify-center gap-3">
+                    <span className="text-3xl">🗺️</span>
+                    MISSION SELECT
+                  </span>
+                </Button>
+                
+                <Button
+                  className="group w-full bg-orange-500 hover:bg-orange-400 text-white h-20 text-xl font-black rounded-3xl border-b-8 border-orange-700 active:border-b-0 active:translate-y-2 transition-all shadow-xl"
+                  onClick={() => setShowFAQ(true)}
+                >
+                  <span className="flex items-center justify-center gap-3">
+                    <HelpCircle className="h-6 w-6 text-yellow-500 group-hover:text-yellow-400" />
+                    Field Manual / FAQ
+                  </span>
+                </Button>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Button
+                    className="bg-purple-500 hover:bg-purple-400 text-white h-16 font-bold rounded-2xl border-b-6 border-purple-700 active:border-b-0 active:translate-y-2 transition-all"
+                    onClick={() => setShowOptions(true)}
+                  >
+                    ⚙️ SETTINGS
+                  </Button>
+                  <Button
+                    className="bg-yellow-400 hover:bg-yellow-300 text-yellow-900 h-16 font-bold rounded-2xl border-b-6 border-yellow-600 active:border-b-0 active:translate-y-2 transition-all"
+                    onClick={() => setExpandedHowToPlay(!expandedHowToPlay)}
+                  >
+                    🎮 CONTROLS
+                  </Button>
+                </div>
+              </div>
+                
+                {expandedHowToPlay && (
+                  <ControlsCard onStopTest={() => setExpandedHowToPlay(false)} />
+                )}
+              </div>
           )}
         </CardContent>
       </Card>

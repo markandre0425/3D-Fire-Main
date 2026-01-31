@@ -60,10 +60,10 @@ export default function RandomFireSpawner({
     const currentHazards = useFireSafety.getState().hazards;
     const dynamicFires = currentHazards.filter(h => h.id.startsWith('random-fire-'));
     if (dynamicFires.length >= maxFires) return;
-
+    
     const position = generateRandomPosition();
     const intensity = Math.random() * 0.8 + 0.2; // 0.2 to 1.0
-
+    
     const newHazard: HazardState = {
       id: `random-fire-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       type: HazardType.ClassAFire,

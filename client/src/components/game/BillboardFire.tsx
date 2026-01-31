@@ -73,8 +73,8 @@ export default function BillboardFire({
         const angle = Math.random() * Math.PI * 2;
         x = Math.cos(angle) * r;
         z = Math.sin(angle) * r;
-      }
-
+    }
+    
       offsets[i * 3 + 0] = x;
       offsets[i * 3 + 1] = 0;
       offsets[i * 3 + 2] = z;
@@ -111,7 +111,7 @@ export default function BillboardFire({
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, 128, 128);
     }
-
+    
     const texture = new THREE.CanvasTexture(canvas);
     texture.needsUpdate = true;
     texture.anisotropy = gl.capabilities.getMaxAnisotropy?.() ?? 1;
@@ -155,28 +155,28 @@ export default function BillboardFire({
   const shaderMaterial = useMemo(
     () =>
       new THREE.ShaderMaterial({
-        uniforms: {
-          uTime: { value: 0 },
-          uTexture: { value: fireTexture },
+      uniforms: {
+        uTime: { value: 0 },
+        uTexture: { value: fireTexture },
           uGlobalSize: { value: size },
-          uOpacity: { value: opacity },
-        },
-        vertexShader: `
-          uniform float uTime;
+        uOpacity: { value: opacity },
+      },
+      vertexShader: `
+        uniform float uTime;
           uniform float uGlobalSize;
-
+        
           attribute vec3 aRandom;
           attribute vec3 aOffset;
-
-          varying float vLife;
+        
+        varying float vLife;
           varying vec2 vUv;
           varying float vAlphaMod;
-
-          void main() {
+        
+        void main() {
             vUv = uv;
-            float t = mod(uTime * aRandom.y + aRandom.x * 10.0, 1.0);
-            vLife = t;
-
+          float t = mod(uTime * aRandom.y + aRandom.x * 10.0, 1.0);
+          vLife = t;
+          
             vec3 localPos = vec3(0.0);
             float height = 2.5 * uGlobalSize;
             localPos.y = t * height;
@@ -191,39 +191,39 @@ export default function BillboardFire({
             // --- BILLBOARD FIX: USE VIEW SPACE ALIGNMENT ---
             // 1. Transform instance center to View Space (relative to camera)
             vec4 mvPosition = modelViewMatrix * vec4(centerPos, 1.0);
-
+          
             // 2. Scale logic
             float particleScale = 1.5 * uGlobalSize * (0.8 + aRandom.z * 0.4);
             if (t < 0.15) {
               particleScale *= t / 0.15;
-            } else {
+          } else {
               particleScale *= 1.0 - (t - 0.15) * 0.2;
-            }
-
+          }
+          
             // 3. Offset in X/Y in VIEW space means "Flat against the screen"
             // This guarantees the fire always faces the camera regardless of rotation
             mvPosition.xy += position.xy * particleScale;
-
-            gl_Position = projectionMatrix * mvPosition;
-
+          
+          gl_Position = projectionMatrix * mvPosition;
+          
             vAlphaMod = 1.0;
             if (t > 0.8) {
               vAlphaMod = smoothstep(1.0, 0.8, t);
-            }
           }
-        `,
-        fragmentShader: `
-          uniform sampler2D uTexture;
-          uniform float uOpacity;
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D uTexture;
+        uniform float uOpacity;
 
-          varying float vLife;
+        varying float vLife;
           varying vec2 vUv;
           varying float vAlphaMod;
-
-          void main() {
+        
+        void main() {
             vec4 tex = texture2D(uTexture, vUv);
             if (tex.a < 0.1) discard;
-
+          
             // FIX: Use rich GOLD instead of Pale Yellow to avoid "whitish substance"
             vec3 gold = vec3(1.0, 0.8, 0.0); 
             // Updated to the specific orange you requested
@@ -238,10 +238,10 @@ export default function BillboardFire({
 
             float finalAlpha = tex.a * vAlphaMod * uOpacity;
             gl_FragColor = vec4(color, finalAlpha);
-          }
-        `,
-        transparent: true,
-        depthWrite: false,
+        }
+      `,
+      transparent: true,
+      depthWrite: false,
         blending: smokeMode ? THREE.NormalBlending : THREE.NormalBlending,
       }),
     [fireTexture, size, opacity, smokeMode]
@@ -267,10 +267,10 @@ export default function BillboardFire({
     <mesh
       ref={meshRef}
       position={position}
-      geometry={geometry}
-      material={shaderMaterial}
+        geometry={geometry}
+        material={shaderMaterial}
       frustumCulled={false}
-      visible={shouldPlay}
+        visible={shouldPlay}
     >
       {/* Spatial fire crackle */}
       {shouldPlay && !isMuted && !smokeMode && (

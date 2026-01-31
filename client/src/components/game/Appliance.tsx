@@ -104,6 +104,11 @@ export default function Appliance({ hazard }: ApplianceProps) {
 
   const applianceProps = getApplianceProperties();
 
+  // Don't render anything if hazard is extinguished (no gray box)
+  if (hazard.isExtinguished) {
+    return null;
+  }
+
   // Appliances are now positioned statically on surfaces
 
   return (

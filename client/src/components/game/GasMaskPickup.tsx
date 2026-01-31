@@ -42,8 +42,40 @@ export default function GasMaskPickup({ object, isCollected = false }: GasMaskPi
   // Don't render if already collected
   if (isCollected) return null;
   
+  // Determine rotation based on wall position
+  // If on west wall (x close to -10), face east (toward center)
+  // If on east wall (x close to 10), face west (toward center)
+  // If on north wall (z close to -10), face south (toward center)
+  // If on south wall (z close to 10), face north (toward center)
+  // Otherwise use default rotation
+  const isOnWestWall = Math.abs(object.position.x - (-10)) < 0.5;
+  const isOnEastWall = Math.abs(object.position.x - 10) < 0.5;
+  const isOnNorthWall = Math.abs(object.position.z - (-10)) < 0.5;
+  const isOnSouthWall = Math.abs(object.position.z - 10) < 0.5;
+  
+  let rotation: [number, number, number] = [0, Math.PI / 2, 0]; // Default rotation
+  if (isOnWestWall) {
+    rotation = [0, Math.PI / 2, 0]; // Face south (rotated 90 degrees)
+  } else if (isOnEastWall) {
+    rotation = [0, Math.PI, 0]; // Face west (toward center)
+  } else if (isOnNorthWall) {
+    rotation = [0, Math.PI / 2, 0]; // Face south (toward center)
+  } else if (isOnSouthWall) {
+    rotation = [0, -Math.PI / 2, 0]; // Face north (toward center)
+  }
+  
   // Position HUD slightly above/in front of the model to avoid clipping
-  const labelPosition: [number, number, number] = [0, 1.15, 0.18];
+  // Adjust label position based on wall orientation
+  let labelPosition: [number, number, number] = [0, 1.15, 0.18];
+  if (isOnWestWall) {
+    labelPosition = [0.2, 1.15, 0]; // In front (east) when on west wall
+  } else if (isOnEastWall) {
+    labelPosition = [-0.2, 1.15, 0]; // In front (west) when on east wall
+  } else if (isOnNorthWall) {
+    labelPosition = [0, 1.15, 0.2]; // In front (south) when on north wall
+  } else if (isOnSouthWall) {
+    labelPosition = [0, 1.15, -0.2]; // In front (north) when on south wall
+  }
   
   return (
     <group
@@ -58,7 +90,7 @@ export default function GasMaskPickup({ object, isCollected = false }: GasMaskPi
             <meshStandardMaterial color="#2563eb" />
           </mesh>
         }>
-          <group rotation={[0, Math.PI / 2, 0]}>
+          <group rotation={rotation}>
             <primitive object={gasMaskModel.clone()} castShadow receiveShadow />
           </group>
         </Suspense>

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useEffect } from "react";
+import { useMemo, useRef, useEffect, type MutableRefObject } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { InteractiveObjectType } from "@/lib/types";
@@ -24,10 +24,9 @@ function getMistTexture() {
 
   if (ctx) {
     const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-    gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
-    gradient.addColorStop(0.4, "rgba(255, 255, 255, 0.5)");
+    // Lower alpha at center to reduce fill-rate pressure
+    gradient.addColorStop(0, "rgba(255, 255, 255, 0.8)");
     gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
-    
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 32, 32);
   }
@@ -44,15 +43,16 @@ let cachedGeometry: THREE.BufferGeometry | null = null;
 function getSprayGeometry() {
   if (cachedGeometry) return cachedGeometry;
 
-  const count = 300;
+  // Reduced count (150) for less overdraw; transparent stacking is the real cost
+  const count = 150;
   const geo = new THREE.BufferGeometry();
   const positions = new Float32Array(count * 3);
-  const randoms = new Float32Array(count * 3); 
+  const randoms = new Float32Array(count * 3);
 
   for (let i = 0; i < count; i++) {
-    randoms[i * 3 + 0] = Math.random();             // Phase
-    randoms[i * 3 + 1] = 0.8 + Math.random() * 0.4; // Speed var
-    randoms[i * 3 + 2] = Math.random();             // Spread var
+    randoms[i * 3 + 0] = Math.random();
+    randoms[i * 3 + 1] = 0.8 + Math.random() * 0.4;
+    randoms[i * 3 + 2] = Math.random();
   }
 
   geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
@@ -66,7 +66,7 @@ export default function ExtinguisherSpray({
   active, 
   extinguisherType = InteractiveObjectType.FireExtinguisher 
 }: ExtinguisherSprayProps) {
-  const shaderRef = useRef<THREE.ShaderMaterial>(null);
+  const shaderRef = useRef<THREE.ShaderMaterial | null>(null) as MutableRefObject<THREE.ShaderMaterial | null>;
   const { isMuted } = useAudio();
   const { startSpray, stopSpray } = useExtinguisherSound();
 
@@ -121,19 +121,18 @@ export default function ExtinguisherSpray({
         float distance = t * 8.0; 
         pos.z = -distance;
         
-        float spreadAmount = distance * 0.12; 
+        float spreadAmount = distance * 0.15;
         float angle = aRandom.z * 6.28;
         pos.x += cos(angle) * spreadAmount;
         pos.y += sin(angle) * spreadAmount;
-
         pos.y -= t * t * 1.5;
-
-        float size = 80.0 * (0.3 + t * 5.0); 
 
         vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
         gl_Position = projectionMatrix * mvPosition;
-        
-        gl_PointSize = size / -mvPosition.z;
+
+        // Cap point size so one particle never covers the whole screen (saves GPU fill rate)
+        float size = 60.0 * (0.3 + t * 5.0);
+        gl_PointSize = min(size / -mvPosition.z, 150.0);
         vAlpha = (1.0 - smoothstep(0.7, 1.0, t)) * smoothstep(0.0, 0.1, t);
       }
     `,
@@ -144,7 +143,7 @@ export default function ExtinguisherSpray({
       
       void main() {
         vec4 tex = texture2D(uTexture, gl_PointCoord);
-        if (tex.a < 0.01) discard;
+        if (tex.a < 0.1) discard;
         gl_FragColor = vec4(uColor, tex.a * vAlpha * 0.5);
       }
     `,

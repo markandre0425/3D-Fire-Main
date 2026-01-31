@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
-import HealthBar from "./HealthBar";
-import ScoreDisplay from "./ScoreDisplay";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
-import { usePlayer } from "@/lib/stores/usePlayer";
 import { SAFETY_TIPS } from "@/lib/constants";
 import PauseMenu from "../screens/PauseMenu";
-import { Controls } from "@/lib/types";
 
 export default function GameUI() {
   const { 
@@ -16,9 +12,7 @@ export default function GameUI() {
     levelData,
     isLevelComplete
   } = useFireSafety();
-  
-  const { hasExtinguisher } = usePlayer();
-  
+
   const [showTip, setShowTip] = useState(false);
   const [tipContent, setTipContent] = useState<{title: string, content: string} | null>(null);
   const [showLevelComplete, setShowLevelComplete] = useState(false);
@@ -59,11 +53,6 @@ export default function GameUI() {
   
   return (
     <>
-      {/* Health and Oxygen Bars */}
-      <HealthBar />
-      
-
-      
       {/* Simple Gas Mask Status - Temporarily disabled for debugging */}
       {/* {hasGasMask && (
         <div className="absolute top-4 right-4 bg-blue-900 bg-opacity-80 p-2 rounded-md text-white">
@@ -111,9 +100,6 @@ export default function GameUI() {
           <span className="text-xs">{Math.round(oxygen)}%</span>
         </div>
       </div> */}
-      
-      {/* Score */}
-      <ScoreDisplay />
       
       {/* Level Info */}
       <div className="absolute top-4 left-4 pointer-events-none">

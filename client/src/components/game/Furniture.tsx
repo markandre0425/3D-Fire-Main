@@ -4,8 +4,35 @@ import { useTexture } from "@react-three/drei";
 import ModelLoader from "./ModelLoader";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { createBoundingBox } from "../../lib/collision";
-import { HazardType } from "@/lib/types";
-import { ProceduralCounter, ProceduralStove } from "./ProceduralFurniture";
+import { HazardType, InteractiveObjectType } from "@/lib/types";
+import { ProceduralCounter, ProceduralStove, ProceduralComputer, ProceduralDesk, ProceduralSpeaker, ProceduralCloset, ClosetLightsStrip1, ClosetLightsStrip2, ProceduralMirror, ProceduralWallTV } from "./ProceduralFurniture";
+
+/** Returns the model path for a furniture type, or null if none. Single source of truth for "does this type have a 3D model?" */
+function getModelPathForType(type: string): string | null {
+  switch (type) {
+    case "gas_stove":
+      return "/models/gas_stove.glb";
+    case "fridge":
+      return "/models/fridge.glb";
+    case "retro_fridge":
+      return "/models/retro_fridge.glb";
+    case "sink_with_faucet":
+      return "/models/sink_with_faucet.glb";
+    case "bathtub":
+      return "/models/bathtub.glb";
+    case "toilet":
+      return "/models/toilet.glb";
+    case "sofa":
+    case "office_sofa":
+      return "/models/office_sofa.glb";
+    case "table":
+      return "/models/table.glb";
+    case "curvedTV":
+      return "/models/curvedTV.glb";
+    default:
+      return null;
+  }
+}
 
 interface FurnitureProps {
   type: string;
@@ -96,6 +123,11 @@ export default function Furniture({
         new THREE.Vector3(scale[0], stoveHeight, scale[2] * 0.9)
       );
     } else {
+      // Only register collision if we actually render something (have a 3D model).
+      // Procedural types (counter, speaker, etc.) use the special branches above.
+      // Types with no model and no procedural fall through to return null — no collision.
+      if (!getModelPathForType(type)) return;
+
       registerBox(
         new THREE.Vector3(0, scale[1] / 2, 0),
         new THREE.Vector3(...scale)
@@ -180,6 +212,62 @@ export default function Furniture({
     );
   }
   
+  if (type === "computer_desk" || type === "desk") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralDesk />
+        <ProceduralComputer />
+      </group>
+    );
+  }
+  
+  if (type === "speaker") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralSpeaker />
+      </group>
+    );
+  }
+
+  if (type === "walk_in_closet_lights_1") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ClosetLightsStrip1 />
+      </group>
+    );
+  }
+  if (type === "bathroom_lights_1") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ClosetLightsStrip2 />
+      </group>
+    );
+  }
+
+  if (type === "closet" || type === "walk_in_closet") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralCloset />
+      </group>
+    );
+  }
+  
+  if (type === "mirror") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralMirror />
+      </group>
+    );
+  }
+  
+  if (type === "wall_tv") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralWallTV />
+      </group>
+    );
+  }
+  
   // Optional: Use procedural stove instead of GLB
   if (type === "gas_stove") {
     // You can choose to use procedural or GLB - uncomment to use procedural:
@@ -190,15 +278,55 @@ export default function Furniture({
     // );
   }
 
-  // --- WHITELIST APPROACH: Only render types we explicitly know about ---
-  // This prevents mystery boxes from appearing for unknown types
+  // --- INVISIBLE LOGIC: Don't render hazards or interactive objects ---
+  // These are handled by Hazard.tsx and other specialized components
   
+  const normalizedType = type.toLowerCase().replace(/[^a-z0-9]/g, "");
+  
+  // Check if type matches any HazardType enum value (case-insensitive, normalized)
+  const hazardEnumValues = Object.values(HazardType).map(v => v.toLowerCase().replace(/[^a-z0-9]/g, ""));
+  const isHazardEnum = hazardEnumValues.includes(normalizedType);
+  
+  // Check if type matches any InteractiveObjectType enum value
+  const interactiveEnumValues = Object.values(InteractiveObjectType).map(v => v.toLowerCase().replace(/[^a-z0-9]/g, ""));
+  const isInteractiveEnum = interactiveEnumValues.includes(normalizedType);
+  
+  // Comprehensive keyword matching for hazard-related types
+  const isHazardKeyword = 
+    normalizedType.includes("spawn") || 
+    normalizedType.includes("marker") || 
+    normalizedType.includes("fire") || 
+    normalizedType.includes("hazard") || 
+    normalizedType.includes("trigger") ||
+    normalizedType.includes("class") ||
+    normalizedType.includes("outlet") ||
+    normalizedType.includes("point") ||
+    normalizedType.includes("location") ||
+    normalizedType.includes("candle") ||
+    normalizedType.includes("heater") ||
+    normalizedType.includes("clogged") ||
+    normalizedType.includes("stovetop") ||
+    normalizedType.includes("fireplace") ||
+    normalizedType.includes("leak") ||
+    normalizedType.includes("spill") ||
+    normalizedType.includes("smoke");
+  
+  // Return null for all hazards and interactive objects (they're rendered elsewhere)
+  if (isHazardEnum || isInteractiveEnum || isHazardKeyword) {
+    return null;
+  }
+  
+  // --- WHITELIST APPROACH: Only render known furniture types ---
   const SAFE_FURNITURE_TYPES = [
     // Kitchen appliances
     "gas_stove",
     "fridge",
     "retro_fridge",
     "sink_with_faucet",
+    // Bathroom fixtures
+    "bathtub",
+    "toilet",
+    "mirror",
     // Sofa models
     "sofa",
     "office_sofa",
@@ -206,8 +334,19 @@ export default function Furniture({
     "table",
     // TV model
     "curvedTV",
+    "tv",
+    "wall_tv",
     // Procedural furniture
     "counter",
+    "computer_desk",
+    "desk",
+    "speaker",
+    "bed",
+    "dresser",
+    "coffee",
+    "stool",
+    "book",
+    "lamp",
     // Special room types
     "minimal_bathroom",
     // Walls and floors (handled separately, but included for completeness)
@@ -216,48 +355,17 @@ export default function Furniture({
   ];
 
   // If type is not in whitelist, return null (invisible)
-  // This includes all hazard types, spawn markers, and unknown types
+  // This catches any remaining unknown types
   if (!SAFE_FURNITURE_TYPES.includes(type)) {
     return null;
   }
   
-  // Get 3D model path (for furniture with actual models)
-  const getModelPath = () => {
-    switch (type) {
-      // Kitchen appliances
-      case "gas_stove":
-        return "/models/gas_stove.glb";
-      case "fridge":
-        return "/models/fridge.glb";
-      case "retro_fridge":
-        return "/models/retro_fridge.glb";
-      case "sink_with_faucet":
-        return "/models/sink_with_faucet.glb";
-      // Sofa model
-      case "sofa":
-      case "office_sofa":
-        return "/models/office_sofa.glb";
-      
-      // Table model
-      case "table":
-        return "/models/table.glb";
-      
-      // TV model
-      case "curvedTV":
-        return "/models/curvedTV.glb";
-      
-      // No model available - will use colored box geometry
-      default:
-        return null;
-    }
-  };
-  
+  const modelPath = getModelPathForType(type);
+
   // Get texture (for furniture without 3D models - use box geometry)
   const getTextureUrl = () => {
     return "/textures/wood.jpg";
   };
-  
-  const modelPath = getModelPath();
   const texture = useTexture(getTextureUrl());
   
   // If we have a 3D model, use ModelLoader

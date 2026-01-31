@@ -174,69 +174,65 @@ export const LEVELS: Record<Level, LevelData> = {
       "Understand importance of smoke detector activation"
     ]
   },
+  // --- LIVING ROOM LEVEL (Fully Procedural) ---
   [Level.LivingRoom]: {
     id: Level.LivingRoom,
     name: "Living Room Safety",
-    description: "Identify and manage common fire hazards in the living room",
+    description: "Identify hazards in the Bedroom, Closet, Bathroom, and Living Area.",
     hazards: [
+      // 1. Fireplace (Living Room South Wall)
       {
         id: "fireplace1",
         type: HazardType.Fireplace,
-        position: { x: 0, y: 0, z: -8 },
+        position: { x: -5, y: 0, z: 9 }, 
         isActive: true,
         severity: 2,
         isSmoking: true,
         isExtinguished: false
       },
+      // 2. Candle (On Living Room Coffee Table)
       {
         id: "candle1",
         type: HazardType.Candle,
-        position: { x: 4, y: 0, z: 3 },
+        position: { x: -6.5, y: 0.6, z: 5 }, 
         isActive: true,
         severity: 1,
         isSmoking: false,
         isExtinguished: false
       },
+      // 3. Space Heater (Bedroom - Dangerous position near bed)
       {
         id: "heater1",
         type: HazardType.SpacerHeater,
-        position: { x: -6, y: 0, z: 4 },
+        position: { x: -8, y: 0, z: -6 }, 
         isActive: true,
         severity: 2,
-        isSmoking: false,
+        isSmoking: true,
         isExtinguished: false
       },
+      // 4. Electrical Outlets
       {
-        id: "outlet3",
+        id: "outlet_entertainment",
         type: HazardType.ElectricalOutlet,
-        position: { x: 6, y: 0.4, z: -9.9 },
+        position: { x: -9.9, y: 0.5, z: 5 }, // Behind Living Room TV
         isActive: true,
         severity: 1,
         isSmoking: false,
         isExtinguished: false
       },
       {
-        id: "outlet4",
+        id: "outlet_computer",
         type: HazardType.ElectricalOutlet,
-        position: { x: -9.9, y: 0.4, z: -4 },
+        position: { x: -9.9, y: 0.5, z: -3 }, // Behind Bedroom Computer
         isActive: true,
         severity: 1,
         isSmoking: false,
         isExtinguished: false
       },
       {
-        id: "outlet_living_3",
+        id: "outlet_closet",
         type: HazardType.ElectricalOutlet,
-        position: { x: -3, y: 0.4, z: 9.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_living_4",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 9.9, y: 0.4, z: -7 },
+        position: { x: 4, y: 0.5, z: -9.9 }, // Inside Closet
         isActive: true,
         severity: 1,
         isSmoking: false,
@@ -247,110 +243,97 @@ export const LEVELS: Record<Level, LevelData> = {
       {
         id: "extinguisher2",
         type: InteractiveObjectType.FireExtinguisher,
-        position: { x: 9.9, y: 1.2, z: 5 },
+        position: { x: 9.9, y: 1.2, z: 5 }, // Mounted on East Wall, facing west
         isActive: true,
         isCollected: false
       },
       {
         id: "gasmask3",
         type: InteractiveObjectType.GasMask,
-        position: { x: 9.9, y: 1.2, z: -3 },
-        isActive: true,
-        isCollected: false
-      },
-      {
-        id: "gasmask4",
-        type: InteractiveObjectType.GasMask,
-        position: { x: -9.9, y: 1.2, z: 2 },
+        position: { x: -9.9, y: 1.6, z: -8 }, // Mounted on West Wall, facing camera
         isActive: true,
         isCollected: false
       },
       {
         id: "detector2",
         type: InteractiveObjectType.SmokeDetector,
-        position: { x: 0, y: 2.5, z: 0 },
+        position: { x: 0, y: 2.8, z: 0 }, // Ceiling Center
         isActive: false,
         isCollected: false
       },
       {
         id: "exit2",
         type: InteractiveObjectType.EmergencyExit,
-        position: { x: 0, y: 1.5, z: 9.8 },
+        position: { x: 0, y: 1.5, z: 9.8 }, // South Wall Exit (matches Kitchen level)
         isActive: true,
         isCollected: false
       }
     ],
     environmentObjects: [
-      {
-        id: "floor",
-        type: "floor",
-        position: { x: 0, y: 0, z: 0 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 20, y: 0.1, z: 20 }
-      },
-      {
-        id: "wall1",
-        type: "wall",
-        position: { x: 0, y: 1.5, z: -10 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 20, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall2",
-        type: "wall",
-        position: { x: 0, y: 1.5, z: 10 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 20, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall3",
-        type: "wall",
-        position: { x: -10, y: 1.5, z: 0 },
-        rotation: { x: 0, y: Math.PI / 2, z: 0 },
-        scale: { x: 20, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall4",
-        type: "wall",
-        position: { x: 10, y: 1.5, z: 0 },
-        rotation: { x: 0, y: Math.PI / 2, z: 0 },
-        scale: { x: 20, y: 3, z: 0.1 }
-      },
-      {
-        id: "sofa",
-        type: "sofa",
-        position: { x: -4, y: 0, z: 2 },
-        rotation: { x: 0, y: Math.PI / 2, z: 0 },
-        scale: { x: 3, y: 1, z: 1 }
-      },
-      {
-        id: "sofa_living_2",
-        type: "sofa",
-        position: { x: 4, y: 0, z: 2 },
-        rotation: { x: 0, y: -Math.PI / 2, z: 0 },
-        scale: { x: 3, y: 1, z: 1 }
-      },
-      {
-        id: "sofa_living_3",
-        type: "sofa",
-        position: { x: 0, y: 0, z: -4 },
-        rotation: { x: 0, y: Math.PI, z: 0 },
-        scale: { x: -2.5, y: -1, z: -1 }
-      },
-      {
-        id: "coffeeTable",
-        type: "table",
-        position: { x: 2, y: 0, z: 3 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 1.5, y: 0.6, z: 1 }
-      },
-      {
-        id: "curvedTV_living",
-        type: "curvedTV",
-        position: { x: 0, y: 1.5, z: -9 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 1, y: 1, z: 1 }
-      }
+      // --- 1. STRUCTURE ---
+      { id: "floor", type: "floor", position: { x: 0, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 20, y: 0.1, z: 20 } },
+      // Outer Walls
+      { id: "wall_n", type: "wall", position: { x: 0, y: 1.5, z: -10 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 20, y: 3, z: 0.1 } },
+      { id: "wall_s", type: "wall", position: { x: 0, y: 1.5, z: 10 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 20, y: 3, z: 0.1 } },
+      { id: "wall_e", type: "wall", position: { x: 10, y: 1.5, z: 0 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, scale: { x: 20, y: 3, z: 0.1 } },
+      { id: "wall_w", type: "wall", position: { x: -10, y: 1.5, z: 0 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, scale: { x: 20, y: 3, z: 0.1 } },
+
+      // --- 2. BEDROOM (Top Left: x -10 to 0, z -10 to 0) ---
+      // Divider Wall (Vertical at x=0) with DOORWAY GAP (Door at z = -4 to -2)
+      { id: "wall_bed_v1", type: "wall", position: { x: 0, y: 1.5, z: -8 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, scale: { x: 4, y: 3, z: 0.1 } }, // -10 to -6
+      { id: "wall_bed_v2", type: "wall", position: { x: 0, y: 1.5, z: -1 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, scale: { x: 2, y: 3, z: 0.1 } }, // -2 to 0
+      // Divider Wall (Horizontal at z=0) with DOORWAY GAP
+      // Left Wall (-10 to -6)
+      { id: "wall_bed_h_left", type: "wall", position: { x: -8, y: 1.5, z: 0 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 4, y: 3, z: 0.1 } },
+      // Right Wall (-4 to 0) - Creates a 2m gap between -6 and -4
+      { id: "wall_bed_h_right", type: "wall", position: { x: -2, y: 1.5, z: 0 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 4, y: 3, z: 0.1 } },
+      
+      // Bedroom Furniture
+      { id: "bed_main", type: "bed", position: { x: -8, y: 0, z: -8 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } },
+      { id: "dresser_main", type: "dresser", position: { x: -3, y: 0, z: -8.5 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } },
+      // COMPUTER SET (Replaces old TV)
+      { id: "pc_setup", type: "computer_desk", position: { x: -9, y: 0, z: -3 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, scale: { x: 1.2, y: 1.2, z: 1.2 } },
+
+      // --- 3. CLOSET & BATHROOM (Top Right: x 0 to 10, z -10 to 0) ---
+      // REPLACED OLD WALL WITH DOORWAY CONFIGURATION:
+      // Left Wall (0 to 7)
+      { id: "wall_bath_h_left", type: "wall", position: { x: 3.5, y: 1.5, z: 0 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 7, y: 3, z: 0.1 } },
+      // Right Wall (9 to 10) - Creates a 2m gap between 7 and 9
+      { id: "wall_bath_h_right", type: "wall", position: { x: 9.5, y: 1.5, z: 0 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 3, z: 0.1 } },
+      // Vertical Divider between Closet and Bath (at x=5)
+      { id: "wall_bath_v", type: "wall", position: { x: 5, y: 1.5, z: -5 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, scale: { x: 10, y: 3, z: 0.1 } },
+      
+      // Closet (Left part of Top Right) - Walk-in Closet (position independently from lights)
+      { id: "walk_in_closet_main", type: "walk_in_closet", position: { x: 3.5, y: 0, z: -5 }, rotation: { x: 0, y: -Math.PI / 2, z: 0 }, scale: { x: 1, y: 1, z: 1 } },
+      // Closet ceiling lights (separate object so they can stay fixed or move independently)
+      { id: "closet_lights_strip_1", type: "walk_in_closet_lights_1", position: { x: 5, y: 2.8, z: -2.5 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } },
+      { id: "closet_lights_strip_2", type: "bathroom_lights_1", position: { x: 7.5, y: 2.8, z: -9.8 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } },
+      
+      // Bathroom (Right part of Top Right)
+      { id: "bath_sink", type: "sink_with_faucet", position: { x: 5.84, y: 0, z: 0 }, rotation: { x: 0, y: Math.PI, z: 0 }, scale: { x: 2, y: 2, z: 2 } },
+      { id: "bath_mirror", type: "mirror", position: { x: 5.84, y: 1.5, z: 0.1 }, rotation: { x: 0, y: Math.PI, z: 0 }, scale: { x: 1, y: 1, z: 1 } },
+      { id: "bath_tub", type: "bathtub", position: { x: 7.08, y: 0, z: -8.60 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1.6, y: 2, z: 2 } },
+      { id: "bath_mirror_tub", type: "mirror", position: { x: 9.66, y: 1.5, z: -8.65 }, rotation: { x: 0, y: -Math.PI / 2, z: 0 }, scale: { x: 1, y: 1, z: 1 } },
+      { id: "bath_toilet", type: "toilet", position: { x: 6, y: 0, z: -4.20 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, scale: { x: 2, y: 2, z: 2 } },
+      { id: "bath_stool", type: "stool", position: { x: 9, y: 0, z: -2 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } },
+
+      // --- 4. LIVING AREA (Bottom Left: x -10 to 0, z 0 to 10) ---
+      { id: "wall_tv_living", type: "wall_tv", position: { x: -9.78, y: 2.2, z: 4.73 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, scale: { x: 1.8, y: 1.5, z: 2 } },
+      { id: "tv_stand", type: "tv", position: { x: -9, y: 0, z: 5 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, scale: { x: 1.5, y: 1.5, z: 1.5 } },
+      { id: "sofa_main", type: "sofa", position: { x: -4, y: 0, z: 5 }, rotation: { x: 0, y: -Math.PI / 8, z: 0 }, scale: { x: 1.5, y: 1.5, z: 1.5 } },
+      { id: "coffee_table", type: "coffee", position: { x: -6.5, y: 0, z: 5 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } },
+      { id: "bookshelf", type: "book", position: { x: -2, y: 0, z: 9 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1.5, y: 1.5, z: 1 } },
+      { id: "floor_lamp", type: "lamp", position: { x: -9, y: 0, z: 9 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } },
+      // NEW: Speakers (left & right of TV)
+      { id: "speaker_living", type: "speaker", position: { x: -9, y: 0, z: 2 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, scale: { x: 1.5, y: 1.5, z: 1.5 } },
+      { id: "speaker_living_right", type: "speaker", position: { x: -9, y: 0, z: 8 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, scale: { x: 1.5, y: 1.5, z: 1.5 } },
+
+      // --- 5. DINING AREA (Bottom Right: x 0 to 10, z 0 to 10) ---
+      { id: "dining_tbl", type: "table", position: { x: -6.68, y: 0, z: 6.8 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, scale: { x: 1.5, y: 1.5, z: 1.5 } },
+      { id: "stool_1", type: "stool", position: { x: 5, y: 0, z: 6 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } },
+      { id: "stool_2", type: "stool", position: { x: 7, y: 0, z: 6 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } },
+      { id: "stool_3", type: "stool", position: { x: 6, y: 0, z: 5 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } },
+      { id: "stool_4", type: "stool", position: { x: 6, y: 0, z: 7 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } }
     ],
     requiredScore: 400,
     difficulty: DifficultyLevel.Intermediate,
@@ -542,7 +525,7 @@ export const LEVELS: Record<Level, LevelData> = {
   [Level.BasicTraining]: {
     id: Level.BasicTraining,
     name: "BFP Basic Training",
-    description: "Learn the fundamentals with Captain Apoy! Master the PASS technique and basic fire safety principles.",
+    description: "Learn the fundamentals with Captain Berong Bumbero! Master the PASS technique and basic fire safety principles.",
     hazards: [
       {
         id: "classA1",
@@ -1143,17 +1126,8 @@ export const LEVELS: Record<Level, LevelData> = {
   [Level.BFPCertification]: {
     id: Level.BFPCertification,
     name: "BFP Master Certification",
-    description: "Ultimate fire safety challenge! Prove you're ready for BFP certification with Captain Apoy's master test.",
+    description: "Ultimate fire safety challenge! Prove you're ready for BFP certification with Captain Berong Bumbero's master test.",
     hazards: [
-      {
-        id: "masterClassA",
-        type: HazardType.ClassAFire,
-        position: { x: -8, y: 0, z: -8 },
-        isActive: true,
-        severity: 3,
-        isSmoking: true,
-        isExtinguished: false
-      },
       {
         id: "masterClassB",
         type: HazardType.ClassBFire,
@@ -1471,7 +1445,7 @@ export const SAFETY_TIPS: SafetyTip[] = [
   },
   {
     id: "tip17",
-    title: "Captain Apoy's Golden Rule",
+    title: "Captain Berong Bumbero's Golden Rule",
     content: "When in doubt, get out! Your safety is more important than property. Follow your evacuation plan and let trained firefighters handle dangerous situations.",
     category: SafetyTipCategory.Evacuation
   }

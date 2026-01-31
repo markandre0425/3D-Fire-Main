@@ -13,7 +13,7 @@ export default function TutorialScreen({ onComplete }: TutorialScreenProps) {
   const tutorialSteps = [
     {
       title: "🚒 Welcome to BFP Fire Safety Academy! 🎓",
-      content: "Hi there, brave Fire Safety Hero! I'm Captain Apoy from the Bureau of Fire Protection (BFP). Today, you'll learn everything about fire safety - just like real Filipino firefighters do! Are you ready to become a fire safety expert?",
+      content: "Hi there, brave Fire Safety Hero! I'm Captain Berong Bumbero from the Bureau of Fire Protection (BFP). Today, you'll learn everything about fire safety - just like real Filipino firefighters do! Are you ready to become a fire safety expert?",
       mascot: "🚒",
       bgColor: "from-red-400 to-orange-400",
       borderColor: "border-red-400",
@@ -110,7 +110,7 @@ export default function TutorialScreen({ onComplete }: TutorialScreenProps) {
     },
     {
       title: "🌟 Ready to Become a Fire Safety Hero?",
-      content: "Amazing! You've completed the BFP Fire Safety Academy basic training! Remember, the skills you learn here could help you protect your family, friends, and community in real life. Captain Apoy is proud of you - now go save the day!",
+      content: "Amazing! You've completed the BFP Fire Safety Academy basic training! Remember, the skills you learn here could help you protect your family, friends, and community in real life. Captain Berong Bumbero is proud of you - now go save the day!",
       mascot: "⭐",
       bgColor: "from-green-400 to-teal-400",
       borderColor: "border-green-400",

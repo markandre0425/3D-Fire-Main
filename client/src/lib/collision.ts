@@ -6,6 +6,7 @@ export interface BoundingBox {
 }
 
 const DEFAULT_COLLISION_SCALE = 0.7;
+const MIN_WALL_THICKNESS = 0.3; // Minimum thickness for walls to prevent tunneling
 
 export function createBoundingBox(
   position: THREE.Vector3,
@@ -14,10 +15,12 @@ export function createBoundingBox(
   scale: number = DEFAULT_COLLISION_SCALE
 ): BoundingBox {
   const box = new THREE.Box3();
+  // Don't scale down thin dimensions (like wall thickness) below minimum
+  // This prevents walls from becoming paper-thin and allowing character tunneling
   const scaledSize = new THREE.Vector3(
-    size.x * scale,
-    size.y * scale,
-    size.z * scale
+    size.x < MIN_WALL_THICKNESS ? Math.max(size.x, MIN_WALL_THICKNESS) : size.x * scale,
+    size.y < MIN_WALL_THICKNESS ? Math.max(size.y, MIN_WALL_THICKNESS) : size.y * scale,
+    size.z < MIN_WALL_THICKNESS ? Math.max(size.z, MIN_WALL_THICKNESS) : size.z * scale
   );
   const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(scaledSize.x, scaledSize.y, scaledSize.z)

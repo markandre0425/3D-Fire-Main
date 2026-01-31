@@ -19,10 +19,13 @@ interface PlayerStateStore extends PlayerState {
   setSpawnPoint: (point: { x: number; y: number; z: number }) => void;
   respawn: () => void;
   pickupExtinguisher: (extinguisherType?: InteractiveObjectType) => void;
+  setHasExtinguisher: (has: boolean) => void;
   useExtinguisher: () => void;
   addScore: (points: number) => void;
+  setScore: (score: number) => void;
   getMovementSpeed: () => number;
   pickupGasMask: () => void;
+  setHasGasMask: (has: boolean) => void;
 }
 
 export const usePlayer = create<PlayerStateStore>()(
@@ -223,6 +226,13 @@ export const usePlayer = create<PlayerStateStore>()(
         extinguisherType: extinguisherType || InteractiveObjectType.FireExtinguisher
       });
     },
+
+    setHasExtinguisher: (has: boolean) => {
+      set((state) => ({
+        hasExtinguisher: has,
+        extinguisherType: has ? (state.extinguisherType || InteractiveObjectType.FireExtinguisher) : null,
+      }));
+    },
     
     useExtinguisher: () => {
       // Logic for using the extinguisher
@@ -232,9 +242,17 @@ export const usePlayer = create<PlayerStateStore>()(
     addScore: (points: number) => {
       set(state => ({ score: state.score + points }));
     },
+
+    setScore: (score: number) => {
+      set({ score });
+    },
     
     pickupGasMask: () => {
       set({ hasGasMask: true });
+    },
+
+    setHasGasMask: (has: boolean) => {
+      set({ hasGasMask: has });
     },
     
     getMovementSpeed: () => {

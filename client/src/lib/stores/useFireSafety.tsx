@@ -65,6 +65,8 @@ export const useFireSafety = create<FireSafetyState>()(
     },
 
     startLevel: (level: Level) => {
+      // Reset score when entering any new level (tutorial, mission select, or level transition)
+      usePlayer.getState().setScore(0);
       const levelData = LEVELS[level];
       const levelConfig = getLevelConfig(parseInt(level) || 1);
       const { collidableGeneration } = get();

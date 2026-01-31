@@ -95,6 +95,48 @@ function GenericDebris({ isBurnt }: { isBurnt: boolean }) {
   );
 }
 
+function WoodPallet({ isBurnt }: { isBurnt: boolean }) {
+  const color = isBurnt ? "#1a1a1a" : "#8B4513";
+  return (
+    <group position={[0, 0.05, 0]}>
+      <mesh castShadow receiveShadow position={[0.15, 0, 0]}>
+        <boxGeometry args={[0.05, 0.1, 0.5]} />
+        <meshStandardMaterial color={color} />
+      </mesh>
+      <mesh castShadow receiveShadow position={[-0.15, 0, 0]}>
+        <boxGeometry args={[0.05, 0.1, 0.5]} />
+        <meshStandardMaterial color={color} />
+      </mesh>
+      <mesh castShadow receiveShadow position={[0, 0.06, 0]}>
+        <boxGeometry args={[0.5, 0.02, 0.5]} />
+        <meshStandardMaterial color={color} roughness={0.9} />
+      </mesh>
+    </group>
+  );
+}
+
+function BookPile({ isBurnt }: { isBurnt: boolean }) {
+  const c1 = isBurnt ? "#222" : "#8e44ad";
+  const c2 = isBurnt ? "#222" : "#2980b9";
+  const c3 = isBurnt ? "#222" : "#27ae60";
+  return (
+    <group position={[0, 0.1, 0]}>
+      <mesh castShadow receiveShadow position={[0, 0, 0]}>
+        <boxGeometry args={[0.3, 0.05, 0.4]} />
+        <meshStandardMaterial color={c1} />
+      </mesh>
+      <mesh castShadow receiveShadow position={[0.05, 0.05, 0]} rotation={[0, 0.5, 0]}>
+        <boxGeometry args={[0.25, 0.04, 0.35]} />
+        <meshStandardMaterial color={c2} />
+      </mesh>
+      <mesh castShadow receiveShadow position={[-0.05, 0.1, 0]} rotation={[0, -0.2, 0.1]}>
+        <boxGeometry args={[0.28, 0.04, 0.38]} />
+        <meshStandardMaterial color={c3} />
+      </mesh>
+    </group>
+  );
+}
+
 export default function FireHazard({ hazard }: FireHazardProps) {
   if (hazard.type === HazardType.ElectricalOutlet) {
     return null;
@@ -106,17 +148,27 @@ export default function FireHazard({ hazard }: FireHazardProps) {
     const isBurnt = hazard.isExtinguished;
     const typeStr = hazard.type.toString().toLowerCase().replace(/[^a-z0-9]/g, "");
 
-    // 1. STOVE / PAN
+    // Deterministic variant from ID (same fire always looks the same)
+    const variantSeed = hazard.id.charCodeAt(hazard.id.length - 1) % 4;
+
+    // 1. STOVE / PAN (Class K)
     if (typeStr.includes("classk") || typeStr.includes("stove") || typeStr.includes("grease")) {
-      // FIX: If Pan is on the floor (y < 0.5), automatically lift it to stove height (0.9)
-      // This ensures it sits on the burners, not inside the stove body.
       const heightOffset = hazard.position.y < 0.5 ? 0.9 : 0;
       return <group position={[0, heightOffset, 0]}><FryingPan isBurnt={isBurnt} /></group>;
     }
-    
-    // 2. TRASH BIN
+
+    // 2. CLASS A (Ordinary Combustibles) — 4 variants: TrashBin, WoodPallet, BookPile, Box
     if (typeStr.includes("classa") || typeStr.includes("trash") || typeStr.includes("wood") || typeStr.includes("paper") || typeStr.includes("dryer")) {
-      return <TrashBin isBurnt={isBurnt} />;
+      switch (variantSeed) {
+        case 0:
+          return <TrashBin isBurnt={isBurnt} />;
+        case 1:
+          return <WoodPallet isBurnt={isBurnt} />;
+        case 2:
+          return <BookPile isBurnt={isBurnt} />;
+        default:
+          return <GenericDebris isBurnt={isBurnt} />;
+      }
     }
 
     // 3. SPILL
@@ -149,6 +201,11 @@ export default function FireHazard({ hazard }: FireHazardProps) {
   if (typeStr.includes("stove") || typeStr.includes("classk")) {
      // If we lifted the pan, lift the fire too
      fireYOffset = hazard.position.y < 0.5 ? 1.1 : 0.2;
+  }
+  
+  // Don't render anything if hazard is extinguished (no gray debris box)
+  if (hazard.isExtinguished) {
+    return null;
   }
   
   return (

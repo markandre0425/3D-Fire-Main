@@ -13,7 +13,7 @@ export default function PauseMenu({ onResume, onRestart }: PauseMenuProps) {
   const { isMuted, toggleMute } = useAudio();
   
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-black/70 z-50">
+    <div className="absolute inset-0 flex items-center justify-center bg-black/70 z-50 pointer-events-auto">
       <Card className="w-full max-w-md bg-gray-900/95 border-2 border-gray-500 shadow-[0_25px_65px_rgba(0,0,0,0.8)] text-white">
         <CardHeader className="text-center space-y-2">
           <CardTitle className="text-sm font-semibold uppercase tracking-[0.35em] text-gray-300">

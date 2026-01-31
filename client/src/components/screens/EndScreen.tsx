@@ -71,7 +71,7 @@ export default function EndScreen() {
           
           <CardContent className="p-4 sm:p-6 lg:p-8 bg-gradient-to-b from-blue-50 to-purple-50 space-y-4 sm:space-y-6">
             
-            {/* Captain Apoy's Message */}
+            {/* Captain Berong Bumbero's Message */}
             <div className="bg-gradient-to-r from-yellow-200 to-orange-200 rounded-xl p-4 sm:p-6 border-4 border-yellow-400">
               <div className="flex items-center mb-3">
                 <div className="text-4xl sm:text-6xl mr-3">🚒</div>
@@ -79,7 +79,7 @@ export default function EndScreen() {
                   <h3 className="text-lg sm:text-2xl font-bold text-red-600">
                     {isGameComplete ? "Amazing work, Fire Hero! 🌟" : "Great effort, future hero! 💪"}
                   </h3>
-                  <p className="text-sm sm:text-lg text-gray-700 font-medium">Captain Apoy is proud of you!</p>
+                  <p className="text-sm sm:text-lg text-gray-700 font-medium">Captain Berong Bumbero is proud of you!</p>
                 </div>
               </div>
               <p className="text-gray-700 text-sm sm:text-lg leading-relaxed">

@@ -8,12 +8,15 @@ import { Level as LevelType } from "@/lib/types";
 import { useGame } from "@/lib/stores/useGame";
 
 export default function GameScreen() {
-  const { startLevel, isLevelComplete } = useFireSafety();
+  const { startLevel, isLevelComplete, currentLevel } = useFireSafety();
   const { health } = usePlayer();
   const { end } = useGame();
 
   // State to track if tutorial is active
-  const [showTutorial, setShowTutorial] = useState(true);
+  // Skip tutorial if a level other than BasicTraining is already active (quick access)
+  const [showTutorial, setShowTutorial] = useState(
+    currentLevel === LevelType.BasicTraining || currentLevel === undefined
+  );
 
   // Handle tutorial completion - transition to real game
   const handleTutorialComplete = () => {
@@ -25,6 +28,13 @@ export default function GameScreen() {
   // NOTE: do not call startLevel(Kitchen) here on mount. 
   // If we did, it would overwrite the Tutorial data and break the pickups.
   // TutorialLevel initializes its own data.
+  
+  // If a level is already started (from quick access), skip tutorial
+  useEffect(() => {
+    if (currentLevel && currentLevel !== LevelType.BasicTraining) {
+      setShowTutorial(false);
+    }
+  }, [currentLevel]);
 
   useEffect(() => {
     const gameOverCheckDelay = setTimeout(() => {
@@ -57,7 +67,7 @@ export default function GameScreen() {
         {showTutorial ? (
           <TutorialLevel onComplete={handleTutorialComplete} />
         ) : (
-          <Level />
+        <Level />
         )}
       </Suspense>
       <KeyboardManager />

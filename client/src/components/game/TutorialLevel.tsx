@@ -1,5 +1,6 @@
 import { useEffect, useRef, useMemo } from "react";
 import { Text, useTexture } from "@react-three/drei";
+import { ThreeElements } from "@react-three/fiber";
 import * as THREE from "three";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { usePlayer } from "@/lib/stores/usePlayer";
@@ -33,7 +34,7 @@ function InfoLabel({ text, position, size = 0.5, color = "black" }: { text: stri
 }
 
 export default function TutorialLevel({ onComplete }: TutorialLevelProps) {
-  const { position: playerPos, setSpawnPoint, respawn, hasExtinguisher } = usePlayer();
+  const { position: playerPos, setSpawnPoint, respawn, hasExtinguisher, setHasExtinguisher, setHasGasMask } = usePlayer();
   
   // FIX 1: Use selectors to prevent infinite re-render loops.
   // we just used `useFireSafety()`, this component would re-render every time a collider is added.
@@ -133,6 +134,10 @@ export default function TutorialLevel({ onComplete }: TutorialLevelProps) {
     if (initialized.current) return;
     initialized.current = true;
 
+    // Reset inventory so player starts tutorial empty-handed
+    setHasExtinguisher(false);
+    setHasGasMask(false);
+
     // FIX 2: Reset colliders immediately to prevent stale physics
     useFireSafety.setState({ collidables: [] });
     
@@ -154,15 +159,21 @@ export default function TutorialLevel({ onComplete }: TutorialLevelProps) {
     // HomeEnvironment (rendered below) will read 'levelData' and create the walls + colliders.
     // prevents the "Double Collider" issue and the "createBoundingBox is not defined" error.
 
-  }, [tutorialLevelData, setSpawnPoint, respawn]);
+  }, [tutorialLevelData, setSpawnPoint, respawn, setHasExtinguisher, setHasGasMask]);
 
-  // --- 3. PROGRESS CHECK ---
+  // --- 3. PROGRESS CHECK: only complete when fire is out AND player reached portal ---
+  const tutorialFire = hazards.find((h) => h.id === "tutorial-fire");
+  const isFireOut = tutorialFire ? tutorialFire.isExtinguished : false;
+
   useEffect(() => {
-    if (playerPos.z < -58 && !completionTriggered.current) {
+    if (playerPos.z < -58 && !completionTriggered.current && isFireOut) {
       completionTriggered.current = true;
+      // Clear inventory before transitioning so next level starts empty-handed
+      usePlayer.getState().setHasExtinguisher(false);
+      usePlayer.getState().setHasGasMask(false);
       onComplete();
     }
-  }, [playerPos, onComplete]);
+  }, [playerPos, onComplete, isFireOut]);
 
   return (
     <group>
@@ -222,27 +233,45 @@ export default function TutorialLevel({ onComplete }: TutorialLevelProps) {
       <InfoLabel text="(Watch your head!)" position={[0, 3.4, -20]} size={0.3} />
 
       <InfoLabel text="EQUIPMENT: GAS MASK" position={[0, 3.5, -32]} color="#10b981" size={0.7} />
+      <InfoLabel text = "GAS MASK: Protects you from smoke and harmful gases." position={[0, 2.9, -32]} color="#10b981" size={0.4} />
       <InfoLabel text="Press E to Pickup" position={[-3, 2.5, -32]} size={0.4} />
       
       <InfoLabel text="WEAPON: EXTINGUISHER" position={[0, 3.5, -42]} color="#ef4444" size={0.7} />
       <InfoLabel text="Press E to Pickup" position={[3, 2.5, -42]} size={0.4} />
       
       {/* Dynamic instruction based on state */}
-      {hasExtinguisher ? (
-         <InfoLabel text="GREAT! Now Press F to Extinguish the Fire!" position={[0, 2.5, -48]} color="#ef4444" size={0.6} />
+      {isFireOut ? (
+        <InfoLabel text="FIRE EXTINGUISHED! PROCEED." position={[0, 2.5, -52]} color="#10b981" size={0.6} />
+      ) : hasExtinguisher ? (
+        <InfoLabel text="GREAT! Now Press F to Extinguish the Fire!" position={[0, 2.5, -48]} color="#ef4444" size={0.4} />
       ) : (
-         <InfoLabel text="Grab the Extinguisher first!" position={[0, 2.5, -48]} color="#555" size={0.4} />
+        <InfoLabel text="Grab the Extinguisher first!" position={[0, 2.5, -48]} color="#555" size={0.4} />
       )}
 
-      <InfoLabel text="TRAINING COMPLETE" position={[0, 3.0, -55]} color="#10b981" size={1.0} />
-      
-      {/* Portal */}
-      <mesh position={[0, 1.5, -58]}>
-        <torusGeometry args={[1.5, 0.2, 16, 32]} />
-        <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={2} />
-      </mesh>
-      <pointLight position={[0, 1.5, -58]} color="#00ffff" intensity={2} distance={5} />
-      
+      {/* Portal & exit: only pass when fire is out */}
+      {isFireOut ? (
+        <>
+          <InfoLabel text="TRAINING COMPLETE" position={[0, 3.0, -55]} color="#10b981" size={1.0} />
+          <mesh position={[0, 1.5, -58]}>
+            <torusGeometry args={[1.5, 0.2, 16, 32]} />
+            <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={2} />
+          </mesh>
+          <pointLight position={[0, 1.5, -58]} color="#00ffff" intensity={2} distance={5} />
+        </>
+      ) : (
+        <>
+          <InfoLabel text="EXTINGUISH FIRE TO LEAVE" position={[0, 3.0, -55]} color="#ff0000" size={0.8} />
+          <mesh position={[0, 1.5, -58]}>
+            <torusGeometry args={[1.5, 0.2, 16, 32]} />
+            <meshStandardMaterial color="#555" transparent opacity={0.5} />
+          </mesh>
+          <mesh position={[0, 2.5, -58]}>
+            <boxGeometry args={[4, 5, 0.1]} />
+            <meshStandardMaterial color="#ff0000" transparent opacity={0.2} />
+          </mesh>
+        </>
+      )}
+
     </group>
   );
 }
