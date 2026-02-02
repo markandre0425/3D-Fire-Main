@@ -13,16 +13,9 @@ export default function Floor() {
     switch (currentLevel) {
       case Level.Kitchen:
       case Level.LivingRoom:
-      case Level.Bedroom:
+      case Level.Garage:
       case Level.BasicTraining:
         return 20; // 20x20 rooms
-      case Level.FireClassification:
-      case Level.EmergencyResponse:
-        return 24; // 24x24 rooms
-      case Level.AdvancedRescue:
-        return 28; // 28x28 rooms
-      case Level.BFPCertification:
-        return 32; // 32x32 rooms
       default:
         return 20;
     }

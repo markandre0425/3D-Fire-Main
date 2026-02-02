@@ -93,16 +93,9 @@ export default function Character() {
     switch (currentLevel) {
       case Level.Kitchen:
       case Level.LivingRoom:
-      case Level.Bedroom:
+      case Level.Garage:
       case Level.BasicTraining:
         return 9.5;
-      case Level.FireClassification:
-      case Level.EmergencyResponse:
-        return 11.5;
-      case Level.AdvancedRescue:
-        return 13.5;
-      case Level.BFPCertification:
-        return 15.5;
       default:
         return 9.5;
     }

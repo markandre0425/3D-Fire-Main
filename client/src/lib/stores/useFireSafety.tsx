@@ -65,8 +65,10 @@ export const useFireSafety = create<FireSafetyState>()(
     },
 
     startLevel: (level: Level) => {
-      // Reset score when entering any new level (tutorial, mission select, or level transition)
+      // Reset score and inventory when entering any new level
       usePlayer.getState().setScore(0);
+      usePlayer.getState().setHasExtinguisher(false);
+      usePlayer.getState().setHasGasMask(false);
       const levelData = LEVELS[level];
       const levelConfig = getLevelConfig(parseInt(level) || 1);
       const { collidableGeneration } = get();
@@ -232,8 +234,8 @@ export const useFireSafety = create<FireSafetyState>()(
       
       // Only award points / play sound when a hazard actually becomes extinguished
       if (awardedScore) {
-      usePlayer.getState().addScore(GAME_CONSTANTS.POINTS_FOR_EXTINGUISHING);
-      useAudio.getState().playHit();
+        usePlayer.getState().addScore(GAME_CONSTANTS.POINTS_FOR_EXTINGUISHING);
+        useAudio.getState().playHit();
       }
       
       set({ hazards: updatedHazards });

@@ -1,10 +1,55 @@
 import { useRef } from "react";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { HazardState, HazardType } from "@/lib/types";
 import Fire from "./Fire";
+import { ProceduralPropaneTank } from "./ProceduralFurniture";
 
 interface FireHazardProps {
   hazard: HazardState;
+}
+
+// --- GAS VAPOR EFFECT ---
+function GasVapor({ intensity = 1 }: { intensity: number }) {
+  const groupRef = useRef<THREE.Group>(null);
+  
+  useFrame((_, delta) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y += delta * 0.5;
+    }
+  });
+  
+  return (
+    <group ref={groupRef} position={[0, 0.5, 0]}>
+      {/* Green vapor clouds */}
+      {[0, 1, 2, 3].map((i) => (
+        <mesh 
+          key={i} 
+          position={[
+            Math.sin(i * Math.PI / 2) * 0.3,
+            Math.sin(i) * 0.2 + 0.3,
+            Math.cos(i * Math.PI / 2) * 0.3
+          ]}
+        >
+          <sphereGeometry args={[0.15 + i * 0.05, 8, 8]} />
+          <meshBasicMaterial 
+            color="#44ff44" 
+            transparent 
+            opacity={0.3 * intensity} 
+          />
+        </mesh>
+      ))}
+      {/* Rising vapor particles */}
+      <mesh position={[0, 0.6, 0]}>
+        <sphereGeometry args={[0.1, 6, 6]} />
+        <meshBasicMaterial color="#66ff66" transparent opacity={0.2 * intensity} />
+      </mesh>
+      <mesh position={[0.1, 0.8, 0.1]}>
+        <sphereGeometry args={[0.08, 6, 6]} />
+        <meshBasicMaterial color="#88ff88" transparent opacity={0.15 * intensity} />
+      </mesh>
+    </group>
+  );
 }
 
 // --- PROCEDURAL PROPS (Kitchen Items) ---
@@ -181,6 +226,11 @@ export default function FireHazard({ hazard }: FireHazardProps) {
       return <PowerStrip isBurnt={isBurnt} />;
     }
     
+    // 5. GAS LEAK - Propane tank with vapor
+    if (typeStr.includes("gas") || typeStr.includes("leak") || typeStr.includes("propane")) {
+      return <ProceduralPropaneTank />;
+    }
+    
     if (typeStr.includes("candle") || typeStr.includes("fireplace")) return null;
 
     return <GenericDebris isBurnt={isBurnt} />;
@@ -208,6 +258,9 @@ export default function FireHazard({ hazard }: FireHazardProps) {
     return null;
   }
   
+  // Check if this is a gas leak hazard
+  const isGasLeak = typeStr.includes("gas") || typeStr.includes("leak") || typeStr.includes("propane");
+  
   return (
     <group 
       ref={groupRef}
@@ -216,8 +269,8 @@ export default function FireHazard({ hazard }: FireHazardProps) {
       {/* 1. THE OBJECT (Always Visible if active) */}
       {hazard.isActive && renderProp()}
       
-      {/* 2. THE FIRE EFFECT */}
-      {shouldUseNewFire && hazard.isActive && !hazard.isExtinguished && (
+      {/* 2. THE FIRE EFFECT (not for gas leaks) */}
+      {shouldUseNewFire && !isGasLeak && hazard.isActive && !hazard.isExtinguished && (
         <Fire
           position={[0, fireYOffset, 0]} 
           size={Math.max(0.3, hazard.severity * 0.6)}
@@ -225,6 +278,11 @@ export default function FireHazard({ hazard }: FireHazardProps) {
           isActive={true}
           shape="triangular"
         />
+      )}
+      
+      {/* 3. GAS VAPOR EFFECT (only for gas leaks) */}
+      {isGasLeak && hazard.isActive && !hazard.isExtinguished && (
+        <GasVapor intensity={hazard.severity} />
       )}
     </group>
   );

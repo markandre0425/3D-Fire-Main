@@ -1,6 +1,46 @@
 import { Level, LevelData, SafetyTip, SafetyTipCategory, HazardType, InteractiveObjectType, DifficultyLevel } from "./types";
 
 export const LEVELS: Record<Level, LevelData> = {
+  [Level.BasicTraining]: {
+    id: Level.BasicTraining,
+    name: "Basic Training",
+    description: "Learn fire safety fundamentals: movement, equipment pickup, and extinguishing fires",
+    hazards: [
+      {
+        id: "tutorial-fire",
+        type: HazardType.ClassAFire,
+        position: { x: 0, y: 0, z: -52 },
+        isActive: true,
+        severity: 1,
+        isSmoking: false,
+        isExtinguished: false
+      }
+    ],
+    objects: [
+      {
+        id: "tutorial-mask",
+        type: InteractiveObjectType.GasMask,
+        position: { x: -3, y: 1.2, z: -32 },
+        isActive: true,
+        isCollected: false
+      },
+      {
+        id: "tutorial-extinguisher",
+        type: InteractiveObjectType.FireExtinguisher,
+        position: { x: 3, y: 1.2, z: -42 },
+        isActive: true,
+        isCollected: false
+      }
+    ],
+    environmentObjects: [],
+    requiredScore: 100,
+    difficulty: DifficultyLevel.Beginner,
+    learningObjectives: [
+      "Master basic movement controls (WASD, Space, C)",
+      "Learn to pick up equipment (Gas Mask, Extinguisher)",
+      "Practice extinguishing fires with the PASS technique"
+    ]
+  },
   [Level.Kitchen]: {
     id: Level.Kitchen,
     name: "Kitchen Safety",
@@ -343,106 +383,107 @@ export const LEVELS: Record<Level, LevelData> = {
       "Learn candle safety and fireplace management"
     ]
   },
-  [Level.Bedroom]: {
-    id: Level.Bedroom,
-    name: "Bedroom Safety",
-    description: "Practice fire safety measures in the bedroom",
+  [Level.Garage]: {
+    id: Level.Garage,
+    name: "Garage Workshop Safety",
+    description: "Navigate fire hazards in a garage workshop with flammable liquids, electrical tools, and hot equipment.",
     hazards: [
+      // 1. Gasoline fire near workbench (Class B - Flammable liquids)
       {
-        id: "outlet_bedroom_1",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -9.9, y: 0.4, z: -4 },
+        id: "gas_can_fire",
+        type: HazardType.ClassBFire,
+        position: { x: -7, y: 0, z: -7 },
         isActive: true,
-        severity: 1,
-        isSmoking: false,
+        severity: 2.5,
+        isSmoking: true,
         isExtinguished: false
       },
+      // 2. Electrical fire from overloaded power strip (Class C)
       {
-        id: "outlet5",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 4, y: 0.4, z: 9.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_bedroom_3",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 9.9, y: 0.4, z: 2 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_bedroom_4",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -6, y: 0.4, z: -9.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_bedroom_5",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 7, y: 0.4, z: -9.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "heater2",
-        type: HazardType.SpacerHeater,
-        position: { x: 6, y: 0, z: -6 },
+        id: "power_strip_fire",
+        type: HazardType.ClassCFire,
+        position: { x: 7, y: 0, z: -8 },
         isActive: true,
         severity: 2,
         isSmoking: true,
         isExtinguished: false
       },
+      // 3. Oily rag fire (spontaneous combustion - Class B)
       {
-        id: "dryer1",
-        type: HazardType.CloggedDryer,
-        position: { x: 7, y: 0, z: 6 },
+        id: "oily_rag_fire",
+        type: HazardType.ClassBFire,
+        position: { x: 5, y: 0, z: 5 },
         isActive: true,
-        severity: 3,
+        severity: 1.5,
         isSmoking: true,
+        isExtinguished: false
+      },
+      // 4. Overloaded outlets (mounted on walls at eye level)
+      {
+        id: "outlet_garage_1",
+        type: HazardType.ElectricalOutlet,
+        position: { x: -9.9, y: 0.4, z: 0 },
+        isActive: true,
+        severity: 1,
+        isSmoking: false,
+        isExtinguished: false
+      },
+      {
+        id: "outlet_garage_2",
+        type: HazardType.ElectricalOutlet,
+        position: { x: 9.9, y: 0.4, z: -4 },
+        isActive: true,
+        severity: 1,
+        isSmoking: false,
+        isExtinguished: false
+      },
+      // 5. Gas leak from propane tank
+      {
+        id: "propane_leak",
+        type: HazardType.GasLeak,
+        position: { x: -8, y: 0, z: 6 },
+        isActive: true,
+        severity: 2,
+        isSmoking: false,
         isExtinguished: false
       }
     ],
     objects: [
+      // Fire extinguisher (Class B for flammable liquids) - mounted on west wall
       {
-        id: "extinguisher3",
-        type: InteractiveObjectType.FireExtinguisher,
-        position: { x: -9.9, y: 1.2, z: 5 },
+        id: "extinguisher_garage",
+        type: InteractiveObjectType.FoamExtinguisher,
+        position: { x: -9.5, y: 1.2, z: -7 },
         isActive: true,
         isCollected: false
       },
+      // CO2 Extinguisher for electrical fires - mounted on east wall
       {
-        id: "gasmask5",
+        id: "co2_extinguisher",
+        type: InteractiveObjectType.CO2Extinguisher,
+        position: { x: 9.5, y: 1.2, z: -5 },
+        isActive: true,
+        isCollected: false
+      },
+      // Gas mask for fumes (mounted on north wall)
+      {
+        id: "gasmask_garage",
         type: InteractiveObjectType.GasMask,
-        position: { x: -9.9, y: 1.2, z: -3 },
+        position: { x: 3, y: 1.5, z: -9.5 },
         isActive: true,
         isCollected: false
       },
+      // Heat alarm (not smoke alarm - for garages)
       {
-        id: "gasmask6",
-        type: InteractiveObjectType.GasMask,
-        position: { x: 9.9, y: 1.2, z: 4 },
-        isActive: true,
-        isCollected: false
-      },
-      {
-        id: "detector3",
+        id: "heat_alarm",
         type: InteractiveObjectType.SmokeDetector,
-        position: { x: 0, y: 2.5, z: 0 },
+        position: { x: 0, y: 2.8, z: 0 },
         isActive: false,
         isCollected: false
       },
+      // Emergency exit (fire-rated door)
       {
-        id: "exit3",
+        id: "exit_garage",
         type: InteractiveObjectType.EmergencyExit,
         position: { x: 0, y: 1.5, z: 9.8 },
         isActive: true,
@@ -450,897 +491,238 @@ export const LEVELS: Record<Level, LevelData> = {
       }
     ],
     environmentObjects: [
+      // Floor (concrete texture)
       {
-        id: "floor",
+        id: "floor_garage",
         type: "floor",
         position: { x: 0, y: 0, z: 0 },
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 20, y: 0.1, z: 20 }
       },
+      // Walls
       {
-        id: "wall1",
+        id: "wall_garage_n",
         type: "wall",
         position: { x: 0, y: 1.5, z: -10 },
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 20, y: 3, z: 0.1 }
       },
       {
-        id: "wall2",
+        id: "wall_garage_s",
         type: "wall",
         position: { x: 0, y: 1.5, z: 10 },
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 20, y: 3, z: 0.1 }
       },
       {
-        id: "wall3",
+        id: "wall_garage_w",
         type: "wall",
         position: { x: -10, y: 1.5, z: 0 },
         rotation: { x: 0, y: Math.PI / 2, z: 0 },
         scale: { x: 20, y: 3, z: 0.1 }
       },
       {
-        id: "wall4",
+        id: "wall_garage_e",
         type: "wall",
         position: { x: 10, y: 1.5, z: 0 },
         rotation: { x: 0, y: Math.PI / 2, z: 0 },
         scale: { x: 20, y: 3, z: 0.1 }
       },
+      // Workbench (west wall)
       {
-        id: "bed",
-        type: "bed",
-        position: { x: -5, y: 0, z: 2 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 2, y: 0.8, z: 3 }
+        id: "workbench_main",
+        type: "workbench",
+        position: { x: -8, y: 0, z: -5 },
+        rotation: { x: 0, y: Math.PI / 2, z: 0 },
+        scale: { x: 1, y: 1, z: 1 }
       },
+      // Shelving unit (east wall)
       {
-        id: "dresser",
-        type: "dresser",
+        id: "shelving_1",
+        type: "garage_shelving",
+        position: { x: 8, y: 0, z: -6 },
+        rotation: { x: 0, y: -Math.PI / 2, z: 0 },
+        scale: { x: 1, y: 1, z: 1 }
+      },
+      // Car placeholder (center)
+      {
+        id: "car_main",
+        type: "garage_car",
+        position: { x: 0, y: 0, z: 2 },
+        rotation: { x: 0, y: 0, z: 0 },
+        scale: { x: 1.5, y: 1.5, z: 1.5 }
+      },
+      // Gas cans (near workbench - hazard source)
+      {
+        id: "gas_cans",
+        type: "gas_cans",
         position: { x: -7, y: 0, z: -7 },
         rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 1.5, y: 1.6, z: 0.8 }
+        scale: { x: 1, y: 1, z: 1 }
       },
+      // Tool pegboard (on wall) - 2x scale
       {
-        id: "gas_stove_bedroom",
-        type: "gas_stove",
-        position: { x: 0, y: 0, z: -9 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 2.5, y: 1.5, z: 2.5 }
-      },
-      {
-        id: "bathroom_bedroom",
-        type: "minimal_bathroom",
-        position: { x: 6, y: 0, z: -7.5 },
-        rotation: { x: 0, y: Math.PI, z: 0 }, // Rotated 180° to face into room (mounted on north wall)
-        scale: { x: 8, y: 3, z: 5 } // Depth reduced to fit within walls (z: -10 to -5)PORT
-      }
-    ],
-    requiredScore: 500,
-    difficulty: DifficultyLevel.Advanced,
-    learningObjectives: [
-      "Handle high-severity hazards like clogged dryers",
-      "Manage multiple fire sources simultaneously",
-      "Practice emergency response under time pressure"
-    ]
-  },
-  [Level.BasicTraining]: {
-    id: Level.BasicTraining,
-    name: "BFP Basic Training",
-    description: "Learn the fundamentals with Captain Berong Bumbero! Master the PASS technique and basic fire safety principles.",
-    hazards: [
-      {
-        id: "classA1",
-        type: HazardType.ClassAFire,
-        position: { x: 0, y: 0, z: -4 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet6",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -9.9, y: 0.4, z: 2 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet7",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 9.9, y: 0.4, z: -2 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_basic_3",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 4, y: 0.4, z: 9.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      }
-    ],
-    objects: [
-      {
-        id: "waterExt1",
-        type: InteractiveObjectType.WaterExtinguisher,
-        position: { x: -9.9, y: 1.2, z: 6 },
-        isActive: true,
-        isCollected: false
-      },
-      {
-        id: "basicDetector",
-        type: InteractiveObjectType.SmokeDetector,
-        position: { x: 0, y: 2.5, z: 0 },
-        isActive: false,
-        isCollected: false
-      },
-      {
-        id: "basicExit",
-        type: InteractiveObjectType.EmergencyExit,
-        position: { x: 0, y: 1.5, z: 9.8 },
-        isActive: true,
-        isCollected: false
-      }
-    ],
-    environmentObjects: [
-      {
-        id: "floor",
-        type: "floor",
-        position: { x: 0, y: 0, z: 0 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 20, y: 0.1, z: 20 }
-      },
-      {
-        id: "wall1",
-        type: "wall",
-        position: { x: 0, y: 1.5, z: -10 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 20, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall2",
-        type: "wall",
-        position: { x: 0, y: 1.5, z: 10 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 20, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall3",
-        type: "wall",
-        position: { x: -10, y: 1.5, z: 0 },
+        id: "pegboard",
+        type: "tool_pegboard",
+        position: { x: -9.9, y: 1.8, z: -2 },
         rotation: { x: 0, y: Math.PI / 2, z: 0 },
-        scale: { x: 20, y: 3, z: 0.1 }
+        scale: { x: 2, y: 2, z: 2 }
       },
+      // Trash/oily rags bin (fire hazard)
       {
-        id: "wall4",
-        type: "wall",
-        position: { x: 10, y: 1.5, z: 0 },
-        rotation: { x: 0, y: Math.PI / 2, z: 0 },
-        scale: { x: 20, y: 3, z: 0.1 }
-      },
-      {
-        id: "gas_stove_training",
-        type: "gas_stove",
-        position: { x: -6, y: 0, z: -8 },
+        id: "oily_rags_bin",
+        type: "trash_bin",
+        position: { x: 5, y: 0, z: 5 },
         rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 2.5, y: 2.5, z: 2.5 }
+        scale: { x: 1, y: 1, z: 1 }
       },
-    ],
-    requiredScore: 150,
-    difficulty: DifficultyLevel.Beginner,
-    learningObjectives: [
-      "Master the PASS technique (Pull, Aim, Squeeze, Sweep)",
-      "Identify Class A fires (ordinary combustibles)",
-      "Use water extinguisher safely and effectively"
-    ]
-  },
-  [Level.FireClassification]: {
-    id: Level.FireClassification,
-    name: "Fire Classification Challenge",
-    description: "Test your knowledge of different fire types! Match the right extinguisher to each fire class.",
-    hazards: [
+      // --- VISUAL PROPS ---
+      // Oil puddle under gas cans (visual storytelling)
       {
-        id: "classA2",
-        type: HazardType.ClassAFire,
-        position: { x: -6, y: 0, z: -5 },
-        isActive: true,
-        severity: 2,
-        isSmoking: false,
-        isExtinguished: false
+        id: "puddle_gas_cans",
+        type: "oil_puddle",
+        position: { x: -7, y: 0, z: -7 },
+        rotation: { x: 0, y: 0.5, z: 0 },
+        scale: { x: 1.2, y: 1, z: 1.2 }
       },
+      // Oil drip under car
       {
-        id: "classB1",
-        type: HazardType.ClassBFire,
-        position: { x: 0, y: 0, z: -5 },
-        isActive: true,
-        severity: 2,
-        isSmoking: true,
-        isExtinguished: false
+        id: "puddle_car",
+        type: "oil_puddle",
+        position: { x: 0, y: 0, z: 1 },
+        rotation: { x: 0, y: 0, z: 0 },
+        scale: { x: 0.8, y: 1, z: 0.8 }
       },
+      // Ladder hanging on east wall
       {
-        id: "classC1",
-        type: HazardType.ClassCFire,
-        position: { x: 6, y: 0, z: -5 },
-        isActive: true,
-        severity: 2,
-        isSmoking: false,
-        isExtinguished: false
+        id: "wall_ladder",
+        type: "ladder",
+        position: { x: 9.8, y: 1.3, z: 3 },
+        rotation: { x: 0, y: -Math.PI / 2, z: 0 },
+        scale: { x: 1, y: 1, z: 1 }
       },
+      // Bike mounted on west wall
       {
-        id: "outlet8",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -11.9, y: 0.4, z: 4 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
+        id: "wall_bike",
+        type: "hanging_bike",
+        position: { x: -9.7, y: 1.8, z: 4 },
+        rotation: { x: 0, y: Math.PI / 2, z: 0 },
+        scale: { x: 1.2, y: 1.2, z: 1.2 }
       },
+      // Motorcycle parked near south wall
       {
-        id: "outlet9",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 11.9, y: 0.4, z: -6 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
+        id: "motorcycle",
+        type: "motorcycle",
+        position: { x: 6, y: 0, z: 7 },
+        rotation: { x: 0, y: -Math.PI / 4, z: 0 },
+        scale: { x: 1, y: 1, z: 1 }
       },
+      // === ADDITIONAL GARAGE EQUIPMENT ===
+      // Shop Vac near workbench
       {
-        id: "outlet_fireclass_3",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -4, y: 0.4, z: 11.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
+        id: "shop_vac",
+        type: "shop_vac",
+        position: { x: -7, y: 0, z: -8 },
+        rotation: { x: 0, y: 0.3, z: 0 },
+        scale: { x: 1, y: 1, z: 1 }
       },
+      // Fire Extinguisher Cabinet on north wall
       {
-        id: "outlet_fireclass_4",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 7, y: 0.4, z: -11.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
+        id: "extinguisher_cabinet",
+        type: "extinguisher_cabinet",
+        position: { x: -5, y: 1.3, z: -9.9 },
+        rotation: { x: 0, y: 0, z: 0 },
+        scale: { x: 1, y: 1, z: 1 }
+      },
+      // First Aid Kit on east wall
+      {
+        id: "first_aid_kit",
+        type: "first_aid_kit",
+        position: { x: 9.9, y: 1.4, z: -2 },
+        rotation: { x: 0, y: -Math.PI / 2, z: 0 },
+        scale: { x: 1, y: 1, z: 1 }
+      },
+      // Metal Locker near entrance
+      {
+        id: "locker_1",
+        type: "locker",
+        position: { x: 8, y: 0, z: 8.5 },
+        rotation: { x: 0, y: Math.PI, z: 0 },
+        scale: { x: 1, y: 1, z: 1 }
+      },
+      // Hose Reel on west wall
+      {
+        id: "hose_reel",
+        type: "hose_reel",
+        position: { x: -9.9, y: 1.2, z: -6 },
+        rotation: { x: 0, y: Math.PI / 2, z: 0 },
+        scale: { x: 1, y: 1, z: 1 }
+      },
+      // Floor Jack near car
+      {
+        id: "floor_jack",
+        type: "floor_jack",
+        position: { x: -3, y: 0, z: 2 },
+        rotation: { x: 0, y: 0.5, z: 0 },
+        scale: { x: 1.2, y: 1.2, z: 1.2 }
+      },
+      // Air Compressor against east wall
+      {
+        id: "air_compressor",
+        type: "air_compressor",
+        position: { x: 8, y: 0, z: -7 },
+        rotation: { x: 0, y: -Math.PI / 4, z: 0 },
+        scale: { x: 1, y: 1, z: 1 }
+      },
+      // Tire Rack against south wall
+      {
+        id: "tire_rack",
+        type: "tire_rack",
+        position: { x: -6, y: 0, z: 9 },
+        rotation: { x: 0, y: 0, z: 0 },
+        scale: { x: 1.2, y: 1.2, z: 1.2 }
+      },
+      // Oil Drum Rack (flammable!) near shelving
+      {
+        id: "oil_drums",
+        type: "oil_drum_rack",
+        position: { x: 7, y: 0, z: 5 },
+        rotation: { x: 0, y: -0.3, z: 0 },
+        scale: { x: 1, y: 1, z: 1 }
+      },
+      // Oil Cans on workbench area
+      {
+        id: "oil_cans",
+        type: "oil_cans",
+        position: { x: -8.5, y: 0.9, z: -8.5 },
+        rotation: { x: 0, y: 0, z: 0 },
+        scale: { x: 1, y: 1, z: 1 }
+      },
+      // Safety Cones near hazard areas
+      {
+        id: "safety_cones_1",
+        type: "safety_cones",
+        position: { x: 3, y: 0, z: -6 },
+        rotation: { x: 0, y: 0.2, z: 0 },
+        scale: { x: 1, y: 1, z: 1 }
+      },
+      // Additional safety cones near gas area
+      {
+        id: "safety_cones_2",
+        type: "safety_cones",
+        position: { x: 6, y: 0, z: -3 },
+        rotation: { x: 0, y: -0.5, z: 0 },
+        scale: { x: 1, y: 1, z: 1 }
       }
-    ],
-    objects: [
-      {
-        id: "waterExt2",
-        type: InteractiveObjectType.WaterExtinguisher,
-        position: { x: -11.9, y: 1.2, z: 8 },
-        isActive: true,
-        isCollected: false
-      },
-      {
-        id: "foamExt1",
-        type: InteractiveObjectType.FoamExtinguisher,
-        position: { x: 0, y: 1.2, z: 11.9 },
-        isActive: true,
-        isCollected: false
-      },
-      {
-        id: "co2Ext1",
-        type: InteractiveObjectType.CO2Extinguisher,
-        position: { x: 11.9, y: 1.2, z: 8 },
-        isActive: true,
-        isCollected: false
-      },
-      {
-        id: "classDetector",
-        type: InteractiveObjectType.SmokeDetector,
-        position: { x: 0, y: 2.5, z: 0 },
-        isActive: false,
-        isCollected: false
-      }
-    ],
-    environmentObjects: [
-      {
-        id: "floor",
-        type: "floor",
-        position: { x: 0, y: 0, z: 0 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 24, y: 0.1, z: 24 }
-      },
-      {
-        id: "wall1",
-        type: "wall",
-        position: { x: 0, y: 1.5, z: -12 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 24, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall2",
-        type: "wall",
-        position: { x: 0, y: 1.5, z: 12 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 24, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall3",
-        type: "wall",
-        position: { x: -12, y: 1.5, z: 0 },
-        rotation: { x: 0, y: Math.PI / 2, z: 0 },
-        scale: { x: 24, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall4",
-        type: "wall",
-        position: { x: 12, y: 1.5, z: 0 },
-        rotation: { x: 0, y: Math.PI / 2, z: 0 },
-        scale: { x: 24, y: 3, z: 0.1 }
-      },
-      {
-        id: "gas_stove_classification",
-        type: "gas_stove",
-        position: { x: -8, y: 0, z: -10 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 2.5, y: 2.5, z: 2.5 }
-      },
     ],
     requiredScore: 600,
-    difficulty: DifficultyLevel.Intermediate,
-    learningObjectives: [
-      "Classify fire types: A (solids), B (liquids), C (electrical)",
-      "Select appropriate extinguisher for each fire class",
-      "Understand fire triangle principles"
-    ]
-  },
-  [Level.EmergencyResponse]: {
-    id: Level.EmergencyResponse,
-    name: "Emergency Response Drill",
-    description: "Handle multiple hazards and emergency scenarios like a true fire safety hero!",
-    hazards: [
-      {
-        id: "classK1",
-        type: HazardType.ClassKFire,
-        position: { x: -4, y: 0, z: -6 },
-        isActive: true,
-        severity: 3,
-        isSmoking: true,
-        isExtinguished: false
-      },
-      {
-        id: "gasLeak1",
-        type: HazardType.GasLeak,
-        position: { x: 4, y: 0, z: -6 },
-        isActive: true,
-        severity: 3,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "smokeArea1",
-        type: HazardType.SmokeScreen,
-        position: { x: 0, y: 0, z: 0 },
-        isActive: true,
-        severity: 2,
-        isSmoking: true,
-        isExtinguished: false
-      },
-      {
-        id: "outlet10",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -6, y: 0.4, z: -11.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet11",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 6, y: 0.4, z: 11.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_emerg_3",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -11.9, y: 0.4, z: -7 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_emerg_4",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 11.9, y: 0.4, z: 6 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_emerg_5",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 0, y: 0.4, z: -11.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      }
-    ],
-    objects: [
-      {
-        id: "wetChemExt1",
-        type: InteractiveObjectType.WetChemicalExtinguisher,
-        position: { x: -11.9, y: 1.2, z: 8 },
-        isActive: true,
-        isCollected: false
-      },
-      {
-        id: "emergencyAlarm1",
-        type: InteractiveObjectType.EmergencyAlarm,
-        position: { x: 8, y: 1.8, z: 8 },
-        isActive: false,
-        isCollected: false
-      },
-      {
-        id: "firstAid1",
-        type: InteractiveObjectType.FirstAidKit,
-        position: { x: 0, y: 1.2, z: 11.9 },
-        isActive: true,
-        isCollected: false
-      },
-      {
-        id: "emergExit1",
-        type: InteractiveObjectType.EmergencyExit,
-        position: { x: -11.8, y: 1.5, z: 0 },
-        isActive: true,
-        isCollected: false
-      },
-      {
-        id: "emergExit2",
-        type: InteractiveObjectType.EmergencyExit,
-        position: { x: 11.8, y: 1.5, z: 0 },
-        isActive: true,
-        isCollected: false
-      }
-    ],
-    environmentObjects: [
-      {
-        id: "floor",
-        type: "floor",
-        position: { x: 0, y: 0, z: 0 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 24, y: 0.1, z: 24 }
-      },
-      {
-        id: "wall1",
-        type: "wall",
-        position: { x: 0, y: 1.5, z: -12 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 24, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall2",
-        type: "wall",
-        position: { x: 0, y: 1.5, z: 12 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 24, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall3",
-        type: "wall",
-        position: { x: -12, y: 1.5, z: 0 },
-        rotation: { x: 0, y: Math.PI / 2, z: 0 },
-        scale: { x: 24, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall4",
-        type: "wall",
-        position: { x: 12, y: 1.5, z: 0 },
-        rotation: { x: 0, y: Math.PI / 2, z: 0 },
-        scale: { x: 24, y: 3, z: 0.1 }
-      },
-      {
-        id: "gas_stove_emergency",
-        type: "gas_stove",
-        position: { x: -4, y: 0, z: -10 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 2.5, y: 2.5, z: 2.5 }
-      },
-    ],
-    requiredScore: 800,
-    difficulty: DifficultyLevel.Advanced,
-    learningObjectives: [
-      "Manage Class K fires (cooking oils) with wet chemical extinguisher",
-      "Recognize and respond to gas leaks safely",
-      "Navigate through smoke using proper techniques",
-      "Activate emergency alarm systems"
-    ]
-  },
-  [Level.AdvancedRescue]: {
-    id: Level.AdvancedRescue,
-    name: "Advanced Rescue Operations",
-    description: "Complex multi-hazard scenario requiring expert coordination and rescue techniques.",
-    hazards: [
-      {
-        id: "classD1",
-        type: HazardType.ClassDFire,
-        position: { x: -6, y: 0, z: -5 },
-        isActive: true,
-        severity: 4,
-        isSmoking: true,
-        isExtinguished: false
-      },
-      {
-        id: "chemSpill1",
-        type: HazardType.ChemicalSpill,
-        position: { x: 6, y: 0, z: -5 },
-        isActive: true,
-        severity: 4,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "multiSmoke1",
-        type: HazardType.SmokeScreen,
-        position: { x: -3, y: 0, z: 3 },
-        isActive: true,
-        severity: 3,
-        isSmoking: true,
-        isExtinguished: false
-      },
-      {
-        id: "multiSmoke2",
-        type: HazardType.SmokeScreen,
-        position: { x: 3, y: 0, z: 3 },
-        isActive: true,
-        severity: 3,
-        isSmoking: true,
-        isExtinguished: false
-      },
-      {
-        id: "outlet12",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -13.9, y: 0.4, z: 6 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet13",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 13.9, y: 0.4, z: -6 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_rescue_3",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -13.9, y: 0.4, z: -8 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_rescue_4",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 13.9, y: 0.4, z: 8 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_rescue_5",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -8, y: 0.4, z: 13.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_rescue_6",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 8, y: 0.4, z: -13.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      }
-    ],
-    objects: [
-      {
-        id: "powderExt1",
-        type: InteractiveObjectType.PowderExtinguisher,
-        position: { x: -13.9, y: 1.2, z: 10 },
-        isActive: true,
-        isCollected: false
-      },
-      {
-        id: "firstAid2",
-        type: InteractiveObjectType.FirstAidKit,
-        position: { x: 0, y: 1.2, z: 13.9 },
-        isActive: true,
-        isCollected: false
-      }
-    ],
-    environmentObjects: [
-      {
-        id: "floor",
-        type: "floor",
-        position: { x: 0, y: 0, z: 0 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 28, y: 0.1, z: 28 }
-      },
-      {
-        id: "wall1",
-        type: "wall",
-        position: { x: 0, y: 1.5, z: -14 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 28, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall2",
-        type: "wall",
-        position: { x: 0, y: 1.5, z: 14 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 28, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall3",
-        type: "wall",
-        position: { x: -14, y: 1.5, z: 0 },
-        rotation: { x: 0, y: Math.PI / 2, z: 0 },
-        scale: { x: 28, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall4",
-        type: "wall",
-        position: { x: 14, y: 1.5, z: 0 },
-        rotation: { x: 0, y: Math.PI / 2, z: 0 },
-        scale: { x: 28, y: 3, z: 0.1 }
-      },
-      {
-        id: "gas_stove_advanced",
-        type: "gas_stove",
-        position: { x: -8, y: 0, z: -12 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 3, y: 3, z: 3 }
-      },
-    ],
-    requiredScore: 1000,
     difficulty: DifficultyLevel.Expert,
     learningObjectives: [
-      "Handle Class D fires (metals) with powder extinguisher",
-      "Manage chemical spills safely",
-      "Navigate complex smoke-filled environments",
-      "Use escape ropes for emergency evacuation"
-    ]
-  },
-  [Level.BFPCertification]: {
-    id: Level.BFPCertification,
-    name: "BFP Master Certification",
-    description: "Ultimate fire safety challenge! Prove you're ready for BFP certification with Captain Berong Bumbero's master test.",
-    hazards: [
-      {
-        id: "masterClassB",
-        type: HazardType.ClassBFire,
-        position: { x: 0, y: 0, z: -8 },
-        isActive: true,
-        severity: 3,
-        isSmoking: true,
-        isExtinguished: false
-      },
-      {
-        id: "masterClassC",
-        type: HazardType.ClassCFire,
-        position: { x: 8, y: 0, z: -8 },
-        isActive: true,
-        severity: 3,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "masterClassK",
-        type: HazardType.ClassKFire,
-        position: { x: -4, y: 0, z: 0 },
-        isActive: true,
-        severity: 4,
-        isSmoking: true,
-        isExtinguished: false
-      },
-      {
-        id: "masterGas",
-        type: HazardType.GasLeak,
-        position: { x: 4, y: 0, z: 0 },
-        isActive: true,
-        severity: 4,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "masterSmoke1",
-        type: HazardType.SmokeScreen,
-        position: { x: -4, y: 0, z: 4 },
-        isActive: true,
-        severity: 4,
-        isSmoking: true,
-        isExtinguished: false
-      },
-      {
-        id: "masterSmoke2",
-        type: HazardType.SmokeScreen,
-        position: { x: 4, y: 0, z: 4 },
-        isActive: true,
-        severity: 4,
-        isSmoking: true,
-        isExtinguished: false
-      },
-      {
-        id: "outlet14",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -8, y: 0.4, z: -15.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet15",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 8, y: 0.4, z: 15.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_cert_3",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -15.9, y: 0.4, z: -10 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_cert_4",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 15.9, y: 0.4, z: 10 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_cert_5",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -10, y: 0.4, z: 15.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_cert_6",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 10, y: 0.4, z: -15.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_cert_7",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 0, y: 0.4, z: -15.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      }
-    ],
-    objects: [
-      {
-        id: "masterWater",
-        type: InteractiveObjectType.WaterExtinguisher,
-        position: { x: -15.9, y: 1.2, z: 12 },
-        isActive: true,
-        isCollected: false
-      },
-      {
-        id: "masterFoam",
-        type: InteractiveObjectType.FoamExtinguisher,
-        position: { x: -6, y: 1.2, z: 15.9 },
-        isActive: true,
-        isCollected: false
-      },
-      {
-        id: "masterCO2",
-        type: InteractiveObjectType.CO2Extinguisher,
-        position: { x: 0, y: 1.2, z: 15.9 },
-        isActive: true,
-        isCollected: false
-      },
-      {
-        id: "masterWetChem",
-        type: InteractiveObjectType.WetChemicalExtinguisher,
-        position: { x: 15.9, y: 1.2, z: 12 },
-        isActive: true,
-        isCollected: false
-      },
-      {
-        id: "masterAlarm",
-        type: InteractiveObjectType.EmergencyAlarm,
-        position: { x: 6, y: 1.8, z: 5 },
-        isActive: false,
-        isCollected: false
-      }
-    ],
-    environmentObjects: [
-      {
-        id: "floor",
-        type: "floor",
-        position: { x: 0, y: 0, z: 0 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 32, y: 0.1, z: 32 }
-      },
-      {
-        id: "wall1",
-        type: "wall",
-        position: { x: 0, y: 1.5, z: -16 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 32, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall2",
-        type: "wall",
-        position: { x: 0, y: 1.5, z: 16 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 32, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall3",
-        type: "wall",
-        position: { x: -16, y: 1.5, z: 0 },
-        rotation: { x: 0, y: Math.PI / 2, z: 0 },
-        scale: { x: 32, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall4",
-        type: "wall",
-        position: { x: 16, y: 1.5, z: 0 },
-        rotation: { x: 0, y: Math.PI / 2, z: 0 },
-        scale: { x: 32, y: 3, z: 0.1 }
-      },
-      {
-        id: "gas_stove_master_1",
-        type: "gas_stove",
-        position: { x: -10, y: 0, z: -14 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 3.5, y: 3.5, z: 3.5 }
-      },
-      {
-        id: "gas_stove_master_2",
-        type: "gas_stove",
-        position: { x: 10, y: 0, z: -14 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 3.5, y: 3.5, z: 3.5 }
-      },
-    ],
-    requiredScore: 1500,
-    difficulty: DifficultyLevel.Master,
-    learningObjectives: [
-      "Master all fire classes and appropriate extinguisher types",
-      "Demonstrate expert PASS technique under pressure",
-      "Coordinate complex emergency response procedures",
-      "Achieve BFP fire safety certification standards"
+      "Identify flammable liquid hazards (gasoline, paint, propane)",
+      "Use proper extinguisher types (Class B for liquids, Class C for electrical)",
+      "Store flammables 3 feet from heat sources",
+      "Recognize spontaneous combustion risks (oily rags)",
+      "Use heat alarms instead of smoke alarms in garages"
     ]
   }
 };

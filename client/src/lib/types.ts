@@ -86,12 +86,8 @@ export enum InteractiveObjectType {
 export enum Level {
   Kitchen = "Kitchen",
   LivingRoom = "LivingRoom",
-  Bedroom = "Bedroom",
-  BasicTraining = "BasicTraining",
-  FireClassification = "FireClassification",
-  EmergencyResponse = "EmergencyResponse",
-  AdvancedRescue = "AdvancedRescue",
-  BFPCertification = "BFPCertification"
+  Garage = "Garage",
+  BasicTraining = "BasicTraining"
 }
 
 export interface LevelData {

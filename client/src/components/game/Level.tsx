@@ -25,16 +25,9 @@ export default function Level() {
     switch (currentLevel) {
       case LevelEnum.Kitchen:
       case LevelEnum.LivingRoom:
-      case LevelEnum.Bedroom:
+      case LevelEnum.Garage:
       case LevelEnum.BasicTraining:
         return { minX: -9, maxX: 9, minZ: -9, maxZ: 9, y: 0.1 };
-      case LevelEnum.FireClassification:
-      case LevelEnum.EmergencyResponse:
-        return { minX: -11, maxX: 11, minZ: -11, maxZ: 11, y: 0.1 };
-      case LevelEnum.AdvancedRescue:
-        return { minX: -13, maxX: 13, minZ: -13, maxZ: 13, y: 0.1 };
-      case LevelEnum.BFPCertification:
-        return { minX: -15, maxX: 15, minZ: -15, maxZ: 15, y: 0.1 };
       default:
         return { minX: -9, maxX: 9, minZ: -9, maxZ: 9, y: 0.1 };
     }

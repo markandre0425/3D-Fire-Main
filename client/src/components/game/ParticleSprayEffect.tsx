@@ -80,27 +80,27 @@ export default function ParticleSprayEffect({
 
   const createParticle = (): Particle => {
     const angle = playerRotation.y;
-    const spreadAngle = (Math.random() - 0.5) * 0.15; // Narrower cone (was 0.4)
+    const spreadAngle = (Math.random() - 0.5) * 0.15;
     
-    let baseSpeed = 2.5; // 50% of original (was 5)
+    let baseSpeed = 2.5;
     let upwardBias = -0.3;
     
     switch (extinguisherType) {
       case InteractiveObjectType.CO2Extinguisher:
-        baseSpeed = 3; // 50% of original (was 6)
+        baseSpeed = 3;
         upwardBias = 0;
         break;
       case InteractiveObjectType.FoamExtinguisher:
-        baseSpeed = 2; // 50% of original (was 4)
+        baseSpeed = 2;
         upwardBias = -0.5;
         break;
       case InteractiveObjectType.PowderExtinguisher:
-        baseSpeed = 2.75; // 50% of original (was 5.5)
+        baseSpeed = 2.75;
         upwardBias = -0.2;
         break;
     }
 
-    const speed = baseSpeed + Math.random() * 1; // 50% of original (was 2)
+    const speed = baseSpeed + Math.random() * 1;
 
     return {
       position: new THREE.Vector3(
@@ -114,7 +114,7 @@ export default function ParticleSprayEffect({
         Math.cos(angle + spreadAngle) * speed
       ),
       life: 1.0,
-      maxLife: 0.5 + Math.random() * 0.25, // 50% shorter life (was 1.0 + 0.5)
+      maxLife: 0.5 + Math.random() * 0.25,
       size: (0.1 + Math.random() * 0.15),
       color: sprayColors[Math.floor(Math.random() * sprayColors.length)].clone()
     };
@@ -159,25 +159,25 @@ export default function ParticleSprayEffect({
         const angle = playerRotation.y;
         const spreadAngle = (Math.random() - 0.5) * 0.15; // Narrower cone
         
-        let baseSpeed = 2.5; // 50% of original
+        let baseSpeed = 2.5; 
         let upwardBias = -0.3;
         
         switch (extinguisherType) {
           case InteractiveObjectType.CO2Extinguisher:
-            baseSpeed = 3; // 50% of original
+            baseSpeed = 3;
             upwardBias = 0;
             break;
           case InteractiveObjectType.FoamExtinguisher:
-            baseSpeed = 2; // 50% of original
+            baseSpeed = 2; 
             upwardBias = -0.5;
             break;
           case InteractiveObjectType.PowderExtinguisher:
-            baseSpeed = 2.75; // 50% of original
+            baseSpeed = 2.75;
             upwardBias = -0.2;
             break;
         }
 
-        const speed = baseSpeed + Math.random() * 1; // 50% of original
+        const speed = baseSpeed + Math.random() * 1;
         
         particle.position.set(
           0, // Start at center
@@ -202,7 +202,7 @@ export default function ParticleSprayEffect({
       // Air resistance
       particle.velocity.y *= 0.95;
 
-      // Update geometry attributes (position is relative to the points object)
+      // Update geometry attributes
       const i3 = i * 3;
       positions[i3] = particle.position.x;
       positions[i3 + 1] = particle.position.y;
@@ -285,7 +285,7 @@ export default function ParticleSprayEffect({
 
   if (!isActive || !renderParticles || !geometry || !material) return null;
 
-  // Calculate nozzle position (in front of player at chest height)
+  // Calculate nozzle position (in front of player like SF and CF)
   const angle = playerRotation.y;
   const nozzleX = playerPosition.x + Math.sin(angle) * 0.5;
   const nozzleY = playerPosition.y + 0.7; // Chest height

@@ -12,7 +12,6 @@ import {
   ArrowLeft,
   Volume2,
   VolumeX,
-  HelpCircle,
 } from "lucide-react";
 import { LEVELS } from "@/lib/constants";
 import { Level, DifficultyLevel } from "@/lib/types";
@@ -25,7 +24,6 @@ interface MainMenuProps {
 export default function MainMenu({ onStartTutorial, onStartGame }: MainMenuProps) {
   const [showOptions, setShowOptions] = useState(false);
   const [showLevelSelect, setShowLevelSelect] = useState(false);
-  const [showFAQ, setShowFAQ] = useState(false);
   const [expandedHowToPlay, setExpandedHowToPlay] = useState(false);
   const { isMuted, toggleMute } = useAudio();
   const { startLevel } = useFireSafety();
@@ -178,37 +176,6 @@ export default function MainMenu({ onStartTutorial, onStartGame }: MainMenuProps
                 </div>
               </div>
             </div>
-          ) : showFAQ ? (
-            <div className="space-y-6 animate-in slide-in-from-right-8 duration-300">
-              <div className="flex items-center mb-4">
-                <Button
-                  onClick={() => setShowFAQ(false)}
-                  className="mr-4 bg-gray-400 hover:bg-gray-500 text-white w-12 h-12 rounded-full shadow-md"
-                >
-                  <ArrowLeft className="w-6 h-6" />
-                </Button>
-                <h3 className="text-3xl font-black text-slate-700 uppercase tracking-wide flex items-center gap-2">
-                  <HelpCircle className="w-8 h-8 text-yellow-500" />
-                  Field Manual / FAQ
-                </h3>
-              </div>
-              <Card className="p-6 bg-slate-50 border-2 border-slate-200 rounded-2xl text-left">
-                <CardContent className="p-0 space-y-6">
-                  <div>
-                    <p className="font-semibold text-slate-800">How do I jump to a specific level (e.g. Level 2 – Living Room)?</p>
-                    <p className="text-slate-600 text-sm mt-1">Use <strong>MISSION SELECT</strong> to choose any level, including Living Room Safety (Level 2).</p>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-800">What does START TRAINING do?</p>
-                    <p className="text-slate-600 text-sm mt-1">It takes you straight into the in-game tutorial (Basic Training) so you can learn controls and safety in the 3D environment.</p>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-800">Where can I see controls?</p>
-                    <p className="text-slate-600 text-sm mt-1">Click <strong>CONTROLS</strong> for a summary, or check the on-screen hints during play.</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-full space-y-6 animate-in zoom-in-95 duration-300">
               <div className="bg-white p-6 rounded-3xl border-4 border-orange-200 shadow-lg max-w-2xl text-center relative overflow-visible">
@@ -241,16 +208,6 @@ export default function MainMenu({ onStartTutorial, onStartGame }: MainMenuProps
                   </span>
                 </Button>
                 
-                <Button
-                  className="group w-full bg-orange-500 hover:bg-orange-400 text-white h-20 text-xl font-black rounded-3xl border-b-8 border-orange-700 active:border-b-0 active:translate-y-2 transition-all shadow-xl"
-                  onClick={() => setShowFAQ(true)}
-                >
-                  <span className="flex items-center justify-center gap-3">
-                    <HelpCircle className="h-6 w-6 text-yellow-500 group-hover:text-yellow-400" />
-                    Field Manual / FAQ
-                  </span>
-                </Button>
-
                 <div className="grid grid-cols-2 gap-4">
                   <Button
                     className="bg-purple-500 hover:bg-purple-400 text-white h-16 font-bold rounded-2xl border-b-6 border-purple-700 active:border-b-0 active:translate-y-2 transition-all"

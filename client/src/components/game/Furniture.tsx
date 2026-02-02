@@ -5,7 +5,43 @@ import ModelLoader from "./ModelLoader";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { createBoundingBox } from "../../lib/collision";
 import { HazardType, InteractiveObjectType } from "@/lib/types";
-import { ProceduralCounter, ProceduralStove, ProceduralComputer, ProceduralDesk, ProceduralSpeaker, ProceduralCloset, ClosetLightsStrip1, ClosetLightsStrip2, ProceduralMirror, ProceduralWallTV } from "./ProceduralFurniture";
+import { 
+  ProceduralCounter, 
+  ProceduralStove, 
+  ProceduralComputer, 
+  ProceduralDesk, 
+  ProceduralSpeaker, 
+  ProceduralCloset, 
+  ClosetLightsStrip1, 
+  ClosetLightsStrip2, 
+  ProceduralMirror, 
+  ProceduralWallTV,
+  // Garage components
+  ProceduralWorkbench,
+  ProceduralGarageShelving,
+  ProceduralWaterHeater,
+  ProceduralCar,
+  ProceduralGasCans,
+  ProceduralToolPegboard,
+  ProceduralTrashBin,
+  // Garage visual props
+  ProceduralPuddle,
+  ProceduralLadder,
+  ProceduralHangingBike,
+  ProceduralMotorcycle,
+  // Additional garage equipment
+  ProceduralShopVac,
+  ProceduralExtinguisherCabinet,
+  ProceduralFirstAidKit,
+  ProceduralLocker,
+  ProceduralHoseReel,
+  ProceduralFloorJack,
+  ProceduralAirCompressor,
+  ProceduralTireRack,
+  ProceduralOilDrumRack,
+  ProceduralOilCans,
+  ProceduralSafetyCones
+} from "./ProceduralFurniture";
 
 /** Returns the model path for a furniture type, or null if none. Single source of truth for "does this type have a 3D model?" */
 function getModelPathForType(type: string): string | null {
@@ -264,6 +300,185 @@ export default function Furniture({
     return (
       <group position={position} rotation={rotation} scale={scale}>
         <ProceduralWallTV />
+      </group>
+    );
+  }
+
+  // --- GARAGE / WORKSHOP COMPONENTS ---
+  if (type === "workbench") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralWorkbench />
+      </group>
+    );
+  }
+
+  if (type === "garage_shelving") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralGarageShelving />
+      </group>
+    );
+  }
+
+  if (type === "water_heater") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralWaterHeater />
+      </group>
+    );
+  }
+
+  if (type === "garage_car") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralCar />
+      </group>
+    );
+  }
+
+  if (type === "gas_cans") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralGasCans />
+      </group>
+    );
+  }
+
+  if (type === "tool_pegboard") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralToolPegboard />
+      </group>
+    );
+  }
+
+  if (type === "trash_bin") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralTrashBin />
+      </group>
+    );
+  }
+
+  // Garage visual props (decoration only)
+  if (type === "oil_puddle" || type === "gas_puddle" || type === "puddle") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralPuddle />
+      </group>
+    );
+  }
+
+  if (type === "ladder" || type === "wall_ladder") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralLadder />
+      </group>
+    );
+  }
+
+  if (type === "hanging_bike" || type === "ceiling_bike") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralHangingBike />
+      </group>
+    );
+  }
+
+  if (type === "motorcycle" || type === "motorbike") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralMotorcycle />
+      </group>
+    );
+  }
+  
+  // Additional garage equipment
+  if (type === "shop_vac" || type === "shopvac") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralShopVac />
+      </group>
+    );
+  }
+  
+  if (type === "extinguisher_cabinet" || type === "fire_cabinet") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralExtinguisherCabinet />
+      </group>
+    );
+  }
+  
+  if (type === "first_aid" || type === "first_aid_kit" || type === "firstaid") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralFirstAidKit />
+      </group>
+    );
+  }
+  
+  if (type === "locker" || type === "metal_locker") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralLocker />
+      </group>
+    );
+  }
+  
+  if (type === "hose_reel" || type === "hosereel") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralHoseReel />
+      </group>
+    );
+  }
+  
+  if (type === "floor_jack" || type === "jack") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralFloorJack />
+      </group>
+    );
+  }
+  
+  if (type === "air_compressor" || type === "compressor") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralAirCompressor />
+      </group>
+    );
+  }
+  
+  if (type === "tire_rack" || type === "tires") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralTireRack />
+      </group>
+    );
+  }
+  
+  if (type === "oil_drum_rack" || type === "oil_drums" || type === "drums") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralOilDrumRack />
+      </group>
+    );
+  }
+  
+  if (type === "oil_cans" || type === "fluid_bottles" || type === "lubricants") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralOilCans />
+      </group>
+    );
+  }
+  
+  if (type === "safety_cones" || type === "cones" || type === "traffic_cones") {
+    return (
+      <group position={position} rotation={rotation} scale={scale}>
+        <ProceduralSafetyCones />
       </group>
     );
   }

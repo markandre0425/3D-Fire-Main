@@ -341,9 +341,9 @@ export default function FirstPersonPlayer() {
       }
       
       // --- EXTINGUISHING LOGIC (GAMEPLAY, DAMAGE OVER TIME) ---
-      // run hazard checks at a fixed interval to save CPU,
-      // also apply a severity reduction scaled by time to keep the rate consistent.
-      const checkInterval = 0.1; // seconds, 10 checks per second
+      // Throttle hazard checks to avoid 10 store updates/sec (was causing hang when fire almost out).
+      // Fewer updates = fewer re-renders of Hazard/Lights. Same damage/sec: rate * interval.
+      const checkInterval = 0.25; // seconds, 4 checks per second (was 0.1)
 
       if (extinguishCooldown.current > 0) {
         extinguishCooldown.current -= delta;

@@ -2,6 +2,7 @@ import { useEffect, useRef, useMemo } from "react";
 import { Text, useTexture } from "@react-three/drei";
 import { ThreeElements } from "@react-three/fiber";
 import * as THREE from "three";
+import { DoubleSide } from "three";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { usePlayer } from "@/lib/stores/usePlayer";
 import { InteractiveObjectType, HazardType, LevelData, Level, DifficultyLevel, EnvironmentObject } from "@/lib/types";
@@ -45,15 +46,16 @@ export default function TutorialLevel({ onComplete }: TutorialLevelProps) {
   const initialized = useRef(false);
   const completionTriggered = useRef(false);
 
-  // Load floor texture
-  const woodTexture = useTexture("/textures/wood.jpg");
-  
-  // Configure texture tiling for the long hallway
-  useEffect(() => {
-    woodTexture.wrapS = woodTexture.wrapT = THREE.RepeatWrapping;
-    // Floor is 20x100, scaling by 2.5 that gives a natural plank size
-    woodTexture.repeat.set(20 / 2.5, 100 / 2.5); 
-  }, [woodTexture]);
+  // Load floor texture - clone to avoid shared state with other components
+  const woodTextureBase = useTexture("/textures/wood.jpg");
+  const woodTexture = useMemo(() => {
+    const tex = woodTextureBase.clone();
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    // Same density as Kitchen floor (20/2.5 = 8 repeats per 20 units)
+    tex.repeat.set(20 / 2.5, 100 / 2.5);
+    tex.needsUpdate = true;
+    return tex;
+  }, [woodTextureBase]);
 
   // --- 1. DEFINE TUTORIAL LEVEL DATA ---
   const tutorialLevelData = useMemo<LevelData>(() => {
@@ -184,9 +186,10 @@ export default function TutorialLevel({ onComplete }: TutorialLevelProps) {
       <HomeEnvironment />
 
       {/* Manual Floor (Visual Only - No Physics to prevent bouncing) */}
+      {/* Uses same wood texture and settings as Floor.tsx for consistency */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -40]} receiveShadow>
         <planeGeometry args={[20, 100]} />
-        <meshStandardMaterial map={woodTexture} />
+        <meshStandardMaterial map={woodTexture} side={DoubleSide} />
       </mesh>
 
       {/* Render Game Entities */}

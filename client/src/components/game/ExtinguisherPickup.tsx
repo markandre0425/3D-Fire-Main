@@ -16,6 +16,11 @@ export default function InteractiveObjectComponent({ object, isCollected }: Exti
   const renderObject = useMemo(() => {
     switch (object.type) {
       case InteractiveObjectType.FireExtinguisher:
+      case InteractiveObjectType.FoamExtinguisher:
+      case InteractiveObjectType.CO2Extinguisher:
+      case InteractiveObjectType.WaterExtinguisher:
+      case InteractiveObjectType.PowderExtinguisher:
+      case InteractiveObjectType.WetChemicalExtinguisher:
         return <FireExtinguisher object={object} isCollected={isCollected} />;
       case InteractiveObjectType.EmergencyExit:
         return <ExitSign object={object} />;

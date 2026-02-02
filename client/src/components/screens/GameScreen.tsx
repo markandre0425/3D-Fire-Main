@@ -53,8 +53,8 @@ export default function GameScreen() {
 
       if (currentLevel === LevelType.Kitchen && !completedLevels.includes(LevelType.LivingRoom)) {
         setTimeout(() => startLevel(LevelType.LivingRoom), 2000);
-      } else if (currentLevel === LevelType.LivingRoom && !completedLevels.includes(LevelType.Bedroom)) {
-        setTimeout(() => startLevel(LevelType.Bedroom), 2000);
+      } else if (currentLevel === LevelType.LivingRoom && !completedLevels.includes(LevelType.Garage)) {
+        setTimeout(() => startLevel(LevelType.Garage), 2000);
       } else {
         setTimeout(() => end(), 2000);
       }
