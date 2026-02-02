@@ -9,6 +9,7 @@ interface AudioState {
   coughSound: Howl | null;
   fireDamageSound: Howl | null;
   deathSound: Howl | null;
+  noAmmoSound: Howl | null;
   isMuted: boolean;
 
   setBackgroundMusic: (music: Howl) => void;
@@ -18,6 +19,7 @@ interface AudioState {
   setCoughSound: (sound: Howl) => void;
   setFireDamageSound: (sound: Howl) => void;
   setDeathSound: (sound: Howl) => void;
+  setNoAmmoSound: (sound: Howl) => void;
 
   toggleMute: () => void;
   playHit: () => void;
@@ -26,6 +28,7 @@ interface AudioState {
   playCough: () => void;
   playFireDamage: () => void;
   playDeath: () => void;
+  playNoAmmo: () => void;
 }
 
 export const useAudio = create<AudioState>((set, get) => ({
@@ -36,6 +39,7 @@ export const useAudio = create<AudioState>((set, get) => ({
   coughSound: null,
   fireDamageSound: null,
   deathSound: null,
+  noAmmoSound: null,
   isMuted: false, // Changed from true - sounds play by default
 
   setBackgroundMusic: (music) => set({ backgroundMusic: music }),
@@ -45,9 +49,10 @@ export const useAudio = create<AudioState>((set, get) => ({
   setCoughSound: (sound) => set({ coughSound: sound }),
   setFireDamageSound: (sound) => set({ fireDamageSound: sound }),
   setDeathSound: (sound) => set({ deathSound: sound }),
+  setNoAmmoSound: (sound) => set({ noAmmoSound: sound }),
   
   toggleMute: () => {
-    const { isMuted, backgroundMusic, hitSound, successSound, levelCompletedSound, coughSound, fireDamageSound, deathSound } = get();
+    const { isMuted, backgroundMusic, hitSound, successSound, levelCompletedSound, coughSound, fireDamageSound, deathSound, noAmmoSound } = get();
     const newMutedState = !isMuted;
 
     if (backgroundMusic) {
@@ -76,6 +81,10 @@ export const useAudio = create<AudioState>((set, get) => ({
     
     if (deathSound) {
       deathSound.mute(newMutedState);
+    }
+    
+    if (noAmmoSound) {
+      noAmmoSound.mute(newMutedState);
     }
 
     set({ isMuted: newMutedState });
@@ -141,6 +150,17 @@ export const useAudio = create<AudioState>((set, get) => ({
     if (deathSound && !isMuted) {
       deathSound.volume(0.7);
       deathSound.play();
+    }
+  },
+  
+  playNoAmmo: () => {
+    const { noAmmoSound, isMuted } = get();
+    if (noAmmoSound && !isMuted) {
+      // Only play if not already playing to avoid spam
+      if (!noAmmoSound.playing()) {
+        noAmmoSound.volume(0.5);
+        noAmmoSound.play();
+      }
     }
   }
 }));

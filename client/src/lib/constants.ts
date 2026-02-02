@@ -111,6 +111,13 @@ export const LEVELS: Record<Level, LevelData> = {
         position: { x: 0, y: 1.5, z: 9.8 },
         isActive: true,
         isCollected: false
+      },
+      {
+        id: "cabinet_kitchen",
+        type: "ExtinguisherCabinet" as InteractiveObjectType,
+        position: { x: 9.9, y: 1.3, z: -4 },
+        isActive: true,
+        isCollected: false
       }
     ],
     environmentObjects: [
@@ -307,6 +314,13 @@ export const LEVELS: Record<Level, LevelData> = {
         position: { x: 0, y: 1.5, z: 9.8 }, // South Wall Exit (matches Kitchen level)
         isActive: true,
         isCollected: false
+      },
+      {
+        id: "cabinet_livingroom",
+        type: "ExtinguisherCabinet" as InteractiveObjectType,
+        position: { x: 9.9, y: 1.3, z: 0 }, // East Wall
+        isActive: true,
+        isCollected: false
       }
     ],
     environmentObjects: [
@@ -486,6 +500,14 @@ export const LEVELS: Record<Level, LevelData> = {
         id: "exit_garage",
         type: InteractiveObjectType.EmergencyExit,
         position: { x: 0, y: 1.5, z: 9.8 },
+        isActive: true,
+        isCollected: false
+      },
+      // Fire Extinguisher Cabinet (refill station)
+      {
+        id: "cabinet_garage",
+        type: "ExtinguisherCabinet" as InteractiveObjectType,
+        position: { x: -5, y: 1.3, z: -9.9 }, // Same position as visual cabinet
         isActive: true,
         isCollected: false
       }
@@ -862,6 +884,27 @@ export const GAME_CONSTANTS = {
   GAS_MASK_PROTECTION: 0.9,      // Gas mask reduces oxygen depletion by 90%
   OXYGEN_RECOVERY_RATE: 10,      // Oxygen recovery per second when safe
   LOW_OXYGEN_DAMAGE_RATE: 5      // Damage per second when oxygen is 0
+};
+
+// Extinguisher ammo system constants
+export const EXTINGUISHER_AMMO = {
+  MAX_CAPACITY: 100,              // Maximum ammo percentage
+  DEFAULT_DRAIN_RATE: 4,          // Default drain rate (% per second) - ~25 seconds of spray
+  LOW_AMMO_THRESHOLD: 30,         // Show warning at 30%
+  CRITICAL_AMMO_THRESHOLD: 10,    // Critical warning at 10%
+  RESPAWN_DELAY: 15000,           // 15 seconds to respawn after depletion
+  CABINET_REFILL_AMOUNT: 100,     // Full refill from cabinet
+  
+  // Drain rates per extinguisher type (% per second)
+  // Lower = longer spray time, Higher = shorter spray time
+  DRAIN_RATES: {
+    FireExtinguisher: 4,          // ~25 seconds
+    WaterExtinguisher: 3.33,      // ~30 seconds
+    FoamExtinguisher: 4,          // ~25 seconds
+    CO2Extinguisher: 5,           // ~20 seconds
+    PowderExtinguisher: 4,        // ~25 seconds
+    WetChemicalExtinguisher: 3.33 // ~30 seconds
+  } as Record<string, number>
 };
 
 export const COLLISION_GROUPS = {

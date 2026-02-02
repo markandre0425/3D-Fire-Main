@@ -24,6 +24,7 @@ export interface PlayerState {
   health: number;
   hasExtinguisher: boolean;
   extinguisherType: InteractiveObjectType | null; // Track which type of extinguisher the player has
+  extinguisherAmmo: number; // Current ammo (0-100%)
   hasGasMask: boolean;
   isCrouching: boolean;
   isRunning: boolean;

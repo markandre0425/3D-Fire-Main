@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { PlayerState, InteractiveObjectType } from "../types";
-import { PLAYER_CONSTANTS } from "../constants";
+import { PLAYER_CONSTANTS, EXTINGUISHER_AMMO } from "../constants";
 
 interface PlayerStateStore extends PlayerState {
   // Actions
@@ -26,6 +26,11 @@ interface PlayerStateStore extends PlayerState {
   getMovementSpeed: () => number;
   pickupGasMask: () => void;
   setHasGasMask: (has: boolean) => void;
+  // Extinguisher ammo actions
+  drainExtinguisherAmmo: (amount: number) => void;
+  refillExtinguisherAmmo: (amount: number) => void;
+  canUseExtinguisher: () => boolean;
+  getExtinguisherDrainRate: () => number;
 }
 
 export const usePlayer = create<PlayerStateStore>()(
@@ -36,6 +41,7 @@ export const usePlayer = create<PlayerStateStore>()(
     health: PLAYER_CONSTANTS.MAX_HEALTH,
     hasExtinguisher: false,
     extinguisherType: null,
+    extinguisherAmmo: 0, // Starts at 0, set to 100 when picking up extinguisher
     hasGasMask: false,
     isCrouching: false,
     isRunning: false,
@@ -201,6 +207,7 @@ export const usePlayer = create<PlayerStateStore>()(
         health: PLAYER_CONSTANTS.MAX_HEALTH,
         hasExtinguisher: false,
         extinguisherType: null,
+        extinguisherAmmo: 0,
         hasGasMask: false,
         isCrouching: false,
         isRunning: false,
@@ -223,7 +230,8 @@ export const usePlayer = create<PlayerStateStore>()(
     pickupExtinguisher: (extinguisherType?: InteractiveObjectType) => {
       set({ 
         hasExtinguisher: true,
-        extinguisherType: extinguisherType || InteractiveObjectType.FireExtinguisher
+        extinguisherType: extinguisherType || InteractiveObjectType.FireExtinguisher,
+        extinguisherAmmo: EXTINGUISHER_AMMO.MAX_CAPACITY // Full ammo on pickup
       });
     },
 
@@ -231,6 +239,7 @@ export const usePlayer = create<PlayerStateStore>()(
       set((state) => ({
         hasExtinguisher: has,
         extinguisherType: has ? (state.extinguisherType || InteractiveObjectType.FireExtinguisher) : null,
+        extinguisherAmmo: has ? EXTINGUISHER_AMMO.MAX_CAPACITY : 0,
       }));
     },
     
@@ -265,6 +274,50 @@ export const usePlayer = create<PlayerStateStore>()(
       } else {
         return PLAYER_CONSTANTS.MOVEMENT_SPEED;
       }
+    },
+    
+    // === EXTINGUISHER AMMO ACTIONS ===
+    
+    drainExtinguisherAmmo: (amount: number) => {
+      const prevAmmo = get().extinguisherAmmo;
+      const newAmmo = Math.max(0, prevAmmo - amount);
+      
+      set({ extinguisherAmmo: newAmmo });
+      
+      // If ammo just reached 0, trigger respawn timer
+      if (prevAmmo > 0 && newAmmo <= 0) {
+        console.log("🧯 Extinguisher depleted! Respawn in 15 seconds...");
+        
+        // Import dynamically to avoid circular dependency
+        import("./useFireSafety").then(({ useFireSafety }) => {
+          const lastPickedId = useFireSafety.getState().lastPickedExtinguisherId;
+          if (lastPickedId) {
+            setTimeout(() => {
+              useFireSafety.getState().respawnExtinguisher(lastPickedId);
+            }, EXTINGUISHER_AMMO.RESPAWN_DELAY);
+          }
+        });
+      }
+    },
+    
+    refillExtinguisherAmmo: (amount: number) => {
+      set(state => ({
+        extinguisherAmmo: Math.min(EXTINGUISHER_AMMO.MAX_CAPACITY, state.extinguisherAmmo + amount)
+      }));
+    },
+    
+    canUseExtinguisher: () => {
+      const { hasExtinguisher, extinguisherAmmo } = get();
+      return hasExtinguisher && extinguisherAmmo > 0;
+    },
+    
+    getExtinguisherDrainRate: () => {
+      const { extinguisherType } = get();
+      if (!extinguisherType) return EXTINGUISHER_AMMO.DEFAULT_DRAIN_RATE;
+      
+      // Get drain rate for specific extinguisher type
+      const typeName = extinguisherType.toString();
+      return EXTINGUISHER_AMMO.DRAIN_RATES[typeName] || EXTINGUISHER_AMMO.DEFAULT_DRAIN_RATE;
     }
   }))
 );

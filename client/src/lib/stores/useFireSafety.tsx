@@ -19,6 +19,7 @@ interface FireSafetyState {
   collidableGeneration: number;
   activeTip: string | null;
   isLevelComplete: boolean;
+  lastPickedExtinguisherId: string | null; // Track for respawn system
   
   // Actions
   addCollidable: (collidable: BoundingBox) => void;
@@ -35,6 +36,8 @@ interface FireSafetyState {
   collectObject: (objectId: string) => void;
   activateSmokeDetector: (detectorId: string) => void;
   addHazard: (hazard: HazardState) => void;
+  respawnExtinguisher: (objectId: string) => void;
+  refillFromCabinet: () => boolean;
 }
 
 export const useFireSafety = create<FireSafetyState>()(
@@ -49,6 +52,7 @@ export const useFireSafety = create<FireSafetyState>()(
     collidableGeneration: 0,
     activeTip: null,
     isLevelComplete: false,
+    lastPickedExtinguisherId: null,
     
     addCollidable: (collidable: BoundingBox) => {
       set((state) => ({
@@ -261,13 +265,18 @@ export const useFireSafety = create<FireSafetyState>()(
         set({ interactiveObjects: updatedObjects });
         
         // If it's a fire extinguisher, give it to the player with type
-        if (object.type === "FireExtinguisher" || 
+        const isExtinguisher = object.type === "FireExtinguisher" || 
             object.type === "WaterExtinguisher" ||
             object.type === "FoamExtinguisher" ||
             object.type === "CO2Extinguisher" ||
             object.type === "PowderExtinguisher" ||
-            object.type === "WetChemicalExtinguisher") {
+            object.type === "WetChemicalExtinguisher";
+            
+        if (isExtinguisher) {
           usePlayer.getState().pickupExtinguisher(object.type);
+          // Track this extinguisher for respawn system
+          set({ lastPickedExtinguisherId: objectId });
+          console.log(`🧯 Picked up extinguisher: ${objectId}`);
         }
         
         // If it's a gas mask, give it to the player
@@ -277,6 +286,56 @@ export const useFireSafety = create<FireSafetyState>()(
         
         useAudio.getState().playSuccess();
       }
+    },
+    
+    // Respawn a collected extinguisher (makes it pickable again)
+    respawnExtinguisher: (objectId: string) => {
+      const { interactiveObjects } = get();
+      
+      const updatedObjects = interactiveObjects.map(obj => 
+        obj.id === objectId ? { ...obj, isCollected: false } : obj
+      );
+      
+      set({ interactiveObjects: updatedObjects });
+      console.log(`🧯 Extinguisher respawned: ${objectId}`);
+    },
+    
+    // Refill extinguisher from cabinet (if player has extinguisher and is near cabinet)
+    refillFromCabinet: () => {
+      const playerState = usePlayer.getState();
+      const { interactiveObjects } = get();
+      const playerPos = playerState.position;
+      
+      // Check if player has an extinguisher
+      if (!playerState.hasExtinguisher) {
+        console.log("No extinguisher to refill");
+        return false;
+      }
+      
+      // Check if player is near a cabinet
+      const interactDistSq = ((GAME_CONSTANTS?.INTERACTION_DISTANCE || 2.5) + 0.5) ** 2;
+      
+      // Find nearby cabinets (check environment objects too)
+      // For now, check interactiveObjects for cabinet type
+      const nearbyCabinet = interactiveObjects.find(obj => {
+        if (obj.type !== "ExtinguisherCabinet" && obj.type !== "extinguisher_cabinet") return false;
+        
+        const dx = playerPos.x - obj.position.x;
+        const dy = playerPos.y - obj.position.y;
+        const dz = playerPos.z - obj.position.z;
+        const distSq = dx*dx + dy*dy + dz*dz;
+        
+        return distSq < interactDistSq;
+      });
+      
+      if (nearbyCabinet) {
+        playerState.refillExtinguisherAmmo(100); // Full refill
+        useAudio.getState().playSuccess();
+        console.log("🧯 Refilled from cabinet!");
+        return true;
+      }
+      
+      return false;
     },
     
     activateSmokeDetector: (detectorId: string) => {

@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { useKeyboardControls, useGLTF } from "@react-three/drei";
 import { usePlayer } from "@/lib/stores/usePlayer";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
+import { useAudio } from "@/lib/stores/useAudio";
 import { Controls, InteractiveObjectType, Level } from "@/lib/types";
 // Added GAME_CONSTANTS to imports for interaction distance
 import { PLAYER_CONSTANTS, GAME_CONSTANTS } from "@/lib/constants";
@@ -49,7 +50,7 @@ export default function FirstPersonPlayer() {
   
   // Get subscription for physics updates (Movement loop)
   const [subscribeKeys] = useKeyboardControls<Controls>();
-  const { hasExtinguisher, extinguisherType } = usePlayer();
+  const { hasExtinguisher, extinguisherType, extinguisherAmmo } = usePlayer();
   const respawnPlayer = usePlayer((state) => state.respawn);
   const spawnPoint = usePlayer((state) => state.spawnPoint);
   
@@ -118,30 +119,54 @@ export default function FirstPersonPlayer() {
       (state) => state.action,
       (pressed) => {
         if (pressed) {
-          const state = useFireSafety.getState();
-          const playerPos = usePlayer.getState().position;
-          const objects = state.interactiveObjects;
-          const collect = state.collectObject;
+          const fireSafetyState = useFireSafety.getState();
+          const playerState = usePlayer.getState();
+          const playerPos = playerState.position;
+          const objects = fireSafetyState.interactiveObjects;
+          const collect = fireSafetyState.collectObject;
             
           // Interaction distance logic
           const interactDistSq = ((GAME_CONSTANTS?.INTERACTION_DISTANCE || 2.5) + 0.5) ** 2;
 
-          // DEBUG LOGGING
-          // console.log("Attempting interaction. Player at:", playerPos);
-          // console.log("Objects available:", objects.length);
+          // First check for cabinet refill (if player has extinguisher)
+          if (playerState.hasExtinguisher) {
+            for (const obj of objects) {
+              const typeStr = obj.type?.toString() || "";
+              const isCabinet = typeStr === "ExtinguisherCabinet" || typeStr === "extinguisher_cabinet";
+              
+              if (isCabinet && obj.isActive) {
+                const dx = playerPos.x - obj.position.x;
+                const dy = playerPos.y - obj.position.y; 
+                const dz = playerPos.z - obj.position.z;
+                const distSq = dx*dx + dy*dy + dz*dz;
+                
+                if (distSq < interactDistSq) {
+                  // Refill from cabinet
+                  playerState.refillExtinguisherAmmo(100);
+                  useAudio.getState().playSuccess();
+                  console.log("🧯 Refilled from cabinet!");
+                  return; // Don't collect the cabinet
+                }
+              }
+            }
+          }
 
+          // Normal object collection
           for (const obj of objects) {
             if (obj.isCollected || !obj.isActive) {
-               // console.log(`Skipping ${obj.id} (Collected: ${obj.isCollected}, Active: ${obj.isActive})`);
                continue;
+            }
+            
+            // Skip cabinets for collection (they are refill stations, not collectible)
+            const typeStr = obj.type?.toString() || "";
+            if (typeStr === "ExtinguisherCabinet" || typeStr === "extinguisher_cabinet") {
+              continue;
             }
 
             const dx = playerPos.x - obj.position.x;
             const dy = playerPos.y - obj.position.y; 
             const dz = playerPos.z - obj.position.z;
             const distSq = dx*dx + dy*dy + dz*dz;
-
-            // console.log(`Checking ${obj.id} at distSq: ${distSq} vs Limit: ${interactDistSq}`);
 
             if (distSq < interactDistSq) {
               console.log(`Collecting ${obj.id}`);
@@ -321,8 +346,20 @@ export default function FirstPersonPlayer() {
     // Update Camera
     camera.position.set(nextPos.x, nextPos.y + targetEyeHeight, nextPos.z);
 
-    // --- EXTINGUISHER VISUALS ---
-    const isSpraying = controls.extinguish && hasExtinguisher;
+    // --- EXTINGUISHER VISUALS & AMMO ---
+    // Check if player can actually spray (has extinguisher AND has ammo)
+    const playerState = usePlayer.getState();
+    const canSpray = playerState.canUseExtinguisher();
+    const isSpraying = controls.extinguish && hasExtinguisher && canSpray;
+    
+    // Play empty sound when trying to spray with no ammo
+    if (controls.extinguish && hasExtinguisher && !canSpray) {
+      // Use extinguishCooldown ref to throttle the sound (plays once per 0.5 sec)
+      if (extinguishCooldown.current <= 0) {
+        useAudio.getState().playNoAmmo();
+        extinguishCooldown.current = 0.5; // Throttle empty sound
+      }
+    }
 
     if (extinguisherGroup.current && hasExtinguisher) {
         camera.updateMatrixWorld(true);
@@ -338,6 +375,13 @@ export default function FirstPersonPlayer() {
           camera.localToWorld(handleWorld);
           sprayGroup.current.position.copy(handleWorld);
         sprayGroup.current.quaternion.copy(camera.quaternion);
+      }
+      
+      // --- AMMO DRAIN ---
+      // Drain ammo while spraying
+      if (isSpraying) {
+        const drainRate = playerState.getExtinguisherDrainRate();
+        playerState.drainExtinguisherAmmo(drainRate * delta);
       }
       
       // --- EXTINGUISHING LOGIC (GAMEPLAY, DAMAGE OVER TIME) ---
@@ -390,7 +434,8 @@ export default function FirstPersonPlayer() {
   });
       
   // FIX: Use the state-based 'extinguishPressed' for visual toggling
-  const isSprayingVisual = extinguishPressed && hasExtinguisher;
+  // Also check if there's ammo - no spray visual when empty
+  const isSprayingVisual = extinguishPressed && hasExtinguisher && extinguisherAmmo > 0;
 
   return (
     <>

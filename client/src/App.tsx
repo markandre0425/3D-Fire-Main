@@ -40,7 +40,7 @@ function App() {
   const [showEndScreen, setShowEndScreen] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [loadingComplete, setLoadingComplete] = useState(false);
-  const { setHitSound, setSuccessSound, setLevelCompletedSound, setCoughSound, setFireDamageSound, setDeathSound } = useAudio();
+  const { setHitSound, setSuccessSound, setLevelCompletedSound, setCoughSound, setFireDamageSound, setDeathSound, setNoAmmoSound } = useAudio();
 
   useEffect(() => {
     // Configure Howl to use Web Audio API and prevent auto-initialization warnings
@@ -86,6 +86,13 @@ function App() {
       preload: true, // Preload for instant playback on death
     });
     
+    const noAmmo = new Howl({
+      src: ['/sounds/noammo.mp3'],
+      volume: 0.5,
+      html5: false,
+      preload: true, // Preload for quick response when trying to spray empty
+    });
+    
     // Set up event listeners after creation
     (levelCompleted as any).on('load', () => {
       console.log('✅ Level completed sound loaded successfully!');
@@ -104,6 +111,10 @@ function App() {
       console.log('✅ Death sound loaded successfully!');
     });
     
+    (noAmmo as any).on('load', () => {
+      console.log('✅ No ammo sound loaded successfully!');
+    });
+    
     (levelCompleted as any).on('loaderror', (id: any, error: any) => {
       console.error('❌ Failed to load level completed sound:', error);
     });
@@ -113,6 +124,7 @@ function App() {
     setCoughSound(cough);
     setFireDamageSound(fireDamage);
     setDeathSound(death);
+    setNoAmmoSound(noAmmo);
     
     setHitSound(hit);
     setSuccessSound(success);
@@ -126,8 +138,9 @@ function App() {
       cough.stop();
       fireDamage.stop();
       death.stop();
+      noAmmo.stop();
     };
-  }, [setHitSound, setSuccessSound, setLevelCompletedSound, setCoughSound, setFireDamageSound, setDeathSound]);
+  }, [setHitSound, setSuccessSound, setLevelCompletedSound, setCoughSound, setFireDamageSound, setDeathSound, setNoAmmoSound]);
 
   // Update UI based on game phase
   useEffect(() => {
