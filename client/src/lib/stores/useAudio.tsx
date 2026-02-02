@@ -6,17 +6,26 @@ interface AudioState {
   hitSound: Howl | null;
   successSound: Howl | null;
   levelCompletedSound: Howl | null;
+  coughSound: Howl | null;
+  fireDamageSound: Howl | null;
+  deathSound: Howl | null;
   isMuted: boolean;
 
   setBackgroundMusic: (music: Howl) => void;
   setHitSound: (sound: Howl) => void;
   setSuccessSound: (sound: Howl) => void;
   setLevelCompletedSound: (sound: Howl) => void;
+  setCoughSound: (sound: Howl) => void;
+  setFireDamageSound: (sound: Howl) => void;
+  setDeathSound: (sound: Howl) => void;
 
   toggleMute: () => void;
   playHit: () => void;
   playSuccess: () => void;
   playLevelCompleted: () => void;
+  playCough: () => void;
+  playFireDamage: () => void;
+  playDeath: () => void;
 }
 
 export const useAudio = create<AudioState>((set, get) => ({
@@ -24,15 +33,21 @@ export const useAudio = create<AudioState>((set, get) => ({
   hitSound: null,
   successSound: null,
   levelCompletedSound: null,
+  coughSound: null,
+  fireDamageSound: null,
+  deathSound: null,
   isMuted: false, // Changed from true - sounds play by default
 
   setBackgroundMusic: (music) => set({ backgroundMusic: music }),
   setHitSound: (sound) => set({ hitSound: sound }),
   setSuccessSound: (sound) => set({ successSound: sound }),
   setLevelCompletedSound: (sound) => set({ levelCompletedSound: sound }),
+  setCoughSound: (sound) => set({ coughSound: sound }),
+  setFireDamageSound: (sound) => set({ fireDamageSound: sound }),
+  setDeathSound: (sound) => set({ deathSound: sound }),
   
   toggleMute: () => {
-    const { isMuted, backgroundMusic, hitSound, successSound, levelCompletedSound } = get();
+    const { isMuted, backgroundMusic, hitSound, successSound, levelCompletedSound, coughSound, fireDamageSound, deathSound } = get();
     const newMutedState = !isMuted;
 
     if (backgroundMusic) {
@@ -49,6 +64,18 @@ export const useAudio = create<AudioState>((set, get) => ({
 
     if (levelCompletedSound) {
       levelCompletedSound.mute(newMutedState);
+    }
+    
+    if (coughSound) {
+      coughSound.mute(newMutedState);
+    }
+    
+    if (fireDamageSound) {
+      fireDamageSound.mute(newMutedState);
+    }
+    
+    if (deathSound) {
+      deathSound.mute(newMutedState);
     }
 
     set({ isMuted: newMutedState });
@@ -84,6 +111,36 @@ export const useAudio = create<AudioState>((set, get) => ({
       console.error('❌ Level completed sound not loaded!');
     } else if (isMuted) {
       console.log('🔇 Sound is muted - press M to unmute');
+    }
+  },
+  
+  playCough: () => {
+    const { coughSound, isMuted } = get();
+    if (coughSound && !isMuted) {
+      // Only play if not already playing to avoid overlap
+      if (!coughSound.playing()) {
+        coughSound.volume(0.5);
+        coughSound.play();
+      }
+    }
+  },
+  
+  playFireDamage: () => {
+    const { fireDamageSound, isMuted } = get();
+    if (fireDamageSound && !isMuted) {
+      // Only play if not already playing to avoid overlap
+      if (!fireDamageSound.playing()) {
+        fireDamageSound.volume(0.6);
+        fireDamageSound.play();
+      }
+    }
+  },
+  
+  playDeath: () => {
+    const { deathSound, isMuted } = get();
+    if (deathSound && !isMuted) {
+      deathSound.volume(0.7);
+      deathSound.play();
     }
   }
 }));

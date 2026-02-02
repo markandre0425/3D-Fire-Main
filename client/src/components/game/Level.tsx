@@ -5,6 +5,7 @@ import HomeEnvironment from "./HomeEnvironment";
 import Hazard from "./Hazard";
 import ExtinguisherPickup from "./ExtinguisherPickup";
 import RandomFireSpawner from "./RandomFireSpawner";
+import HazardDamageSystem from "./HazardDamageSystem";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { usePlayer } from "@/lib/stores/usePlayer";
 import { Level as LevelEnum } from "@/lib/types";
@@ -65,6 +66,10 @@ export default function Level() {
       {/* 4. PLAYER CONTROLLER */}
       {/* Handles Movement, Pickup (E), and Extinguishing (F) Logic internally */}
       <FirstPersonPlayer />
+      
+      {/* 5. HAZARD DAMAGE SYSTEM */}
+      {/* Handles fire damage and oxygen depletion */}
+      <HazardDamageSystem />
     </>
   );
 }

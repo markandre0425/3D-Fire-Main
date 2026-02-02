@@ -40,7 +40,7 @@ function App() {
   const [showEndScreen, setShowEndScreen] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [loadingComplete, setLoadingComplete] = useState(false);
-  const { setHitSound, setSuccessSound, setLevelCompletedSound } = useAudio();
+  const { setHitSound, setSuccessSound, setLevelCompletedSound, setCoughSound, setFireDamageSound, setDeathSound } = useAudio();
 
   useEffect(() => {
     // Configure Howl to use Web Audio API and prevent auto-initialization warnings
@@ -65,10 +65,43 @@ function App() {
       preload: true, // Keep preload for this one as it's used for level completion
     });
     
+    const cough = new Howl({
+      src: ['/sounds/cough.mp3'],
+      volume: 0.5,
+      html5: false,
+      preload: true, // Preload for quick response when player enters smoke
+    });
+    
+    const fireDamage = new Howl({
+      src: ['/sounds/Arayko.mp3'],
+      volume: 0.6,
+      html5: false,
+      preload: true, // Preload for quick response when player takes fire damage
+    });
+    
+    const death = new Howl({
+      src: ['/sounds/Death.mp3'],
+      volume: 0.7,
+      html5: false,
+      preload: true, // Preload for instant playback on death
+    });
+    
     // Set up event listeners after creation
     (levelCompleted as any).on('load', () => {
       console.log('✅ Level completed sound loaded successfully!');
       setLevelCompletedSound(levelCompleted);
+    });
+    
+    (cough as any).on('load', () => {
+      console.log('✅ Cough sound loaded successfully!');
+    });
+    
+    (fireDamage as any).on('load', () => {
+      console.log('✅ Fire damage sound loaded successfully!');
+    });
+    
+    (death as any).on('load', () => {
+      console.log('✅ Death sound loaded successfully!');
     });
     
     (levelCompleted as any).on('loaderror', (id: any, error: any) => {
@@ -77,6 +110,9 @@ function App() {
     
     // Set the sound immediately (it will be ready when needed)
     setLevelCompletedSound(levelCompleted);
+    setCoughSound(cough);
+    setFireDamageSound(fireDamage);
+    setDeathSound(death);
     
     setHitSound(hit);
     setSuccessSound(success);
@@ -87,8 +123,11 @@ function App() {
       hit.stop();
       success.stop();
       levelCompleted.stop();
+      cough.stop();
+      fireDamage.stop();
+      death.stop();
     };
-  }, [setHitSound, setSuccessSound, setLevelCompletedSound]);
+  }, [setHitSound, setSuccessSound, setLevelCompletedSound, setCoughSound, setFireDamageSound, setDeathSound]);
 
   // Update UI based on game phase
   useEffect(() => {

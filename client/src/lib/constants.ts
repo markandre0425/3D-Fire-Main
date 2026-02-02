@@ -853,7 +853,15 @@ export const GAME_CONSTANTS = {
   POINTS_FOR_EXTINGUISHING: 100,
   POINTS_FOR_PREVENTION: 50,
   POINTS_FOR_DETECTOR: 75,
-  DAMAGE_DISTANCE: 1.2
+  DAMAGE_DISTANCE: 1.2,
+  // Hazard damage system
+  FIRE_DAMAGE_RANGE: 2.5,        // Distance at which fire starts dealing damage
+  FIRE_DAMAGE_RATE: 8,           // Damage per second when in fire range
+  SMOKE_RANGE: 4,                // Distance at which smoke affects oxygen
+  OXYGEN_DEPLETION_RATE: 15,     // Oxygen loss per second in smoke
+  GAS_MASK_PROTECTION: 0.9,      // Gas mask reduces oxygen depletion by 90%
+  OXYGEN_RECOVERY_RATE: 10,      // Oxygen recovery per second when safe
+  LOW_OXYGEN_DAMAGE_RATE: 5      // Damage per second when oxygen is 0
 };
 
 export const COLLISION_GROUPS = {

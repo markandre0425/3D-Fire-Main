@@ -11,6 +11,7 @@ import Lights from "./Lights";
 import HomeEnvironment from "./HomeEnvironment";
 import ExtinguisherPickup from "./ExtinguisherPickup";
 import Hazard from "./Hazard";
+import HazardDamageSystem from "./HazardDamageSystem";
 import ModelLoader from "./ModelLoader";
 
 interface TutorialLevelProps {
@@ -181,6 +182,9 @@ export default function TutorialLevel({ onComplete }: TutorialLevelProps) {
     <group>
       <Lights />
       <FirstPersonPlayer />
+      
+      {/* Hazard damage system for fire damage and oxygen depletion */}
+      <HazardDamageSystem />
       
       {/* Handles Wall/Obstacle Rendering & Physics */}
       <HomeEnvironment />

@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { DoubleSide, Mesh, RepeatWrapping, TextureLoader } from "three";
+import { useRef, useMemo } from "react";
+import { DoubleSide, Mesh, RepeatWrapping } from "three";
 import { useTexture } from "@react-three/drei";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { Level } from "@/lib/types";
@@ -21,13 +21,19 @@ export default function Floor() {
     }
   };
   
-  // All levels use wood texture
-  const texture = useTexture("/textures/wood.jpg");
-  
-  // Configure the texture with proper tiling based on room size
   const floorSize = getFloorSize();
-  texture.wrapS = texture.wrapT = RepeatWrapping;
-  texture.repeat.set(floorSize / 2.5, floorSize / 2.5); // Scale texture repeat with room size
+  
+  // Load base texture
+  const textureBase = useTexture("/textures/wood.jpg");
+  
+  // Clone texture to avoid shared state issues between levels
+  const texture = useMemo(() => {
+    const tex = textureBase.clone();
+    tex.wrapS = tex.wrapT = RepeatWrapping;
+    tex.repeat.set(floorSize / 2.5, floorSize / 2.5); // Scale texture repeat with room size
+    tex.needsUpdate = true;
+    return tex;
+  }, [textureBase, floorSize]);
   
   return (
     <mesh 
