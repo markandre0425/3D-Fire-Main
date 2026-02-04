@@ -115,7 +115,7 @@ export const LEVELS: Record<Level, LevelData> = {
       {
         id: "cabinet_kitchen",
         type: "ExtinguisherCabinet" as InteractiveObjectType,
-        position: { x: 9.9, y: 1.3, z: -4 },
+        position: { x: 7, y: 2, z: -4.9 },
         isActive: true,
         isCollected: false
       }
@@ -318,7 +318,7 @@ export const LEVELS: Record<Level, LevelData> = {
       {
         id: "cabinet_livingroom",
         type: "ExtinguisherCabinet" as InteractiveObjectType,
-        position: { x: 9.9, y: 1.3, z: 0 }, // East Wall
+        position: { x: 9.5, y: 1.7, z: 0 }, // East Wall
         isActive: true,
         isCollected: false
       }
@@ -654,7 +654,7 @@ export const LEVELS: Record<Level, LevelData> = {
         type: "extinguisher_cabinet",
         position: { x: -5, y: 1.3, z: -9.9 },
         rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 1, y: 1, z: 1 }
+        scale: { x: 1.5, y: 1.5, z: 1.5 }
       },
       // First Aid Kit on east wall
       {
@@ -726,7 +726,7 @@ export const LEVELS: Record<Level, LevelData> = {
         type: "safety_cones",
         position: { x: 3, y: 0, z: -6 },
         rotation: { x: 0, y: 0.2, z: 0 },
-        scale: { x: 1, y: 1, z: 1 }
+        scale: { x: 4, y: 4, z: 4 }
       },
       // Additional safety cones near gas area
       {
@@ -734,7 +734,7 @@ export const LEVELS: Record<Level, LevelData> = {
         type: "safety_cones",
         position: { x: 6, y: 0, z: -3 },
         rotation: { x: 0, y: -0.5, z: 0 },
-        scale: { x: 1, y: 1, z: 1 }
+        scale: { x: 4, y: 4, z: 4 }
       }
     ],
     requiredScore: 600,

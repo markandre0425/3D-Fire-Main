@@ -104,14 +104,7 @@ export default function FirstPersonPlayer() {
     positionRef.current.set(startPos.x, startPos.y, startPos.z);
   }, []);
 
-  // Log player position every 2 seconds (for debugging)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const pos = usePlayer.getState().position;
-      console.log("Player position:", { x: pos.x, y: pos.y, z: pos.z });
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
+  // (debug player position logger removed)
 
   // --- INTERACTION HANDLER ---
   useEffect(() => {
@@ -144,7 +137,6 @@ export default function FirstPersonPlayer() {
                   // Refill from cabinet
                   playerState.refillExtinguisherAmmo(100);
                   useAudio.getState().playSuccess();
-                  console.log("🧯 Refilled from cabinet!");
                   return; // Don't collect the cabinet
                 }
               }
@@ -169,7 +161,6 @@ export default function FirstPersonPlayer() {
             const distSq = dx*dx + dy*dy + dz*dz;
 
             if (distSq < interactDistSq) {
-              console.log(`Collecting ${obj.id}`);
               collect(obj.id);
               break; 
             }

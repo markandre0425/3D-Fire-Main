@@ -107,19 +107,15 @@ export const useAudio = create<AudioState>((set, get) => ({
 
   playLevelCompleted: () => {
     const { levelCompletedSound, isMuted } = get();
-    console.log('🎉 playLevelCompleted called! Sound:', levelCompletedSound ? 'loaded' : 'NOT loaded', 'Muted:', isMuted);
     if (levelCompletedSound && !isMuted) {
       try {
         levelCompletedSound.volume(0.7);
         levelCompletedSound.play();
-        console.log('🔊 Level completed sound playing!');
       } catch (error) {
         console.error('❌ Error playing level completed sound:', error);
       }
     } else if (!levelCompletedSound) {
       console.error('❌ Level completed sound not loaded!');
-    } else if (isMuted) {
-      console.log('🔇 Sound is muted - press M to unmute');
     }
   },
   

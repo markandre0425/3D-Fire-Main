@@ -41,7 +41,6 @@ export default function HazardDamageSystem() {
       if (!deathSoundPlayed.current) {
         useAudio.getState().playDeath();
         deathSoundPlayed.current = true;
-        console.log('💀 Player died!');
       }
       return;
     }
@@ -118,10 +117,6 @@ export default function HazardDamageSystem() {
         lastFireDamageSoundTime.current = now;
       }
       
-      // Log damage for debugging (can be removed later)
-      if (Math.random() < 0.02) { // Occasional log
-        console.log(`🔥 Fire damage: ${damageAmount.toFixed(2)} (distance: ${closestFireDistance.toFixed(2)})`);
-      }
     } else {
       setDamageIndicator(false);
     }
@@ -147,15 +142,10 @@ export default function HazardDamageSystem() {
       const oxygenLoss = GAME_CONSTANTS.OXYGEN_DEPLETION_RATE * delta * protectionFactor;
       
       playerState.depleteOxygen(oxygenLoss);
-      
-      // Log for debugging (occasional)
-      if (Math.random() < 0.02) {
-        console.log(`💨 Oxygen depleting: ${oxygenLoss.toFixed(2)} (mask: ${hasGasMask})`);
-      }
     } else if (!hasGasMask) {
       // Even outside direct smoke areas, enclosed space has ambient smoke
-      // Slower oxygen depletion when not directly in smoke
-      const ambientOxygenLoss = GAME_CONSTANTS.OXYGEN_DEPLETION_RATE * delta * 0.3;
+      // Much slower oxygen depletion when not directly in smoke (15% of main rate)
+      const ambientOxygenLoss = GAME_CONSTANTS.OXYGEN_DEPLETION_RATE * delta * 0.15;
       playerState.depleteOxygen(ambientOxygenLoss);
     } else {
       // With gas mask and not in direct smoke, oxygen recovers slowly

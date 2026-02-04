@@ -50,7 +50,10 @@ function ExtinguisherCabinetWithLabel({ object }: { object: InteractiveObject })
   const canRefill = hasExtinguisher && extinguisherAmmo < 100;
   
   return (
-    <group position={[object.position.x, object.position.y, object.position.z]}>
+    <group 
+      position={[object.position.x, object.position.y, object.position.z]}
+      scale={[1.5, 1.5, 1.5]}
+    >
       <ProceduralExtinguisherCabinet />
       
       {/* HTML overlay label - hide when paused or level complete */}

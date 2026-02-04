@@ -93,26 +93,25 @@ function App() {
       preload: true, // Preload for quick response when trying to spray empty
     });
     
-    // Set up event listeners after creation
+    // Set up event listeners after creation (logging removed for production)
     (levelCompleted as any).on('load', () => {
-      console.log('✅ Level completed sound loaded successfully!');
       setLevelCompletedSound(levelCompleted);
     });
     
     (cough as any).on('load', () => {
-      console.log('✅ Cough sound loaded successfully!');
+      // loaded
     });
     
     (fireDamage as any).on('load', () => {
-      console.log('✅ Fire damage sound loaded successfully!');
+      // loaded
     });
     
     (death as any).on('load', () => {
-      console.log('✅ Death sound loaded successfully!');
+      // loaded
     });
     
     (noAmmo as any).on('load', () => {
-      console.log('✅ No ammo sound loaded successfully!');
+      // loaded
     });
     
     (levelCompleted as any).on('loaderror', (id: any, error: any) => {

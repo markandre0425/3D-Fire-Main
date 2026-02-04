@@ -286,8 +286,6 @@ export const usePlayer = create<PlayerStateStore>()(
       
       // If ammo just reached 0, trigger respawn timer
       if (prevAmmo > 0 && newAmmo <= 0) {
-        console.log("🧯 Extinguisher depleted! Respawn in 15 seconds...");
-        
         // Import dynamically to avoid circular dependency
         import("./useFireSafety").then(({ useFireSafety }) => {
           const lastPickedId = useFireSafety.getState().lastPickedExtinguisherId;
