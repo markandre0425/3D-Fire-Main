@@ -6,6 +6,7 @@ import Hazard from "./Hazard";
 import ExtinguisherPickup from "./ExtinguisherPickup";
 import RandomFireSpawner from "./RandomFireSpawner";
 import HazardDamageSystem from "./HazardDamageSystem";
+import CollidersDebug from "./CollidersDebug";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { usePlayer } from "@/lib/stores/usePlayer";
 import { Level as LevelEnum } from "@/lib/types";
@@ -38,6 +39,7 @@ export default function Level() {
     <>
       <Lights />
       <HomeEnvironment />
+      <CollidersDebug enabled={true} />
       
       {/* 1. HAZARDS (Fires & Props) */}
       {/* This includes the Level-Specific fires loaded by the Store */}
@@ -54,7 +56,8 @@ export default function Level() {
         />
       ))}
       
-      {/* 3. DYNAMIC FIRES */}
+      {/* 3. DYNAMIC FIRES (temporarily disabled for performance tuning) */}
+      {/*
       <RandomFireSpawner
         maxFires={2}
         spawnInterval={8000}
@@ -62,6 +65,7 @@ export default function Level() {
         environmentObjects={levelData.environmentObjects}
         mapBounds={mapBounds}
       />
+      */}
       
       {/* 4. PLAYER CONTROLLER */}
       {/* Handles Movement, Pickup (E), and Extinguishing (F) Logic internally */}

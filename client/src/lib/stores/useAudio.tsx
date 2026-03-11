@@ -11,6 +11,7 @@ interface AudioState {
   deathSound: Howl | null;
   noAmmoSound: Howl | null;
   isMuted: boolean;
+  masterVolume: number;
 
   setBackgroundMusic: (music: Howl) => void;
   setHitSound: (sound: Howl) => void;
@@ -20,6 +21,7 @@ interface AudioState {
   setFireDamageSound: (sound: Howl) => void;
   setDeathSound: (sound: Howl) => void;
   setNoAmmoSound: (sound: Howl) => void;
+  setMasterVolume: (value: number) => void;
 
   toggleMute: () => void;
   playHit: () => void;
@@ -41,6 +43,7 @@ export const useAudio = create<AudioState>((set, get) => ({
   deathSound: null,
   noAmmoSound: null,
   isMuted: false, // Changed from true - sounds play by default
+  masterVolume: 1, // Global volume multiplier (0..1)
 
   setBackgroundMusic: (music) => set({ backgroundMusic: music }),
   setHitSound: (sound) => set({ hitSound: sound }),
@@ -50,6 +53,7 @@ export const useAudio = create<AudioState>((set, get) => ({
   setFireDamageSound: (sound) => set({ fireDamageSound: sound }),
   setDeathSound: (sound) => set({ deathSound: sound }),
   setNoAmmoSound: (sound) => set({ noAmmoSound: sound }),
+  setMasterVolume: (value) => set({ masterVolume: Math.max(0, Math.min(1, value)) }),
   
   toggleMute: () => {
     const { isMuted, backgroundMusic, hitSound, successSound, levelCompletedSound, coughSound, fireDamageSound, deathSound, noAmmoSound } = get();
@@ -91,70 +95,71 @@ export const useAudio = create<AudioState>((set, get) => ({
   },
   
   playHit: () => {
-    const { hitSound, isMuted } = get();
-    if (hitSound && !isMuted) {
-      hitSound.volume(0.3);
+    const { hitSound, isMuted, masterVolume } = get();
+    if (hitSound && !isMuted && masterVolume > 0) {
+      hitSound.volume(0.3 * masterVolume);
       hitSound.play();
     }
   },
   
   playSuccess: () => {
-    const { successSound, isMuted } = get();
-    if (successSound && !isMuted) {
+    const { successSound, isMuted, masterVolume } = get();
+    if (successSound && !isMuted && masterVolume > 0) {
+      successSound.volume(masterVolume);
       successSound.play();
     }
   },
 
   playLevelCompleted: () => {
-    const { levelCompletedSound, isMuted } = get();
-    if (levelCompletedSound && !isMuted) {
+    const { levelCompletedSound, isMuted, masterVolume } = get();
+    if (levelCompletedSound && !isMuted && masterVolume > 0) {
       try {
-        levelCompletedSound.volume(0.7);
+        levelCompletedSound.volume(0.7 * masterVolume);
         levelCompletedSound.play();
       } catch (error) {
-        console.error('❌ Error playing level completed sound:', error);
+        console.error('Error playing level completed sound:', error);
       }
     } else if (!levelCompletedSound) {
-      console.error('❌ Level completed sound not loaded!');
+      console.error('Level completed sound not loaded!');
     }
   },
   
   playCough: () => {
-    const { coughSound, isMuted } = get();
-    if (coughSound && !isMuted) {
+    const { coughSound, isMuted, masterVolume } = get();
+    if (coughSound && !isMuted && masterVolume > 0) {
       // Only play if not already playing to avoid overlap
       if (!coughSound.playing()) {
-        coughSound.volume(0.5);
+        coughSound.volume(0.5 * masterVolume);
         coughSound.play();
       }
     }
   },
   
   playFireDamage: () => {
-    const { fireDamageSound, isMuted } = get();
-    if (fireDamageSound && !isMuted) {
+    const { fireDamageSound, isMuted, masterVolume } = get();
+    if (fireDamageSound && !isMuted && masterVolume > 0) {
       // Only play if not already playing to avoid overlap
       if (!fireDamageSound.playing()) {
-        fireDamageSound.volume(0.6);
+        fireDamageSound.volume(0.6 * masterVolume);
         fireDamageSound.play();
       }
     }
   },
   
   playDeath: () => {
-    const { deathSound, isMuted } = get();
-    if (deathSound && !isMuted) {
-      deathSound.volume(0.7);
+    const { deathSound, isMuted, masterVolume } = get();
+    if (deathSound && !isMuted && masterVolume > 0) {
+      deathSound.volume(0.7 * masterVolume);
       deathSound.play();
     }
   },
   
   playNoAmmo: () => {
-    const { noAmmoSound, isMuted } = get();
-    if (noAmmoSound && !isMuted) {
+    const { noAmmoSound, isMuted, masterVolume } = get();
+    if (noAmmoSound && !isMuted && masterVolume > 0) {
       // Only play if not already playing to avoid spam
       if (!noAmmoSound.playing()) {
-        noAmmoSound.volume(0.5);
+        noAmmoSound.volume(0.5 * masterVolume);
         noAmmoSound.play();
       }
     }

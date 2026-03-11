@@ -75,6 +75,9 @@ export default function TutorialLevel({ onComplete }: TutorialLevelProps) {
       // Jump Box
       { id: 'obs-jump', type: 'wall', position: {x:0, y:0.5, z:-10}, rotation: {x:0, y:0, z:0}, scale: {x:12, y:1, z:1} },
       
+      // Crouch Beam (collision - must crouch to pass / cannot jump over)
+      { id: 'obs-crouch', type: 'wall', position: {x:0, y:3.8, z:-20}, rotation: {x:0, y:0, z:0}, scale: {x:12, y:0.6, z:1} },
+      
       // Pedestals
       { id: 'ped-mask', type: 'wall', position: {x:-3, y:0.5, z:-32}, rotation: {x:0, y:0, z:0}, scale: {x:2, y:1, z:2} },
       { id: 'ped-ext', type: 'wall', position: {x:3, y:0.5, z:-42}, rotation: {x:0, y:0, z:0}, scale: {x:2, y:1, z:2} },
@@ -231,13 +234,13 @@ export default function TutorialLevel({ onComplete }: TutorialLevelProps) {
 
       <InfoLabel text="Press SPACE to Jump" position={[0, 2.5, -10]} color="#f59e0b" />
 
-      {/* Crouch Visual Beam (No collider) */}
-      <mesh position={[0, 2.8, -20]} castShadow>
-        <boxGeometry args={[12, 1, 1]} />
+      {/* Crouch Visual Beam */}
+      <mesh position={[0, 3.8, -20]} castShadow>
+        <boxGeometry args={[12, 0.6, 1]} />
         <meshStandardMaterial color="#ef4444" />
       </mesh>
-      <InfoLabel text="Press C to Crouch" position={[0, 3.8, -20]} color="#ef4444" />
-      <InfoLabel text="(Watch your head!)" position={[0, 3.4, -20]} size={0.3} />
+      <InfoLabel text="Press C to Crouch" position={[0, 4.6, -20]} color="#ef4444" />
+      <InfoLabel text="(Watch your head!)" position={[0, 4.2, -20]} size={0.3} />
 
       <InfoLabel text="EQUIPMENT: GAS MASK" position={[0, 3.5, -32]} color="#10b981" size={0.7} />
       <InfoLabel text = "GAS MASK: Protects you from smoke and harmful gases." position={[0, 2.9, -32]} color="#10b981" size={0.4} />

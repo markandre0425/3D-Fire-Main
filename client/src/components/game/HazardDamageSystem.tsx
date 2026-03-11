@@ -3,8 +3,9 @@ import { useFrame } from "@react-three/fiber";
 import { usePlayer } from "@/lib/stores/usePlayer";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { useAudio } from "@/lib/stores/useAudio";
-import { GAME_CONSTANTS, PLAYER_CONSTANTS } from "@/lib/constants";
-import { HazardType } from "@/lib/types";
+import { useSettings } from "@/lib/stores/useSettings";
+import { GAME_CONSTANTS, PLAYER_CONSTANTS, DIFFICULTY_PROFILES } from "@/lib/constants";
+import { HazardType, DifficultyLevel } from "@/lib/types";
 
 /**
  * HazardDamageSystem - Handles fire damage and oxygen depletion
@@ -22,6 +23,7 @@ export default function HazardDamageSystem() {
   const lastCoughTime = useRef(0);
   const lastFireDamageSoundTime = useRef(0);
   const deathSoundPlayed = useRef(false);
+  const invulnerabilityEndTime = useRef(0);
   const COUGH_COOLDOWN = 3000; // Minimum 3 seconds between coughs
   const FIRE_DAMAGE_SOUND_COOLDOWN = 2000; // Minimum 2 seconds between fire damage sounds
   
@@ -33,8 +35,29 @@ export default function HazardDamageSystem() {
   useFrame((state, delta) => {
     const playerState = usePlayer.getState();
     const { hazards } = useFireSafety.getState();
-    const { position, health, oxygen, hasGasMask } = playerState;
+    const { difficulty } = useSettings.getState();
+    const { position, health, oxygen, hasGasMask, lastRespawnTime } = playerState;
+
+    // Apply difficulty profile to damage/oxygen rates
+    const profile =
+      DIFFICULTY_PROFILES[difficulty] ?? DIFFICULTY_PROFILES[DifficultyLevel.Beginner];
+    const FIRE_DAMAGE_RATE = GAME_CONSTANTS.FIRE_DAMAGE_RATE * profile.fireDamageMultiplier;
+    const OXYGEN_DEPLETION_RATE =
+      GAME_CONSTANTS.OXYGEN_DEPLETION_RATE * profile.oxygenDepletionMultiplier;
     
+    // Update post-respawn invulnerability window (e.g. 2.5 seconds after respawn/reset)
+    const nowMs = performance.now();
+    if (lastRespawnTime && lastRespawnTime > 0) {
+      // Convert Date.now() (ms since start) to a relative window using performance.now()
+      if (invulnerabilityEndTime.current === 0) {
+        invulnerabilityEndTime.current = nowMs + 2500;
+      } else if (nowMs > invulnerabilityEndTime.current) {
+        invulnerabilityEndTime.current = 0;
+      }
+    }
+
+    const isInvulnerable = invulnerabilityEndTime.current > nowMs;
+
     // Check for player death
     if (health <= 0) {
       // Play death sound once
@@ -101,11 +124,11 @@ export default function HazardDamageSystem() {
     }
     
     // === FIRE DAMAGE ===
-    if (isNearFire) {
+    if (isNearFire && !isInvulnerable) {
       // Damage scales with proximity and fire severity
       // Closer = more damage, higher severity = more damage
       const proximityFactor = 1 - (closestFireDistance / GAME_CONSTANTS.FIRE_DAMAGE_RANGE);
-      const damageAmount = GAME_CONSTANTS.FIRE_DAMAGE_RATE * delta * proximityFactor * (0.5 + maxFireSeverity * 0.5);
+      const damageAmount = FIRE_DAMAGE_RATE * delta * proximityFactor * (0.5 + maxFireSeverity * 0.5);
       
       playerState.takeDamage(damageAmount);
       setDamageIndicator(true);
@@ -124,7 +147,7 @@ export default function HazardDamageSystem() {
     // === COUGHING - Enclosed space with fire means smoke everywhere ===
     // Player coughs periodically when they don't have a gas mask
     // This simulates being in a smoke-filled burning building
-    if (!hasGasMask) {
+    if (!hasGasMask && !isInvulnerable) {
       const now = Date.now();
       // Cough more frequently when near fire/smoke, less when further away
       const coughInterval = isInSmoke || isNearFire ? COUGH_COOLDOWN : COUGH_COOLDOWN * 2;
@@ -136,28 +159,22 @@ export default function HazardDamageSystem() {
     }
     
     // === OXYGEN DEPLETION ===
-    if (isInSmoke) {
-      // Gas mask reduces oxygen depletion significantly
-      const protectionFactor = hasGasMask ? (1 - GAME_CONSTANTS.GAS_MASK_PROTECTION) : 1;
-      const oxygenLoss = GAME_CONSTANTS.OXYGEN_DEPLETION_RATE * delta * protectionFactor;
+    if (isInSmoke && !isInvulnerable) {
+      // Gas mask blocks oxygen depletion (kid-friendly, clear feedback)
+      const protectionFactor = hasGasMask ? 0 : 1;
+      const oxygenLoss = OXYGEN_DEPLETION_RATE * delta * protectionFactor;
       
       playerState.depleteOxygen(oxygenLoss);
     } else if (!hasGasMask) {
       // Even outside direct smoke areas, enclosed space has ambient smoke
-      // Much slower oxygen depletion when not directly in smoke (15% of main rate)
-      const ambientOxygenLoss = GAME_CONSTANTS.OXYGEN_DEPLETION_RATE * delta * 0.15;
+      // Much slower oxygen depletion when not directly in smoke (10% of main rate)
+      const ambientOxygenLoss = OXYGEN_DEPLETION_RATE * delta * 0.1;
       playerState.depleteOxygen(ambientOxygenLoss);
     } else {
       // With gas mask and not in direct smoke, oxygen recovers slowly
       if (oxygen < PLAYER_CONSTANTS.MAX_OXYGEN) {
         playerState.replenishOxygen(GAME_CONSTANTS.OXYGEN_RECOVERY_RATE * delta);
       }
-    }
-    
-    // === LOW OXYGEN DAMAGE ===
-    // This is already handled in usePlayer.depleteOxygen, but we add extra damage here
-    if (oxygen <= 0 && !hasGasMask) {
-      playerState.takeDamage(GAME_CONSTANTS.LOW_OXYGEN_DAMAGE_RATE * delta);
     }
   });
 

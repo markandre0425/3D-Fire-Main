@@ -1,3 +1,6 @@
+// NOTE: This fire particle system is currently **not in use**.
+// Kept for reference only; the game uses a different fire implementation.
+
 import { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import { PositionalAudio } from '@react-three/drei';

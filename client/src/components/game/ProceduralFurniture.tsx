@@ -1832,36 +1832,36 @@ export function ProceduralShopVac() {
         <meshStandardMaterial color="#cc2222" roughness={0.5} />
       </mesh>
       {/* Tank lid */}
-      <mesh position={[0, 0.72, 0]} castShadow>
+      <mesh position={[0, 0.72, 0]}>
         <cylinderGeometry args={[0.27, 0.27, 0.05, 16]} />
         <meshStandardMaterial color="#222" roughness={0.6} />
       </mesh>
       {/* Motor housing on top */}
-      <mesh position={[0, 0.85, 0]} castShadow>
+      <mesh position={[0, 0.85, 0]}>
         <cylinderGeometry args={[0.18, 0.2, 0.2, 16]} />
         <meshStandardMaterial color="#222" roughness={0.6} />
       </mesh>
       {/* Handle */}
-      <mesh position={[0, 1.0, 0]} castShadow>
+      <mesh position={[0, 1.0, 0]}>
         <torusGeometry args={[0.1, 0.02, 8, 16, Math.PI]} />
         <meshStandardMaterial color="#333" roughness={0.7} />
       </mesh>
       {/* Hose connection port */}
-      <mesh position={[0.25, 0.5, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
+      <mesh position={[0.25, 0.5, 0]} rotation={[0, 0, Math.PI / 2]}>
         <cylinderGeometry args={[0.04, 0.05, 0.08, 12]} />
         <meshStandardMaterial color="#333" roughness={0.6} />
       </mesh>
       {/* Wheels */}
-      <mesh position={[-0.15, 0.08, 0.15]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+      <mesh position={[-0.15, 0.08, 0.15]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.08, 0.08, 0.04, 12]} />
         <meshStandardMaterial color="#222" roughness={0.8} />
       </mesh>
-      <mesh position={[-0.15, 0.08, -0.15]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+      <mesh position={[-0.15, 0.08, -0.15]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.08, 0.08, 0.04, 12]} />
         <meshStandardMaterial color="#222" roughness={0.8} />
       </mesh>
       {/* Front caster */}
-      <mesh position={[0.18, 0.05, 0]} castShadow>
+      <mesh position={[0.18, 0.05, 0]}>
         <sphereGeometry args={[0.05, 8, 8]} />
         <meshStandardMaterial color="#222" roughness={0.8} />
       </mesh>
@@ -1880,39 +1880,39 @@ export function ProceduralExtinguisherCabinet() {
         <boxGeometry args={[0.35, 0.6, 0.15]} />
         <meshStandardMaterial color="#cc2222" roughness={0.5} />
       </mesh>
-      {/* Glass door */}
-      <mesh position={[0, 0, 0.076]} castShadow>
+      {/* Glass door (no shadow) */}
+      <mesh position={[0, 0, 0.076]}>
         <boxGeometry args={[0.28, 0.5, 0.005]} />
         <meshStandardMaterial color="#88ccff" transparent opacity={0.4} roughness={0.1} />
       </mesh>
       {/* Door frame */}
-      <mesh position={[0, 0.26, 0.075]} castShadow>
+      <mesh position={[0, 0.26, 0.075]}>
         <boxGeometry args={[0.32, 0.02, 0.02]} />
         <meshStandardMaterial color="#aa1111" roughness={0.5} />
       </mesh>
-      <mesh position={[0, -0.26, 0.075]} castShadow>
+      <mesh position={[0, -0.26, 0.075]}>
         <boxGeometry args={[0.32, 0.02, 0.02]} />
         <meshStandardMaterial color="#aa1111" roughness={0.5} />
       </mesh>
-      <mesh position={[-0.15, 0, 0.075]} castShadow>
+      <mesh position={[-0.15, 0, 0.075]}>
         <boxGeometry args={[0.02, 0.52, 0.02]} />
         <meshStandardMaterial color="#aa1111" roughness={0.5} />
       </mesh>
-      <mesh position={[0.15, 0, 0.075]} castShadow>
+      <mesh position={[0.15, 0, 0.075]}>
         <boxGeometry args={[0.02, 0.52, 0.02]} />
         <meshStandardMaterial color="#aa1111" roughness={0.5} />
       </mesh>
-      {/* Extinguisher inside (visible through glass) */}
-      <mesh position={[0, -0.05, 0]} castShadow>
+      {/* Extinguisher inside */}
+      <mesh position={[0, -0.05, 0]}>
         <cylinderGeometry args={[0.06, 0.06, 0.35, 12]} />
         <meshStandardMaterial color="#cc0000" roughness={0.4} />
       </mesh>
-      <mesh position={[0, 0.15, 0]} castShadow>
+      <mesh position={[0, 0.15, 0]}>
         <cylinderGeometry args={[0.025, 0.03, 0.08, 8]} />
         <meshStandardMaterial color="#222" roughness={0.5} />
       </mesh>
-      {/* "FIRE EXTINGUISHER" label area */}
-      <mesh position={[0, 0.35, 0.08]} castShadow>
+      {/* "FIRE EXTINGUISHER" label area" */}
+      <mesh position={[0, 0.35, 0.08]}>
         <boxGeometry args={[0.25, 0.06, 0.005]} />
         <meshStandardMaterial color="#fff" roughness={0.8} />
       </mesh>
@@ -1932,22 +1932,22 @@ export function ProceduralFirstAidKit() {
         <meshStandardMaterial color="#fff" roughness={0.5} />
       </mesh>
       {/* Red cross - horizontal */}
-      <mesh position={[0, 0, 0.051]} castShadow>
+      <mesh position={[0, 0, 0.051]}>
         <boxGeometry args={[0.15, 0.04, 0.005]} />
         <meshStandardMaterial color="#cc0000" roughness={0.5} />
       </mesh>
       {/* Red cross - vertical */}
-      <mesh position={[0, 0, 0.051]} castShadow>
+      <mesh position={[0, 0, 0.051]}>
         <boxGeometry args={[0.04, 0.15, 0.005]} />
         <meshStandardMaterial color="#cc0000" roughness={0.5} />
       </mesh>
       {/* Handle/latch */}
-      <mesh position={[0.12, 0, 0.055]} castShadow>
+      <mesh position={[0.12, 0, 0.055]}>
         <boxGeometry args={[0.02, 0.06, 0.02]} />
         <meshStandardMaterial color="#888" metalness={0.7} roughness={0.3} />
       </mesh>
       {/* Hinge */}
-      <mesh position={[-0.14, 0, 0.04]} castShadow>
+      <mesh position={[-0.14, 0, 0.04]}>
         <cylinderGeometry args={[0.01, 0.01, 0.2, 8]} />
         <meshStandardMaterial color="#888" metalness={0.7} roughness={0.3} />
       </mesh>
@@ -1967,41 +1967,41 @@ export function ProceduralLocker() {
         <meshStandardMaterial color="#666" metalness={0.4} roughness={0.6} />
       </mesh>
       {/* Door panel */}
-      <mesh position={[0, 0.9, 0.226]} castShadow>
+      <mesh position={[0, 0.9, 0.226]}>
         <boxGeometry args={[0.36, 1.7, 0.02]} />
         <meshStandardMaterial color="#555" metalness={0.5} roughness={0.5} />
       </mesh>
       {/* Vents at top */}
       {[-0.08, 0, 0.08].map((x, i) => (
-        <mesh key={`vent-${i}`} position={[x, 1.6, 0.24]} castShadow>
+        <mesh key={`vent-${i}`} position={[x, 1.6, 0.24]}>
           <boxGeometry args={[0.06, 0.15, 0.01]} />
           <meshStandardMaterial color="#333" roughness={0.7} />
         </mesh>
       ))}
       {/* Handle */}
-      <mesh position={[0.14, 1.0, 0.25]} castShadow>
+      <mesh position={[0.14, 1.0, 0.25]}>
         <boxGeometry args={[0.03, 0.12, 0.03]} />
         <meshStandardMaterial color="#888" metalness={0.7} roughness={0.3} />
       </mesh>
       {/* Lock */}
-      <mesh position={[0.14, 0.85, 0.25]} castShadow>
+      <mesh position={[0.14, 0.85, 0.25]}>
         <cylinderGeometry args={[0.015, 0.015, 0.03, 8]} />
         <meshStandardMaterial color="#222" metalness={0.8} roughness={0.2} />
       </mesh>
       {/* Feet */}
-      <mesh position={[-0.15, 0.03, -0.18]} castShadow>
+      <mesh position={[-0.15, 0.03, -0.18]}>
         <boxGeometry args={[0.06, 0.06, 0.06]} />
         <meshStandardMaterial color="#444" roughness={0.7} />
       </mesh>
-      <mesh position={[0.15, 0.03, -0.18]} castShadow>
+      <mesh position={[0.15, 0.03, -0.18]}>
         <boxGeometry args={[0.06, 0.06, 0.06]} />
         <meshStandardMaterial color="#444" roughness={0.7} />
       </mesh>
-      <mesh position={[-0.15, 0.03, 0.18]} castShadow>
+      <mesh position={[-0.15, 0.03, 0.18]}>
         <boxGeometry args={[0.06, 0.06, 0.06]} />
         <meshStandardMaterial color="#444" roughness={0.7} />
       </mesh>
-      <mesh position={[0.15, 0.03, 0.18]} castShadow>
+      <mesh position={[0.15, 0.03, 0.18]}>
         <boxGeometry args={[0.06, 0.06, 0.06]} />
         <meshStandardMaterial color="#444" roughness={0.7} />
       </mesh>

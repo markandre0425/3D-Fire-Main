@@ -1,3 +1,6 @@
+// NOTE: This educational overlay is currently **NOT BEing USED**.
+// It is kept for future reference (e.g., a dedicated "Learn More" / BFP info screen).
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 

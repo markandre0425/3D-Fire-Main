@@ -1,4 +1,73 @@
-import { Level, LevelData, SafetyTip, SafetyTipCategory, HazardType, InteractiveObjectType, DifficultyLevel } from "./types";
+import { Level, LevelData, SafetyTip, SafetyTipCategory, HazardType, InteractiveObjectType, DifficultyLevel, EnvironmentObject } from "./types";
+
+// Shared home (floor + outer walls) used by indoor levels
+const BASE_HOME_SHELL: EnvironmentObject[] = [
+  {
+    id: "floor",
+    type: "floor",
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
+    scale: { x: 20, y: 0.1, z: 20 }
+  },
+  {
+    id: "wall_n",
+    type: "wall",
+    position: { x: 0, y: 1.5, z: -10 },
+    rotation: { x: 0, y: 0, z: 0 },
+    scale: { x: 20, y: 3, z: 0.1 }
+  },
+  {
+    id: "wall_s",
+    type: "wall",
+    position: { x: 0, y: 1.5, z: 10 },
+    rotation: { x: 0, y: 0, z: 0 },
+    scale: { x: 20, y: 3, z: 0.1 }
+  },
+  {
+    id: "wall_w",
+    type: "wall",
+    position: { x: -10, y: 1.5, z: 0 },
+    rotation: { x: 0, y: Math.PI / 2, z: 0 },
+    scale: { x: 20, y: 3, z: 0.1 }
+  },
+  {
+    id: "wall_e",
+    type: "wall",
+    position: { x: 10, y: 1.5, z: 0 },
+    rotation: { x: 0, y: Math.PI / 2, z: 0 },
+    scale: { x: 20, y: 3, z: 0.1 }
+  }
+];
+
+// Difficulty profiles: scales damage/oxygen rates per difficulty
+export const DIFFICULTY_PROFILES: Record<
+  DifficultyLevel,
+  {
+    fireDamageMultiplier: number;
+    oxygenDepletionMultiplier: number;
+  }
+> = {
+  [DifficultyLevel.Beginner]: {
+    fireDamageMultiplier: 1,
+    oxygenDepletionMultiplier: 1,
+  },
+  [DifficultyLevel.Intermediate]: {
+    fireDamageMultiplier: 1.25,
+    oxygenDepletionMultiplier: 1.25,
+  },
+  [DifficultyLevel.Advanced]: {
+    fireDamageMultiplier: 1.5,
+    oxygenDepletionMultiplier: 1.5,
+  },
+  [DifficultyLevel.Expert]: {
+    fireDamageMultiplier: 1.75,
+    oxygenDepletionMultiplier: 1.75,
+  },
+  [DifficultyLevel.Master]: {
+    fireDamageMultiplier: 2,
+    oxygenDepletionMultiplier: 2,
+  },
+};
 
 export const LEVELS: Record<Level, LevelData> = {
   [Level.BasicTraining]: {
@@ -121,41 +190,8 @@ export const LEVELS: Record<Level, LevelData> = {
       }
     ],
     environmentObjects: [
-      {
-        id: "floor",
-        type: "floor",
-        position: { x: 0, y: 0, z: 0 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 20, y: 0.1, z: 20 }
-      },
-      {
-        id: "wall1",
-        type: "wall",
-        position: { x: 0, y: 1.5, z: -10 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 20, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall2",
-        type: "wall",
-        position: { x: 0, y: 1.5, z: 10 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: { x: 20, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall3",
-        type: "wall",
-        position: { x: -10, y: 1.5, z: 0 },
-        rotation: { x: 0, y: Math.PI / 2, z: 0 },
-        scale: { x: 20, y: 3, z: 0.1 }
-      },
-      {
-        id: "wall4",
-        type: "wall",
-        position: { x: 10, y: 1.5, z: 0 },
-        rotation: { x: 0, y: Math.PI / 2, z: 0 },
-        scale: { x: 20, y: 3, z: 0.1 }
-      },
+      // Shared home (floor + outer walls)
+      ...BASE_HOME_SHELL,
       {
         id: "counter1",
         type: "counter",
@@ -325,12 +361,8 @@ export const LEVELS: Record<Level, LevelData> = {
     ],
     environmentObjects: [
       // --- 1. STRUCTURE ---
-      { id: "floor", type: "floor", position: { x: 0, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 20, y: 0.1, z: 20 } },
-      // Outer Walls
-      { id: "wall_n", type: "wall", position: { x: 0, y: 1.5, z: -10 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 20, y: 3, z: 0.1 } },
-      { id: "wall_s", type: "wall", position: { x: 0, y: 1.5, z: 10 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 20, y: 3, z: 0.1 } },
-      { id: "wall_e", type: "wall", position: { x: 10, y: 1.5, z: 0 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, scale: { x: 20, y: 3, z: 0.1 } },
-      { id: "wall_w", type: "wall", position: { x: -10, y: 1.5, z: 0 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, scale: { x: 20, y: 3, z: 0.1 } },
+      // Shared home (floor + outer walls)
+      ...BASE_HOME_SHELL,
 
       // --- 2. BEDROOM (Top Left: x -10 to 0, z -10 to 0) ---
       // Divider Wall (Vertical at x=0) with DOORWAY GAP (Door at z = -4 to -2)
@@ -862,7 +894,8 @@ export const PLAYER_CONSTANTS = {
   TURNING_SPEED: 2,
   MAX_HEALTH: 100,
   MAX_OXYGEN: 100,
-  OXYGEN_DEPLETION_RATE: 5,
+  //primary oxygen tuning in GAME_CONSTANTS.OXYGEN_DEPLETION_RATE
+  OXYGEN_DEPLETION_RATE: 3,
   HEALTH_DEPLETION_RATE: 10,
   STARTING_POSITION: { x: 0, y: 0, z: 4 },
   CHARACTER_BOUNDING_BOX: { x: 1.5, y: 5.1, z: 1.5 }
@@ -880,10 +913,10 @@ export const GAME_CONSTANTS = {
   FIRE_DAMAGE_RANGE: 2.5,        // Distance at which fire starts dealing damage
   FIRE_DAMAGE_RATE: 8,           // Damage per second when in fire range
   SMOKE_RANGE: 4,                // Distance at which smoke affects oxygen
-  OXYGEN_DEPLETION_RATE: 15,     // Oxygen loss per second in smoke
-  GAS_MASK_PROTECTION: 0.9,      // Gas mask reduces oxygen depletion by 90%
+  OXYGEN_DEPLETION_RATE: 3,      // Oxygen loss per second in smoke (kid-friendly)
+  GAS_MASK_PROTECTION: 1,        // Gas mask blocks oxygen depletion entirely
   OXYGEN_RECOVERY_RATE: 10,      // Oxygen recovery per second when safe
-  LOW_OXYGEN_DAMAGE_RATE: 5      // Damage per second when oxygen is 0
+  LOW_OXYGEN_DAMAGE_RATE: 3      // Damage per second when oxygen is 0 (kid-friendly)
 };
 
 // Extinguisher ammo system constants

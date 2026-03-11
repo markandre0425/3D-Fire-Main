@@ -26,6 +26,7 @@ interface PlayerStateStore extends PlayerState {
   getMovementSpeed: () => number;
   pickupGasMask: () => void;
   setHasGasMask: (has: boolean) => void;
+  setLastRespawnTime: (time: number) => void;
   // Extinguisher ammo actions
   drainExtinguisherAmmo: (amount: number) => void;
   refillExtinguisherAmmo: (amount: number) => void;
@@ -47,6 +48,7 @@ export const usePlayer = create<PlayerStateStore>()(
     isRunning: false,
     oxygen: PLAYER_CONSTANTS.MAX_OXYGEN,
     score: 0,
+    lastRespawnTime: 0,
     
     moveForward: (distance: number, cameraDirection?: { x: number; z: number }) => {
       const { position, rotation } = get();
@@ -211,7 +213,8 @@ export const usePlayer = create<PlayerStateStore>()(
         hasGasMask: false,
         isCrouching: false,
         isRunning: false,
-        oxygen: PLAYER_CONSTANTS.MAX_OXYGEN
+        oxygen: PLAYER_CONSTANTS.MAX_OXYGEN,
+        lastRespawnTime: Date.now()
       });
     },
     
@@ -223,7 +226,8 @@ export const usePlayer = create<PlayerStateStore>()(
       const { spawnPoint } = get();
       set(state => ({
         position: { ...spawnPoint },
-        rotation: { ...state.rotation, x: 0, z: 0 }
+        rotation: { ...state.rotation, x: 0, z: 0 },
+        lastRespawnTime: Date.now()
       }));
     },
     
@@ -262,6 +266,10 @@ export const usePlayer = create<PlayerStateStore>()(
 
     setHasGasMask: (has: boolean) => {
       set({ hasGasMask: has });
+    },
+    
+    setLastRespawnTime: (time: number) => {
+      set({ lastRespawnTime: time });
     },
     
     getMovementSpeed: () => {

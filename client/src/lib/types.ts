@@ -30,6 +30,8 @@ export interface PlayerState {
   isRunning: boolean;
   oxygen: number;
   score: number;
+  // 2's Invul window after respawn/reset
+  lastRespawnTime: number;
 }
 
 export interface HazardState {

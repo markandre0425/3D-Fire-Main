@@ -52,4 +52,5 @@ dist
 .idea/
 .vscode/
 .DS_Store
-drizzle/
+.drizzle/
+*.md

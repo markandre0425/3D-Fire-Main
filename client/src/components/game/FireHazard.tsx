@@ -85,6 +85,7 @@ function TrashBin({ isBurnt }: { isBurnt: boolean }) {
         <cylinderGeometry args={[0.25, 0.2, 0.5, 16]} />
         <meshStandardMaterial color={color} metalness={0.1} />
       </mesh>
+      {/* Small trash pieces: no shadows */}
       <mesh position={[0.05, 0.2, -0.05]} rotation={[0.5, 0.5, 0]}>
         <dodecahedronGeometry args={[0.08, 0]} />
         <meshStandardMaterial color={isBurnt ? "#111" : "#FFF"} />
@@ -144,11 +145,12 @@ function WoodPallet({ isBurnt }: { isBurnt: boolean }) {
   const color = isBurnt ? "#1a1a1a" : "#8B4513";
   return (
     <group position={[0, 0.05, 0]}>
-      <mesh castShadow receiveShadow position={[0.15, 0, 0]}>
+      {/* Keep only the main deck casting shadows; beams are too thin */}
+      <mesh position={[0.15, 0, 0]}>
         <boxGeometry args={[0.05, 0.1, 0.5]} />
         <meshStandardMaterial color={color} />
       </mesh>
-      <mesh castShadow receiveShadow position={[-0.15, 0, 0]}>
+      <mesh position={[-0.15, 0, 0]}>
         <boxGeometry args={[0.05, 0.1, 0.5]} />
         <meshStandardMaterial color={color} />
       </mesh>
@@ -170,11 +172,11 @@ function BookPile({ isBurnt }: { isBurnt: boolean }) {
         <boxGeometry args={[0.3, 0.05, 0.4]} />
         <meshStandardMaterial color={c1} />
       </mesh>
-      <mesh castShadow receiveShadow position={[0.05, 0.05, 0]} rotation={[0, 0.5, 0]}>
+      <mesh position={[0.05, 0.05, 0]} rotation={[0, 0.5, 0]}>
         <boxGeometry args={[0.25, 0.04, 0.35]} />
         <meshStandardMaterial color={c2} />
       </mesh>
-      <mesh castShadow receiveShadow position={[-0.05, 0.1, 0]} rotation={[0, -0.2, 0.1]}>
+      <mesh position={[-0.05, 0.1, 0]} rotation={[0, -0.2, 0.1]}>
         <boxGeometry args={[0.28, 0.04, 0.38]} />
         <meshStandardMaterial color={c3} />
       </mesh>

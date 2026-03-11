@@ -9,7 +9,7 @@ import { useGame } from "@/lib/stores/useGame";
 
 export default function GameScreen() {
   const { startLevel, isLevelComplete, currentLevel } = useFireSafety();
-  const { health } = usePlayer();
+  const { health, resetPlayer } = usePlayer();
   const { end } = useGame();
 
   // State to track if tutorial is active
@@ -20,6 +20,8 @@ export default function GameScreen() {
 
   // Handle tutorial completion - transition to real game
   const handleTutorialComplete = () => {
+    // Reset player to the normal starting position to not spawn randomly
+    resetPlayer();
     setShowTutorial(false);
     // FIX: Start the Kitchen level only when tutorial finishes
     startLevel(LevelType.Kitchen);

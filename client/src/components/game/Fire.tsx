@@ -54,11 +54,12 @@ function FakeGlow({ size, color }: { size: number; color: string }) {
 
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
-      <planeGeometry args={[size * 4, size * 4]} />
+      {/* Slightly smaller glow to reduce overdraw */}
+      <planeGeometry args={[size * 2.5, size * 2.5]} />
       <meshBasicMaterial
         map={glowTexture}
         transparent={true}
-        opacity={0.4}
+        opacity={0.3}
         depthWrite={false}
         blending={THREE.AdditiveBlending}
       />

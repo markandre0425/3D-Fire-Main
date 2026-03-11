@@ -131,21 +131,6 @@ export default function Furniture({
         new THREE.Vector3(0.7, 1.4, 0.8)
       );
 
-      // Washing machines
-      registerBox(
-        new THREE.Vector3(-5, -0.25, -1.5),
-        new THREE.Vector3(1.2, 1.5, 1.2)
-      );
-      registerBox(
-        new THREE.Vector3(-3.5, -0.25, -1.5),
-        new THREE.Vector3(1.2, 1.5, 1.2)
-      );
-      registerBox(
-        new THREE.Vector3(-2, -0.25, -1.5),
-        new THREE.Vector3(1.2, 1.5, 1.2)
-      );
-
-      // Shower stall remains decorative; no collider to keep doorway open
     } else if (type === "curvedTV") {
       const colliderHeight = scale[1] * 0.4;
       registerBox(
@@ -157,6 +142,17 @@ export default function Furniture({
       registerBox(
         new THREE.Vector3(0, stoveHeight / 2 + 0.2, 0),
         new THREE.Vector3(scale[0], stoveHeight, scale[2] * 0.9)
+      );
+    } else if (type === "table") {
+      // Kitchen table is decorative only – no collision box to avoid invisible blocking
+      return;
+    } else if (type === "office_sofa" || type === "sofa") {
+      // Sofa collider: slightly smaller than visual mesh, shallower so players
+      // can move near the front without hitting an invisible box that sticks out too far.
+      const colliderHeight = scale[1] * 0.8;
+      registerBox(
+        new THREE.Vector3(0, colliderHeight / 2, 0),
+        new THREE.Vector3(scale[0] * 0.9, colliderHeight, scale[2] * 0.6)
       );
     } else {
       // Only register collision if we actually render something (have a 3D model).

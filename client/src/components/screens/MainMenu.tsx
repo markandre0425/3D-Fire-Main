@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { ControlsCard } from "@/components/ui/ControlsCard";
 import { useAudio } from "@/lib/stores/useAudio";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
+import { useSettings } from "@/lib/stores/useSettings";
 import {
   Shield,
   Flame,
@@ -25,23 +26,54 @@ export default function MainMenu({ onStartTutorial, onStartGame }: MainMenuProps
   const [showOptions, setShowOptions] = useState(false);
   const [showLevelSelect, setShowLevelSelect] = useState(false);
   const [expandedHowToPlay, setExpandedHowToPlay] = useState(false);
-  const { isMuted, toggleMute } = useAudio();
+  const { isMuted, toggleMute, masterVolume, setMasterVolume } = useAudio();
   const { startLevel } = useFireSafety();
+  const { difficulty, setDifficulty } = useSettings();
 
   const getDifficultyStyle = (difficulty: DifficultyLevel) => {
     switch (difficulty) {
       case DifficultyLevel.Beginner:
-        return { color: "green", icon: "🌱", label: "Rookie" };
+        return {
+          icon: "🌱",
+          label: "Rookie",
+          cardBorderClass: "border-green-200 hover:border-green-500",
+          badgeClass: "bg-green-100 text-green-700",
+        };
       case DifficultyLevel.Intermediate:
-        return { color: "yellow", icon: "⭐", label: "Cadet" };
+        return {
+          icon: "⭐",
+          label: "Cadet",
+          cardBorderClass: "border-yellow-200 hover:border-yellow-500",
+          badgeClass: "bg-yellow-100 text-yellow-700",
+        };
       case DifficultyLevel.Advanced:
-        return { color: "orange", icon: "🔥", label: "Hero" };
+        return {
+          icon: "🔥",
+          label: "Hero",
+          cardBorderClass: "border-orange-200 hover:border-orange-500",
+          badgeClass: "bg-orange-100 text-orange-700",
+        };
       case DifficultyLevel.Expert:
-        return { color: "red", icon: "💎", label: "Captain" };
+        return {
+          icon: "💎",
+          label: "Captain",
+          cardBorderClass: "border-red-200 hover:border-red-500",
+          badgeClass: "bg-red-100 text-red-700",
+        };
       case DifficultyLevel.Master:
-        return { color: "purple", icon: "👑", label: "Chief" };
+        return {
+          icon: "👑",
+          label: "Chief",
+          cardBorderClass: "border-purple-200 hover:border-purple-500",
+          badgeClass: "bg-purple-100 text-purple-700",
+        };
       default:
-        return { color: "gray", icon: "⚫", label: "Unknown" };
+        return {
+          icon: "⚫",
+          label: "Unknown",
+          cardBorderClass: "border-gray-200 hover:border-gray-500",
+          badgeClass: "bg-gray-100 text-gray-700",
+        };
     }
   };
 
@@ -118,7 +150,7 @@ export default function MainMenu({ onStartTutorial, onStartGame }: MainMenuProps
                   return (
                     <div
                       key={level.id}
-                      className={`group bg-white p-4 rounded-2xl border-4 border-${difficultyStyle.color}-200 hover:border-${difficultyStyle.color}-500 transition-all duration-200 cursor-pointer shadow-md hover:shadow-xl hover:-translate-y-1`}
+                      className={`group bg-white p-4 rounded-2xl border-4 ${difficultyStyle.cardBorderClass} transition-all duration-200 cursor-pointer shadow-md hover:shadow-xl hover:-translate-y-1`}
                       onClick={() => handleLevelSelect(level.id)}
                     >
                       <div className="flex justify-between items-start mb-2">
@@ -126,7 +158,7 @@ export default function MainMenu({ onStartTutorial, onStartGame }: MainMenuProps
                           {difficultyStyle.icon}
                         </div>
                         <div
-                          className={`px-3 py-1 rounded-full text-xs font-bold uppercase bg-${difficultyStyle.color}-100 text-${difficultyStyle.color}-700`}
+                          className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${difficultyStyle.badgeClass}`}
                         >
                           {difficultyStyle.label}
                         </div>
@@ -171,8 +203,57 @@ export default function MainMenu({ onStartTutorial, onStartGame }: MainMenuProps
                     {isMuted ? "OFF" : "ON"}
                   </Button>
                 </div>
-                <div className="p-4 bg-blue-50 rounded-xl border-2 border-blue-100 text-center">
-                  <p className="text-blue-800 font-medium">More settings coming soon!</p>
+                <div className="space-y-6">
+                  {/* Master Volume Slider */}
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <h4 className="text-xl font-bold text-gray-800">Volume</h4>
+                      <p className="text-sm text-gray-500">Adjust how loud the game is</p>
+                    </div>
+                    <div className="flex items-center gap-3 w-56">
+                      <span className="text-sm text-gray-500 w-8 text-right">
+                        {Math.round(masterVolume * 100)}%
+                      </span>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={Math.round(masterVolume * 100)}
+                        onChange={(e) => setMasterVolume(Number(e.target.value) / 100)}
+                        className="w-full accent-purple-500 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Difficulty Selection */}
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <h4 className="text-xl font-bold text-gray-800">Difficulty</h4>
+                      <p className="text-sm text-gray-500">Choose Difficulty</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => setDifficulty(DifficultyLevel.Beginner)}
+                        className={`px-4 h-10 text-sm font-bold rounded-full border-2 ${
+                          difficulty === DifficultyLevel.Beginner
+                            ? "bg-green-500 text-white border-green-700"
+                            : "bg-green-50 text-green-700 border-green-200"
+                        }`}
+                      >
+                        Kid
+                      </Button>
+                      <Button
+                        onClick={() => setDifficulty(DifficultyLevel.Intermediate)}
+                        className={`px-4 h-10 text-sm font-bold rounded-full border-2 ${
+                          difficulty === DifficultyLevel.Intermediate
+                            ? "bg-yellow-500 text-white border-yellow-700"
+                            : "bg-yellow-50 text-yellow-700 border-yellow-200"
+                        }`}
+                      >
+                        Standard
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

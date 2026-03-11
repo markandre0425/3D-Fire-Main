@@ -6,6 +6,22 @@ import ControlsHelp from "../ui/ControlsHelp";
 import Crosshair from "../ui/Crosshair";
 import { usePlayer } from "@/lib/stores/usePlayer";
 
+function DebugPosition() {
+  const pos = usePlayer((s) => s.position);
+  const enabled = usePlayer((s) => (s as any).debugPositionOverlay ?? true);
+
+  if (!enabled) return null;
+
+  return (
+    <div className="absolute top-4 left-1/2 -translate-x-1/2 text-xs text-white bg-black/60 px-3 py-2 rounded-lg border border-white/10">
+      <div className="font-bold tracking-wide mb-1">POS</div>
+      <div>
+        x: {pos.x.toFixed(2)} y: {pos.y.toFixed(2)} z: {pos.z.toFixed(2)}
+      </div>
+    </div>
+  );
+}
+
 // --- DAMAGE VIGNETTE ---
 // Red pulse at screen edges when health is low.
 function DamageVignette() {
@@ -32,6 +48,9 @@ export default function GameHUD() {
     <div className="fixed inset-0 pointer-events-none select-none z-40">
       {/* 1. Visual effects (behind other HUD) */}
       <DamageVignette />
+
+      {/* Debug: Live player position */}
+      <DebugPosition />
 
       {/* 2. Top: Score */}
       <ScoreDisplay />

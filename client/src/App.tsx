@@ -203,6 +203,17 @@ function App() {
                   antialias: true,
                   powerPreference: "default"
                 }}
+                onCreated={({ gl }) => {
+                  const canvas = gl.domElement as HTMLCanvasElement;
+                  const handleContextLost = (event: any) => {
+                    // Prevent default browser message and reload the app to recover cleanly
+                    if (event && typeof event.preventDefault === "function") {
+                      event.preventDefault();
+                    }
+                    window.location.reload();
+                  };
+                  canvas.addEventListener("webglcontextlost", handleContextLost, false);
+                }}
               >
                 <color attach="background" args={["#87CEEB"]} />
                 <Suspense fallback={null}>

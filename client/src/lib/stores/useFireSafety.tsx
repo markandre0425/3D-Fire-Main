@@ -127,6 +127,15 @@ export const useFireSafety = create<FireSafetyState>()(
         
       }
       
+      // Choose a level-specific intro safety tip
+      const tipMap: Partial<Record<Level, string>> = {
+        [Level.Kitchen]: "tip1",       // Stove / cooking safety
+        [Level.LivingRoom]: "tip5",    // Space heater / living area
+        [Level.Garage]: "tip14",       // Gas leak / garage safety
+      };
+      const introTipId = tipMap[level];
+      const hasIntroTip = introTipId && SAFETY_TIPS.some((t) => t.id === introTipId);
+
       set({
         currentLevel: level,
         levelData,
@@ -136,7 +145,7 @@ export const useFireSafety = create<FireSafetyState>()(
         collidableGeneration: collidableGeneration + 1,
         isPaused: false,
         isLevelComplete: false,
-        activeTip: null
+        activeTip: hasIntroTip ? introTipId! : null,
       });
       
     },

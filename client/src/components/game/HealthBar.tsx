@@ -2,7 +2,9 @@ import { usePlayer } from "@/lib/stores/usePlayer";
 import { PLAYER_CONSTANTS } from "@/lib/constants";
 
 export default function HealthBar() {
-  const { health, oxygen } = usePlayer();
+  // only re-render when health/oxygen change
+  const health = usePlayer((state) => state.health);
+  const oxygen = usePlayer((state) => state.oxygen);
   
   // Calculate health percentage
   const healthPercentage = (health / PLAYER_CONSTANTS.MAX_HEALTH) * 100;
@@ -31,14 +33,14 @@ export default function HealthBar() {
     <div 
       className={`absolute bottom-4 left-4 w-72 bg-gray-900/85 border-2 rounded-2xl px-4 py-3 text-white shadow-[0_12px_25px_rgba(0,0,0,0.55)] transition-all duration-300 ${
         isCritical 
-          ? 'border-red-500 animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.5)]' 
+          ? 'border-red-500 shadow-[0_0_16px_rgba(239,68,68,0.4)]' 
           : 'border-gray-500'
       }`}
     >
       <div className="mb-3">
         <div className="flex justify-between mb-1">
           <span className={`text-xs font-semibold uppercase tracking-[0.2em] ${
-            isHealthCritical ? 'text-red-400 animate-pulse' : 'text-gray-300'
+            isHealthCritical ? 'text-red-400' : 'text-gray-300'
           }`}>
             Health {isHealthCritical && '⚠️'}
           </span>
@@ -50,14 +52,12 @@ export default function HealthBar() {
         </div>
         <div className="w-full h-4 bg-neutral-700 rounded-full overflow-hidden">
           <div 
-            className={`h-full rounded-full transition-all duration-300 ease-out ${
-              isHealthCritical ? 'animate-pulse' : ''
-            }`}
+              className="h-full rounded-full transition-all duration-300 ease-out"
             style={{ 
               width: `${healthPercentage}%`, 
               backgroundColor: getHealthColor(),
               boxShadow: isHealthCritical 
-                ? '0 0 15px rgba(239, 68, 68, 0.8), 0 0 30px rgba(239, 68, 68, 0.4)' 
+                ? '0 0 10px rgba(239, 68, 68, 0.7)' 
                 : '0 0 12px rgba(0,0,0,0.4)'
             }}
           />
@@ -67,7 +67,7 @@ export default function HealthBar() {
       <div>
         <div className="flex justify-between mb-1">
           <span className={`text-xs font-semibold uppercase tracking-[0.2em] ${
-            isOxygenCritical ? 'text-red-400 animate-pulse' : 'text-gray-300'
+            isOxygenCritical ? 'text-red-400' : 'text-gray-300'
           }`}>
             Oxygen {isOxygenCritical && '⚠️'}
           </span>
@@ -79,14 +79,12 @@ export default function HealthBar() {
         </div>
         <div className="w-full h-4 bg-neutral-700 rounded-full overflow-hidden">
           <div 
-            className={`h-full rounded-full transition-all duration-300 ease-out ${
-              isOxygenCritical ? 'animate-pulse' : ''
-            }`}
+              className="h-full rounded-full transition-all duration-300 ease-out"
             style={{ 
               width: `${oxygenPercentage}%`, 
               backgroundColor: getOxygenColor(),
               boxShadow: isOxygenCritical 
-                ? '0 0 15px rgba(239, 68, 68, 0.8), 0 0 30px rgba(239, 68, 68, 0.4)' 
+                ? '0 0 10px rgba(239, 68, 68, 0.7)' 
                 : '0 0 12px rgba(0,0,0,0.4)'
             }}
           />
@@ -95,7 +93,7 @@ export default function HealthBar() {
       
       {/* Critical warning message */}
       {isCritical && (
-        <div className="mt-2 text-center text-xs text-red-400 font-bold uppercase tracking-wider animate-pulse">
+        <div className="mt-2 text-center text-xs text-red-400 font-bold uppercase tracking-wider">
           {isHealthCritical && isOxygenCritical 
             ? '⚠️ CRITICAL - FIND SAFETY!' 
             : isHealthCritical 
