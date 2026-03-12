@@ -54,3 +54,5 @@ dist
 .DS_Store
 .drizzle/
 *.md
+.node_modules/
+.package-lock.json
