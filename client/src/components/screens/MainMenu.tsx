@@ -14,7 +14,7 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import { LEVELS } from "@/lib/constants";
+import { DIFFICULTY_TUNING, LEVELS } from "@/lib/constants";
 import { Level, DifficultyLevel } from "@/lib/types";
 
 interface MainMenuProps {
@@ -253,6 +253,39 @@ export default function MainMenu({ onStartTutorial, onStartGame }: MainMenuProps
                         Standard
                       </Button>
                     </div>
+                  </div>
+
+                  {/* Read-only tuning info */}
+                  <div className="mt-4 rounded-2xl bg-gray-50 border border-gray-200 px-4 py-3 text-xs text-gray-600">
+                    <div className="font-semibold text-gray-700 mb-1">
+                      Current Difficulty Stats
+                    </div>
+                    {(() => {
+                      const tuning = DIFFICULTY_TUNING[difficulty];
+                      if (!tuning) return null;
+                      return (
+                        <>
+                          <div>
+                            Fire damage near flames:{" "}
+                            <span className="font-semibold">
+                              {tuning.fireDamagePerSecondNearFire.toFixed(1)} HP/sec
+                            </span>
+                          </div>
+                          <div>
+                            Oxygen loss in smoke (no mask):{" "}
+                            <span className="font-semibold">
+                              {tuning.oxygenLossPerSecondInSmokeNoMask.toFixed(1)}%/sec
+                            </span>
+                          </div>
+                          <div>
+                            Low-oxygen HP loss at 0%:{" "}
+                            <span className="font-semibold">
+                              {tuning.lowOxygenDamagePerSecondAtZero.toFixed(1)} HP/sec
+                            </span>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>

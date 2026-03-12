@@ -5,7 +5,17 @@ import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { useAudio } from "@/lib/stores/useAudio";
 import { useSettings } from "@/lib/stores/useSettings";
 import { GAME_CONSTANTS, PLAYER_CONSTANTS, DIFFICULTY_PROFILES } from "@/lib/constants";
-import { HazardType, DifficultyLevel } from "@/lib/types";
+import { HazardState, HazardType, DifficultyLevel } from "@/lib/types";
+
+// reduces how many hazards i check,
+// every frame is grouped into XZ cells.
+const HAZARD_CELL_SIZE = GAME_CONSTANTS.SMOKE_RANGE * 2;
+
+function getHazardCellKey(x: number, z: number): string {
+  const cx = Math.floor(x / HAZARD_CELL_SIZE);
+  const cz = Math.floor(z / HAZARD_CELL_SIZE);
+  return `${cx}|${cz}`;
+}
 
 /**
  * HazardDamageSystem - Handles fire damage and oxygen depletion
@@ -24,8 +34,10 @@ export default function HazardDamageSystem() {
   const lastFireDamageSoundTime = useRef(0);
   const deathSoundPlayed = useRef(false);
   const invulnerabilityEndTime = useRef(0);
-  const COUGH_COOLDOWN = 3000; // Minimum 3 seconds between coughs
+  const COUGH_COOLDOWN = GAME_CONSTANTS.COUGH_COOLDOWN_MS; // Base cooldown coughs
   const FIRE_DAMAGE_SOUND_COOLDOWN = 2000; // Minimum 2 seconds between fire damage sounds
+  const hazardBucketsRef = useRef<Map<string, HazardState[]>>(new Map());
+  const lastHazardsRef = useRef<HazardState[] | null>(null);
   
   // Track if player recently took damage for visual feedback
   const setDamageIndicator = (value: boolean) => {
@@ -45,12 +57,12 @@ export default function HazardDamageSystem() {
     const OXYGEN_DEPLETION_RATE =
       GAME_CONSTANTS.OXYGEN_DEPLETION_RATE * profile.oxygenDepletionMultiplier;
     
-    // Update post-respawn invulnerability window (e.g. 2.5 seconds after respawn/reset)
+    // Update post-respawn invulnerability window (e.g. ~1.5 seconds after respawn/reset)
     const nowMs = performance.now();
     if (lastRespawnTime && lastRespawnTime > 0) {
       // Convert Date.now() (ms since start) to a relative window using performance.now()
       if (invulnerabilityEndTime.current === 0) {
-        invulnerabilityEndTime.current = nowMs + 2500;
+        invulnerabilityEndTime.current = nowMs + 1500;
       } else if (nowMs > invulnerabilityEndTime.current) {
         invulnerabilityEndTime.current = 0;
       }
@@ -73,19 +85,56 @@ export default function HazardDamageSystem() {
       deathSoundPlayed.current = false;
     }
     
+    // Rebuild spatial buckets if hazards array changed
+    if (hazards !== lastHazardsRef.current) {
+      lastHazardsRef.current = hazards;
+      const buckets = hazardBucketsRef.current;
+      buckets.clear();
+      for (const hazard of hazards) {
+        const key = getHazardCellKey(hazard.position.x, hazard.position.z);
+        const cell = buckets.get(key);
+        if (cell) {
+          cell.push(hazard);
+        } else {
+          buckets.set(key, [hazard]);
+        }
+      }
+    }
+
     let isNearFire = false;
     let isInSmoke = false;
     let closestFireDistance = Infinity;
     let maxFireSeverity = 0;
     
-    // Check proximity to all active hazards
-    for (const hazard of hazards) {
+    // Check proximity only to hazards in nearby grid cells
+    const px = position.x;
+    const pz = position.z;
+    const baseCx = Math.floor(px / HAZARD_CELL_SIZE);
+    const baseCz = Math.floor(pz / HAZARD_CELL_SIZE);
+
+    const nearbyHazards: HazardState[] = [];
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dz = -1; dz <= 1; dz++) {
+        const key = `${baseCx + dx}|${baseCz + dz}`;
+        const cell = hazardBucketsRef.current.get(key);
+        if (cell) {
+          nearbyHazards.push(...cell);
+        }
+      }
+    }
+
+    for (const hazard of nearbyHazards) {
       if (!hazard.isActive || hazard.isExtinguished) continue;
       
       // Calculate distance to hazard
       const dx = position.x - hazard.position.x;
       const dz = position.z - hazard.position.z;
       const distance = Math.sqrt(dx * dx + dz * dz);
+      
+      // Coarse early-out: skip hazards that are very far away from the player.
+      // This reduces per-frame work when many hazards exist across the map.
+      const MAX_CHECK_RADIUS = GAME_CONSTANTS.SMOKE_RANGE * 3;
+      if (distance > MAX_CHECK_RADIUS) continue;
       
       // Check if this is a fire-type hazard
       const isFireHazard = [
@@ -127,7 +176,8 @@ export default function HazardDamageSystem() {
     if (isNearFire && !isInvulnerable) {
       // Damage scales with proximity and fire severity
       // Closer = more damage, higher severity = more damage
-      const proximityFactor = 1 - (closestFireDistance / GAME_CONSTANTS.FIRE_DAMAGE_RANGE);
+      const rawProximity = 1 - (closestFireDistance / GAME_CONSTANTS.FIRE_DAMAGE_RANGE);
+      const proximityFactor = Math.max(0.4, rawProximity); // Even at edge of range, still hurts a bit
       const damageAmount = FIRE_DAMAGE_RATE * delta * proximityFactor * (0.5 + maxFireSeverity * 0.5);
       
       playerState.takeDamage(damageAmount);

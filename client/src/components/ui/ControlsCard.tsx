@@ -39,7 +39,6 @@ export function ControlsCard({ onStopTest }: ControlsCardProps) {
 
   const controls = [
     { label: "WASD", keys: ["KeyW", "KeyA", "KeyS", "KeyD"], action: "Move" },
-    { label: "E", keys: ["KeyE"], action: "Grab" },
     { label: "F", keys: ["KeyF"], action: "Spray" },
     { label: "C", keys: ["KeyC"], action: "Duck" },
     { label: "R", keys: ["KeyR"], action: "Unstuck" },

@@ -2,6 +2,8 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { HazardState, HazardType } from "@/lib/types";
+import { GAME_CONSTANTS, FIRE_VISUAL_TUNING } from "@/lib/constants";
+import { usePlayer } from "@/lib/stores/usePlayer";
 import Fire from "./Fire";
 import { ProceduralPropaneTank } from "./ProceduralFurniture";
 
@@ -9,22 +11,49 @@ interface FireHazardProps {
   hazard: HazardState;
 }
 
+// --- HAZARD ICON (for distant fires) ---
+function HazardIcon({ type }: { type: HazardType }) {
+  // Slightly different colors for gas vs fire
+  const baseColor = type === HazardType.GasLeak ? "#44ff44" : "#ff6600";
+  const tipColor = type === HazardType.GasLeak ? "#88ff88" : "#ffcc66";
+
+  return (
+    <group position={[0, 1, 0]}>
+      {/* Flame base */}
+      <mesh position={[0, -0.08, 0]}>
+        <circleGeometry args={[0.12, 12]} />
+        <meshBasicMaterial color={baseColor} transparent opacity={0.9} />
+      </mesh>
+      {/* Main flame body */}
+      <mesh position={[0, 0.08, 0]}>
+        <coneGeometry args={[0.12, 0.28, 14]} />
+        <meshBasicMaterial color={baseColor} transparent opacity={0.9} />
+      </mesh>
+      {/* Inner hotter tip */}
+      <mesh position={[0, 0.16, 0]}>
+        <coneGeometry args={[0.07, 0.18, 12]} />
+        <meshBasicMaterial color={tipColor} transparent opacity={0.95} />
+      </mesh>
+    </group>
+  );
+}
+
 // --- GAS VAPOR EFFECT ---
 function GasVapor({ intensity = 1 }: { intensity: number }) {
   const groupRef = useRef<THREE.Group>(null);
-  
+
   useFrame((_, delta) => {
     if (groupRef.current) {
       groupRef.current.rotation.y += delta * 0.5;
     }
   });
-  
+
   return (
     <group ref={groupRef} position={[0, 0.5, 0]}>
       {/* Green vapor clouds */}
       {[0, 1, 2, 3].map((i) => (
-        <mesh 
-          key={i} 
+        <mesh
+          key={i}
           position={[
             Math.sin(i * Math.PI / 2) * 0.3,
             Math.sin(i) * 0.2 + 0.3,
@@ -32,10 +61,10 @@ function GasVapor({ intensity = 1 }: { intensity: number }) {
           ]}
         >
           <sphereGeometry args={[0.15 + i * 0.05, 8, 8]} />
-          <meshBasicMaterial 
-            color="#44ff44" 
-            transparent 
-            opacity={0.3 * intensity} 
+          <meshBasicMaterial
+            color="#44ff44"
+            transparent
+            opacity={0.3 * intensity}
           />
         </mesh>
       ))}
@@ -104,7 +133,7 @@ function Spill({ isBurnt }: { isBurnt: boolean }) {
     // Lifted to 0.02 to prevent floor z-fighting
     <group position={[0, 0.02, 0]}>
       <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.5, 7]} /> 
+        <circleGeometry args={[0.5, 7]} />
         <meshStandardMaterial color={color} roughness={0.1} transparent opacity={0.9} />
       </mesh>
     </group>
@@ -188,9 +217,44 @@ export default function FireHazard({ hazard }: FireHazardProps) {
   if (hazard.type === HazardType.ElectricalOutlet) {
     return null;
   }
-  
+
   const groupRef = useRef<THREE.Group>(null);
-  
+  const propGroupRef = useRef<THREE.Group>(null);
+  const effectsGroupRef = useRef<THREE.Group>(null);
+  const iconGroupRef = useRef<THREE.Group>(null);
+
+  // Distance-based visual simplification: close = full props + fire,
+  // mid-range = tiny icon only, far = nothing.
+  useFrame(() => {
+    const playerState = usePlayer.getState();
+    const playerPos = playerState.position;
+
+    const dx = playerPos.x - hazard.position.x;
+    const dz = playerPos.z - hazard.position.z;
+    const distance = Math.sqrt(dx * dx + dz * dz);
+
+    const maxVisualRadius =
+      GAME_CONSTANTS.SMOKE_RANGE * FIRE_VISUAL_TUNING.ICON_MULTIPLIER;
+    const fullVisualRadius =
+      GAME_CONSTANTS.SMOKE_RANGE * FIRE_VISUAL_TUNING.FULL_VISUAL_MULTIPLIER;
+
+    const showFull = distance <= fullVisualRadius;
+    const showIcon = !showFull && distance <= maxVisualRadius;
+    const isActiveAndAlive = hazard.isActive && !hazard.isExtinguished;
+
+    if (propGroupRef.current) {
+      propGroupRef.current.visible = isActiveAndAlive && showFull;
+    }
+
+    if (effectsGroupRef.current) {
+      effectsGroupRef.current.visible = isActiveAndAlive && showFull;
+    }
+
+    if (iconGroupRef.current) {
+      iconGroupRef.current.visible = isActiveAndAlive && showIcon;
+    }
+  });
+
   const renderProp = () => {
     const isBurnt = hazard.isExtinguished;
     const typeStr = hazard.type.toString().toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -227,65 +291,75 @@ export default function FireHazard({ hazard }: FireHazardProps) {
     if (typeStr.includes("classc") || typeStr.includes("electric") || typeStr.includes("heater") || typeStr.includes("appliance")) {
       return <PowerStrip isBurnt={isBurnt} />;
     }
-    
+
     // 5. GAS LEAK - Propane tank with vapor
     if (typeStr.includes("gas") || typeStr.includes("leak") || typeStr.includes("propane")) {
       return <ProceduralPropaneTank />;
     }
-    
+
     if (typeStr.includes("candle") || typeStr.includes("fireplace")) return null;
 
     return <GenericDebris isBurnt={isBurnt} />;
   };
-  
+
   // Logic for showing Fire Effect
   const typeStr = hazard.type.toString().toLowerCase().replace(/[^a-z0-9]/g, "");
-  const shouldUseNewFire = 
-    typeStr.includes("class") || 
-    typeStr.includes("fireplace") || 
-    typeStr.includes("stove") || 
-    typeStr.includes("candle") || 
-    typeStr.includes("heater") || 
+  const shouldUseNewFire =
+    typeStr.includes("class") ||
+    typeStr.includes("fireplace") ||
+    typeStr.includes("stove") ||
+    typeStr.includes("candle") ||
+    typeStr.includes("heater") ||
     typeStr.includes("dryer");
-    
+
   // Calculate fire offset based on type (e.g. lift fire higher for pans)
   let fireYOffset = 0.2;
   if (typeStr.includes("stove") || typeStr.includes("classk")) {
-     // If we lifted the pan, lift the fire too
-     fireYOffset = hazard.position.y < 0.5 ? 1.1 : 0.2;
+    // If we lifted the pan, lift the fire too
+    fireYOffset = hazard.position.y < 0.5 ? 1.1 : 0.2;
   }
-  
+
   // Don't render anything if hazard is extinguished (no gray debris box)
   if (hazard.isExtinguished) {
     return null;
   }
-  
+
   // Check if this is a gas leak hazard
   const isGasLeak = typeStr.includes("gas") || typeStr.includes("leak") || typeStr.includes("propane");
-  
+
   return (
-    <group 
+    <group
       ref={groupRef}
       position={[hazard.position.x, hazard.position.y, hazard.position.z]}
     >
-      {/* 1. THE OBJECT (Always Visible if active) */}
-      {hazard.isActive && renderProp()}
-      
-      {/* 2. THE FIRE EFFECT (not for gas leaks) */}
-      {shouldUseNewFire && !isGasLeak && hazard.isActive && !hazard.isExtinguished && (
-        <Fire
-          position={[0, fireYOffset, 0]} 
-          size={Math.max(0.3, hazard.severity * 0.6)}
-          intensity={hazard.severity}
-          isActive={true}
-          shape="triangular"
-        />
-      )}
-      
-      {/* 3. GAS VAPOR EFFECT (only for gas leaks) */}
-      {isGasLeak && hazard.isActive && !hazard.isExtinguished && (
-        <GasVapor intensity={hazard.severity} />
-      )}
+      {/* 1. THE OBJECT (close range only) */}
+      <group ref={propGroupRef}>
+        {hazard.isActive && renderProp()}
+      </group>
+
+      {/* 2. FIRE / GAS EFFECTS (close range only) */}
+      <group ref={effectsGroupRef}>
+        {/* Fire effect (not for gas leaks) */}
+        {shouldUseNewFire && !isGasLeak && hazard.isActive && !hazard.isExtinguished && (
+          <Fire
+            position={[0, fireYOffset, 0]}
+            size={Math.max(0.3, hazard.severity * 0.6)}
+            intensity={hazard.severity}
+            isActive={true}
+            shape="triangular"
+          />
+        )}
+
+        {/* Gas vapor effect (only for gas leaks) */}
+        {isGasLeak && hazard.isActive && !hazard.isExtinguished && (
+          <GasVapor intensity={hazard.severity} />
+        )}
+      </group>
+
+      {/* 3. DISTANT HAZARD ICON (mid-range only) */}
+      <group ref={iconGroupRef} visible={false}>
+        <HazardIcon type={hazard.type} />
+      </group>
     </group>
   );
 }

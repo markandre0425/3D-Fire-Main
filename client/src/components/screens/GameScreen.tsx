@@ -2,13 +2,18 @@ import { Suspense, useEffect, useState } from "react";
 import Level from "../game/Level";
 import TutorialLevel from "../game/TutorialLevel";
 import KeyboardManager from "../game/KeyboardManager";
+import FireSafetyAudioController from "../game/FireSafetyAudioController";
+import ObjectCollectionAudioController from "../game/ObjectCollectionAudioController";
+import GameFlowController from "../game/GameFlowController";
+import HazardTipsController from "../game/HazardTipsController";
+import AchievementsController from "../game/AchievementsController";
 import { useFireSafety } from "@/lib/stores/useFireSafety";
 import { usePlayer } from "@/lib/stores/usePlayer";
 import { Level as LevelType } from "@/lib/types";
 import { useGame } from "@/lib/stores/useGame";
 
 export default function GameScreen() {
-  const { startLevel, isLevelComplete, currentLevel } = useFireSafety();
+  const { startLevel, currentLevel } = useFireSafety();
   const { health, resetPlayer } = usePlayer();
   const { end } = useGame();
 
@@ -48,21 +53,6 @@ export default function GameScreen() {
     return () => clearTimeout(gameOverCheckDelay);
   }, [health, end]);
 
-  useEffect(() => {
-    if (isLevelComplete) {
-      const currentLevel = useFireSafety.getState().currentLevel;
-      const completedLevels = useFireSafety.getState().completedLevels;
-
-      if (currentLevel === LevelType.Kitchen && !completedLevels.includes(LevelType.LivingRoom)) {
-        setTimeout(() => startLevel(LevelType.LivingRoom), 2000);
-      } else if (currentLevel === LevelType.LivingRoom && !completedLevels.includes(LevelType.Garage)) {
-        setTimeout(() => startLevel(LevelType.Garage), 2000);
-      } else {
-        setTimeout(() => end(), 2000);
-      }
-    }
-  }, [isLevelComplete, end, startLevel]);
-  
   return (
     <>
       <Suspense fallback={null}>
@@ -72,6 +62,11 @@ export default function GameScreen() {
         <Level />
         )}
       </Suspense>
+      <FireSafetyAudioController />
+      <ObjectCollectionAudioController />
+      <GameFlowController />
+      <HazardTipsController />
+      <AchievementsController />
       <KeyboardManager />
     </>
   );

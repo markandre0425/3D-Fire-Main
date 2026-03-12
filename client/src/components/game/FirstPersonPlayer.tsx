@@ -13,7 +13,7 @@ import ExtinguisherSpray from "./ExtinguisherSpray";
 
 const PLAYER_HEIGHT = PLAYER_CONSTANTS.CHARACTER_BOUNDING_BOX.y;
 const PLAYER_RADIUS = PLAYER_CONSTANTS.CHARACTER_BOUNDING_BOX.x * 0.5;
-const CROUCH_FACTOR = 0.6; 
+const CROUCH_FACTOR = 0.6;
 
 const EYE_OFFSET = PLAYER_HEIGHT * 0.5;
 const CROUCH_EYE_OFFSET = EYE_OFFSET * CROUCH_FACTOR;
@@ -44,16 +44,16 @@ useGLTF.preload("/models/fire_extinguisher.glb");
 
 export default function FirstPersonPlayer() {
   const { camera, gl } = useThree();
-  
+
   // FIX: Get specific state for rendering updates (Visuals)
   const extinguishPressed = useKeyboardControls<Controls>(state => state.extinguish);
-  
+
   // Get subscription for physics updates (Movement loop)
   const [subscribeKeys] = useKeyboardControls<Controls>();
   const { hasExtinguisher, extinguisherType, extinguisherAmmo } = usePlayer();
   const respawnPlayer = usePlayer((state) => state.respawn);
   const spawnPoint = usePlayer((state) => state.spawnPoint);
-  
+
   // OPTIMIZATION: Use selector to prevent re-renders when Score/Oxygen changes
   const extinguishHazard = useFireSafety((state) => state.extinguishHazard);
   const { scene: extinguisherScene } = useGLTF("/models/fire_extinguisher.glb") as GLTF & {
@@ -63,7 +63,7 @@ export default function FirstPersonPlayer() {
   const clonedExtinguisher = useMemo(() => extinguisherScene.clone(), [extinguisherScene]);
   const extinguisherGroup = useRef<THREE.Group>(null);
   const sprayGroup = useRef<THREE.Group>(null);
-  
+
   const extinguishCooldown = useRef(0);
 
   const controlsRef = useRef({
@@ -76,10 +76,10 @@ export default function FirstPersonPlayer() {
     crouch: false,
     extinguish: false,
   });
-  
+
   const velocityY = useRef(0);
   const grounded = useRef(true);
-  const positionRef = useRef(new THREE.Vector3(0,0,0));
+  const positionRef = useRef(new THREE.Vector3(0, 0, 0));
 
   // Pointer lock setup
   useEffect(() => {
@@ -117,7 +117,7 @@ export default function FirstPersonPlayer() {
           const playerPos = playerState.position;
           const objects = fireSafetyState.interactiveObjects;
           const collect = fireSafetyState.collectObject;
-            
+
           // Interaction distance logic
           const interactDistSq = ((GAME_CONSTANTS?.INTERACTION_DISTANCE || 2.5) + 0.5) ** 2;
 
@@ -126,13 +126,13 @@ export default function FirstPersonPlayer() {
             for (const obj of objects) {
               const typeStr = obj.type?.toString() || "";
               const isCabinet = typeStr === "ExtinguisherCabinet" || typeStr === "extinguisher_cabinet";
-              
+
               if (isCabinet && obj.isActive) {
                 const dx = playerPos.x - obj.position.x;
-                const dy = playerPos.y - obj.position.y; 
+                const dy = playerPos.y - obj.position.y;
                 const dz = playerPos.z - obj.position.z;
-                const distSq = dx*dx + dy*dy + dz*dz;
-                
+                const distSq = dx * dx + dy * dy + dz * dz;
+
                 if (distSq < interactDistSq) {
                   // Refill from cabinet
                   playerState.refillExtinguisherAmmo(100);
@@ -146,9 +146,9 @@ export default function FirstPersonPlayer() {
           // Normal object collection
           for (const obj of objects) {
             if (obj.isCollected || !obj.isActive) {
-               continue;
+              continue;
             }
-            
+
             // Skip cabinets for collection (they are refill stations, not collectible)
             const typeStr = obj.type?.toString() || "";
             if (typeStr === "ExtinguisherCabinet" || typeStr === "extinguisher_cabinet") {
@@ -156,20 +156,20 @@ export default function FirstPersonPlayer() {
             }
 
             const dx = playerPos.x - obj.position.x;
-            const dy = playerPos.y - obj.position.y; 
+            const dy = playerPos.y - obj.position.y;
             const dz = playerPos.z - obj.position.z;
-            const distSq = dx*dx + dy*dy + dz*dz;
+            const distSq = dx * dx + dy * dy + dz * dz;
 
             if (distSq < interactDistSq) {
               collect(obj.id);
-              break; 
+              break;
             }
           }
         }
       }
     );
   }, [subscribeKeys]);
-      
+
   // Respawn Handler
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -178,7 +178,7 @@ export default function FirstPersonPlayer() {
         velocityY.current = 0;
         grounded.current = true;
         camera.rotation.set(0, 0, 0);
-        
+
         const freshSpawn = usePlayer.getState().spawnPoint;
         positionRef.current.set(freshSpawn.x, freshSpawn.y, freshSpawn.z);
         camera.position.set(freshSpawn.x, freshSpawn.y + EYE_OFFSET, freshSpawn.z);
@@ -230,7 +230,7 @@ export default function FirstPersonPlayer() {
 
   // Collision check!!!!
   const collidesAt = (pos: THREE.Vector3, height: number) => {
-    const radius = PLAYER_RADIUS * 0.9; 
+    const radius = PLAYER_RADIUS * 0.9;
     const collidables = useFireSafety.getState().collidables; // Read fresh state without re-render
 
     for (const obstacle of collidables) {
@@ -254,12 +254,12 @@ export default function FirstPersonPlayer() {
   useFrame((state, delta) => {
     const controls = controlsRef.current;
     const isCrouching = controls.crouch;
-    
+
     // --- MOVEMENT & PHYSICS LOGIC ---
-    const currentSpeed = isCrouching 
-      ? PLAYER_CONSTANTS.CROUCH_SPEED 
+    const currentSpeed = isCrouching
+      ? PLAYER_CONSTANTS.CROUCH_SPEED
       : (controls.run ? PLAYER_CONSTANTS.RUNNING_SPEED : PLAYER_CONSTANTS.MOVEMENT_SPEED);
-    
+
     const moveSpeed = currentSpeed * delta;
     const currentHeight = isCrouching ? PLAYER_HEIGHT * CROUCH_FACTOR : PLAYER_HEIGHT;
     const targetEyeHeight = isCrouching ? CROUCH_EYE_OFFSET : EYE_OFFSET;
@@ -277,13 +277,13 @@ export default function FirstPersonPlayer() {
     if (controls.rightward) moveDir.add(RIGHT_VECTOR);
 
     if (moveDir.lengthSq() > 0) moveDir.normalize();
-    
+
     const dx = moveDir.x * moveSpeed;
     const dz = moveDir.z * moveSpeed;
 
     // --- 2. HORIZONTAL COLLISION (Separate Axes to prevent Wall Stick/Bounce) ---
     const nextPos = positionRef.current.clone();
-    
+
     // Horizontal Collision (Slide) instead of bouncing off walls
     nextPos.x += dx;
     if (collidesAt(nextPos, currentHeight)) nextPos.x -= dx;
@@ -296,7 +296,7 @@ export default function FirstPersonPlayer() {
       velocityY.current = JUMP_FORCE;
       grounded.current = false;
     }
-    
+
     velocityY.current -= GRAVITY * delta;
     const dy = velocityY.current * delta;
 
@@ -305,30 +305,30 @@ export default function FirstPersonPlayer() {
 
     // Check Floor Collision
     if (nextPos.y <= GROUND_LEVEL) {
-        nextPos.y = GROUND_LEVEL;
+      nextPos.y = GROUND_LEVEL;
       velocityY.current = 0;
       grounded.current = true;
     } else {
-        // Check Object collision (Vertical)
-        if (collidesAt(nextPos, currentHeight)) {
-            // If moving down (Fall), hit object then land.
-            if (velocityY.current < 0) {
-                velocityY.current = 0;
-                grounded.current = true;
-                nextPos.y -= dy; // Undo move to sit on top
-            } else {
-                // Hit head on ceiling
-                velocityY.current = 0;
-                nextPos.y -= dy;
-            }
-    } else {
-      grounded.current = false;
+      // Check Object collision (Vertical)
+      if (collidesAt(nextPos, currentHeight)) {
+        // If moving down (Fall), hit object then land.
+        if (velocityY.current < 0) {
+          velocityY.current = 0;
+          grounded.current = true;
+          nextPos.y -= dy; // Undo move to sit on top
+        } else {
+          // Hit head on ceiling
+          velocityY.current = 0;
+          nextPos.y -= dy;
         }
+      } else {
+        grounded.current = false;
+      }
     }
 
     // --- 4. APPLY UPDATES ---
     positionRef.current.copy(nextPos);
-    
+
     // Sync to Store (for other components)
     usePlayer.setState((state) => ({
       position: { ...state.position, x: nextPos.x, y: nextPos.y, z: nextPos.z }
@@ -342,7 +342,7 @@ export default function FirstPersonPlayer() {
     const playerState = usePlayer.getState();
     const canSpray = playerState.canUseExtinguisher();
     const isSpraying = controls.extinguish && hasExtinguisher && canSpray;
-    
+
     // Play empty sound when trying to spray with no ammo
     if (controls.extinguish && hasExtinguisher && !canSpray) {
       // Use extinguishCooldown ref to throttle the sound (plays once per 0.5 sec)
@@ -353,28 +353,28 @@ export default function FirstPersonPlayer() {
     }
 
     if (extinguisherGroup.current && hasExtinguisher) {
-        camera.updateMatrixWorld(true);
-        const handWorld = HAND_OFFSET.clone();
+      camera.updateMatrixWorld(true);
+      const handWorld = HAND_OFFSET.clone();
       if (isCrouching) handWorld.y += 0.2;
-      
-        camera.localToWorld(handWorld);
-        extinguisherGroup.current.position.copy(handWorld);
-        extinguisherGroup.current.quaternion.copy(camera.quaternion);
 
-        if (sprayGroup.current) {
-          const handleWorld = HANDLE_CAMERA_OFFSET.clone();
-          camera.localToWorld(handleWorld);
-          sprayGroup.current.position.copy(handleWorld);
+      camera.localToWorld(handWorld);
+      extinguisherGroup.current.position.copy(handWorld);
+      extinguisherGroup.current.quaternion.copy(camera.quaternion);
+
+      if (sprayGroup.current) {
+        const handleWorld = HANDLE_CAMERA_OFFSET.clone();
+        camera.localToWorld(handleWorld);
+        sprayGroup.current.position.copy(handleWorld);
         sprayGroup.current.quaternion.copy(camera.quaternion);
       }
-      
+
       // --- AMMO DRAIN ---
       // Drain ammo while spraying
       if (isSpraying) {
         const drainRate = playerState.getExtinguisherDrainRate();
         playerState.drainExtinguisherAmmo(drainRate * delta);
       }
-      
+
       // --- EXTINGUISHING LOGIC (GAMEPLAY, DAMAGE OVER TIME) ---
       // Throttle hazard checks to avoid 10 store updates/sec (was causing hang when fire almost out).
       // Fewer updates = fewer re-renders of Hazard/Lights. Same damage/sec: rate * interval.
@@ -423,7 +423,7 @@ export default function FirstPersonPlayer() {
       }
     }
   });
-      
+
   // FIX: Use the state-based 'extinguishPressed' for visual toggling
   // Also check if there's ammo - no spray visual when empty
   const isSprayingVisual = extinguishPressed && hasExtinguisher && extinguisherAmmo > 0;
@@ -432,16 +432,16 @@ export default function FirstPersonPlayer() {
     <>
       {hasExtinguisher && (
         <group ref={extinguisherGroup}>
-          <primitive 
-            object={clonedExtinguisher} 
-            scale={[0.35 * 2.5, 0.35 * 2.5, 0.35 * 2.5]} 
+          <primitive
+            object={clonedExtinguisher}
+            scale={[0.35 * 2.5, 0.35 * 2.5, 0.35 * 2.5]}
           />
         </group>
       )}
 
       {ENABLE_SPRAY_EFFECT && hasExtinguisher && (
         <group ref={sprayGroup}>
-          <ExtinguisherSpray 
+          <ExtinguisherSpray
             active={isSprayingVisual}
             extinguisherType={extinguisherType || InteractiveObjectType.FireExtinguisher}
           />

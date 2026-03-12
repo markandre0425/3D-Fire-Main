@@ -49,7 +49,7 @@ export const usePlayer = create<PlayerStateStore>()(
     oxygen: PLAYER_CONSTANTS.MAX_OXYGEN,
     score: 0,
     lastRespawnTime: 0,
-    
+
     moveForward: (distance: number, cameraDirection?: { x: number; z: number }) => {
       const { position, rotation } = get();
       const speed = get().getMovementSpeed();
@@ -75,7 +75,7 @@ export const usePlayer = create<PlayerStateStore>()(
         set({ position: { ...position, x: newX, z: newZ } });
       }
     },
-    
+
     moveBackward: (distance: number, cameraDirection?: { x: number; z: number }) => {
       const { position, rotation } = get();
       const speed = get().getMovementSpeed();
@@ -101,7 +101,7 @@ export const usePlayer = create<PlayerStateStore>()(
         set({ position: { ...position, x: newX, z: newZ } });
       }
     },
-    
+
     moveLeft: (distance: number, cameraDirection?: { x: number; z: number }) => {
       const { position, rotation } = get();
       const speed = get().getMovementSpeed();
@@ -129,7 +129,7 @@ export const usePlayer = create<PlayerStateStore>()(
         set({ position: { ...position, x: newX, z: newZ } });
       }
     },
-    
+
     moveRight: (distance: number, cameraDirection?: { x: number; z: number }) => {
       const { position, rotation } = get();
       const speed = get().getMovementSpeed();
@@ -157,15 +157,15 @@ export const usePlayer = create<PlayerStateStore>()(
         set({ position: { ...position, x: newX, z: newZ } });
       }
     },
-    
+
     rotate: (angle: number) => {
       const { rotation } = get();
       set({ rotation: { ...rotation, y: rotation.y + angle } });
     },
-    
+
     setCrouching: (isCrouching: boolean) => {
       set({ isCrouching });
-      
+
       // Adjust height when crouching
       if (isCrouching) {
         set(state => ({ position: { ...state.position, y: 0.5 } }));
@@ -173,34 +173,34 @@ export const usePlayer = create<PlayerStateStore>()(
         set(state => ({ position: { ...state.position, y: 1 } }));
       }
     },
-    
+
     setRunning: (isRunning: boolean) => {
       set({ isRunning });
     },
-    
+
     takeDamage: (amount: number) => {
-      set(state => ({ 
-        health: Math.max(0, state.health - amount) 
+      set(state => ({
+        health: Math.max(0, state.health - amount)
       }));
     },
-    
+
     depleteOxygen: (amount: number) => {
-      set(state => ({ 
-        oxygen: Math.max(0, state.oxygen - amount) 
+      set(state => ({
+        oxygen: Math.max(0, state.oxygen - amount)
       }));
-      
+
       // If oxygen is depleted, start taking damage
       if (get().oxygen <= 0) {
         get().takeDamage(amount / 2);
       }
     },
-    
+
     replenishOxygen: (amount: number) => {
-      set(state => ({ 
-        oxygen: Math.min(PLAYER_CONSTANTS.MAX_OXYGEN, state.oxygen + amount) 
+      set(state => ({
+        oxygen: Math.min(PLAYER_CONSTANTS.MAX_OXYGEN, state.oxygen + amount)
       }));
     },
-    
+
     resetPlayer: () => {
       set({
         position: { ...PLAYER_CONSTANTS.STARTING_POSITION },
@@ -217,11 +217,11 @@ export const usePlayer = create<PlayerStateStore>()(
         lastRespawnTime: Date.now()
       });
     },
-    
+
     setSpawnPoint: (point: { x: number; y: number; z: number }) => {
       set({ spawnPoint: { ...point } });
     },
-    
+
     respawn: () => {
       const { spawnPoint } = get();
       set(state => ({
@@ -230,9 +230,9 @@ export const usePlayer = create<PlayerStateStore>()(
         lastRespawnTime: Date.now()
       }));
     },
-    
+
     pickupExtinguisher: (extinguisherType?: InteractiveObjectType) => {
-      set({ 
+      set({
         hasExtinguisher: true,
         extinguisherType: extinguisherType || InteractiveObjectType.FireExtinguisher,
         extinguisherAmmo: EXTINGUISHER_AMMO.MAX_CAPACITY // Full ammo on pickup
@@ -246,12 +246,12 @@ export const usePlayer = create<PlayerStateStore>()(
         extinguisherAmmo: has ? EXTINGUISHER_AMMO.MAX_CAPACITY : 0,
       }));
     },
-    
+
     useExtinguisher: () => {
       // Logic for using the extinguisher
       // This is just a placeholder - the actual extinguishing is handled in FireSafety store
     },
-    
+
     addScore: (points: number) => {
       set(state => ({ score: state.score + points }));
     },
@@ -259,7 +259,7 @@ export const usePlayer = create<PlayerStateStore>()(
     setScore: (score: number) => {
       set({ score });
     },
-    
+
     pickupGasMask: () => {
       set({ hasGasMask: true });
     },
@@ -267,14 +267,14 @@ export const usePlayer = create<PlayerStateStore>()(
     setHasGasMask: (has: boolean) => {
       set({ hasGasMask: has });
     },
-    
+
     setLastRespawnTime: (time: number) => {
       set({ lastRespawnTime: time });
     },
-    
+
     getMovementSpeed: () => {
       const { isCrouching, isRunning } = get();
-      
+
       if (isCrouching) {
         return PLAYER_CONSTANTS.CROUCH_SPEED;
       } else if (isRunning) {
@@ -283,15 +283,15 @@ export const usePlayer = create<PlayerStateStore>()(
         return PLAYER_CONSTANTS.MOVEMENT_SPEED;
       }
     },
-    
+
     // === EXTINGUISHER AMMO ACTIONS ===
-    
+
     drainExtinguisherAmmo: (amount: number) => {
       const prevAmmo = get().extinguisherAmmo;
       const newAmmo = Math.max(0, prevAmmo - amount);
-      
+
       set({ extinguisherAmmo: newAmmo });
-      
+
       // If ammo just reached 0, trigger respawn timer
       if (prevAmmo > 0 && newAmmo <= 0) {
         // Import dynamically to avoid circular dependency
@@ -305,22 +305,22 @@ export const usePlayer = create<PlayerStateStore>()(
         });
       }
     },
-    
+
     refillExtinguisherAmmo: (amount: number) => {
       set(state => ({
         extinguisherAmmo: Math.min(EXTINGUISHER_AMMO.MAX_CAPACITY, state.extinguisherAmmo + amount)
       }));
     },
-    
+
     canUseExtinguisher: () => {
       const { hasExtinguisher, extinguisherAmmo } = get();
       return hasExtinguisher && extinguisherAmmo > 0;
     },
-    
+
     getExtinguisherDrainRate: () => {
       const { extinguisherType } = get();
       if (!extinguisherType) return EXTINGUISHER_AMMO.DEFAULT_DRAIN_RATE;
-      
+
       // Get drain rate for specific extinguisher type
       const typeName = extinguisherType.toString();
       return EXTINGUISHER_AMMO.DRAIN_RATES[typeName] || EXTINGUISHER_AMMO.DEFAULT_DRAIN_RATE;

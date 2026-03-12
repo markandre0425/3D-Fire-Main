@@ -4,6 +4,7 @@ import { KeyboardControls } from "@react-three/drei";
 import { useAudio } from "./lib/stores/useAudio";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
+import { Toaster } from "sonner";
 // import "@fontsource/inter"; // Temporarily disabled due to path issues
 import { Controls } from "./lib/types";
 import GameScreen from "./components/screens/GameScreen";
@@ -193,15 +194,16 @@ function App() {
             <>
               <Canvas
                 shadows
+                dpr={[1, 1.5]}
                 camera={{
                   position: [0, 5, 10],
                   fov: 50,
                   near: 0.1,
-                  far: 1000
+                  far: 250
                 }}
                 gl={{
                   antialias: true,
-                  powerPreference: "default"
+                  powerPreference: "high-performance"
                 }}
                 onCreated={({ gl }) => {
                   const canvas = gl.domElement as HTMLCanvasElement;
@@ -233,6 +235,7 @@ function App() {
           <AudioUnlocker />
         </KeyboardControls>
       </div>
+      <Toaster position="top-center" richColors />
     </QueryClientProvider>
   );
 }

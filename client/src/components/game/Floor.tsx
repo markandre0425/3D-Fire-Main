@@ -7,7 +7,7 @@ import { Level } from "@/lib/types";
 export default function Floor() {
   const meshRef = useRef<Mesh>(null);
   const { currentLevel } = useFireSafety();
-  
+
   // Get floor size based on current level (matching the 2x scaled rooms)
   const getFloorSize = () => {
     switch (currentLevel) {
@@ -20,12 +20,12 @@ export default function Floor() {
         return 20;
     }
   };
-  
+
   const floorSize = getFloorSize();
-  
+
   // Load base texture
   const textureBase = useTexture("/textures/wood.jpg");
-  
+
   // Clone texture to avoid shared state issues between levels
   const texture = useMemo(() => {
     const tex = textureBase.clone();
@@ -34,12 +34,12 @@ export default function Floor() {
     tex.needsUpdate = true;
     return tex;
   }, [textureBase, floorSize]);
-  
+
   return (
-    <mesh 
-      ref={meshRef} 
-      position={[0, 0, 0]} 
-      rotation={[-Math.PI / 2, 0, 0]} 
+    <mesh
+      ref={meshRef}
+      position={[0, 0, 0]}
+      rotation={[-Math.PI / 2, 0, 0]}
       receiveShadow
     >
       <planeGeometry args={[floorSize, floorSize]} />

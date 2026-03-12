@@ -94,7 +94,7 @@ export function ProceduralCounter() {
         <boxGeometry args={[1.0, 1.0, 0.8]} />
         {materials.woodLight}
       </mesh>
-      <mesh castShadow receiveShadow position={[0, 0.55, 0]}>
+      <mesh receiveShadow position={[0, 0.55, 0]}>
         <boxGeometry args={[1.1, 0.1, 0.9]} />
         <meshStandardMaterial color="#FFFFFF" roughness={0.1} />
       </mesh>
@@ -168,7 +168,7 @@ export function ProceduralComputer() {
       {/* Monitor */}
       <group position={[0, 0.4, -0.1]}>
         {/* Monitor Stand */}
-        <mesh castShadow receiveShadow position={[0, -0.3, 0]}>
+        <mesh receiveShadow position={[0, -0.3, 0]}>
           <boxGeometry args={[0.3, 0.05, 0.2]} />
           {materials.blackPlastic}
         </mesh>
@@ -207,14 +207,14 @@ export function ProceduralComputer() {
       </group>
       {/* Keyboard */}
       <group position={[0, 0.05, 0.15]}>
-        <mesh castShadow receiveShadow>
+        <mesh receiveShadow>
           <boxGeometry args={[0.6, 0.02, 0.2]} />
           {materials.blackPlastic}
         </mesh>
       </group>
       {/* Mouse */}
       <group position={[0.35, 0.05, 0.15]}>
-        <mesh castShadow receiveShadow rotation={[0, 0, Math.PI / 6]}>
+        <mesh receiveShadow rotation={[0, 0, Math.PI / 6]}>
           <boxGeometry args={[0.12, 0.05, 0.08]} />
           {materials.blackPlastic}
         </mesh>
@@ -531,7 +531,7 @@ const ShelfUnit = ({ position, width, height, shelves = 4 }: { position: [number
           </mesh>
           {/* OPTIMIZATION: Reduced probability from 0.7 to 0.85 (15% chance, fewer random items) */}
           {Math.random() > 0.85 && (
-            <mesh castShadow position={[0, 0.15, 0]} rotation={[0, (Math.random() - 0.5) * 0.5, 0]}>
+            <mesh position={[0, 0.15, 0]} rotation={[0, (Math.random() - 0.5) * 0.5, 0]}>
               <boxGeometry args={[0.25, 0.2, 0.35]} />
               <meshStandardMaterial color={Math.random() > 0.5 ? "#d1bfa7" : "#333"} />
             </mesh>
@@ -555,7 +555,7 @@ const DrawerUnit = ({ position }: { position: [number, number, number] }) => {
       </mesh>
       {[0.2, 0.5, 0.8].map((y, i) => (
         <group key={i} position={[0, y, 0.26]}>
-          <mesh castShadow receiveShadow>
+          <mesh receiveShadow>
             <boxGeometry args={[0.7, 0.25, 0.02]} />
             <meshStandardMaterial color="#8c6b4a" roughness={0.6} />
           </mesh>

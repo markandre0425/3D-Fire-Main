@@ -19,11 +19,9 @@ export default function EndScreen() {
   }, []);
 
   const stars = useMemo(() => {
-    const baseScore = 800;
-    if (score >= baseScore && completedLevels.length >= 3) return 3;
-    if (score >= baseScore / 2 && completedLevels.length >= 2) return 2;
-    return 1;
-  }, [score, completedLevels.length]);
+    // Kid-friendly: 1 star per level completed (max 3)
+    return Math.min(3, Math.max(1, completedLevels.length));
+  }, [completedLevels.length]);
 
   const isGameComplete = useMemo(() => completedLevels.length === 3, [completedLevels.length]);
   

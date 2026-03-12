@@ -1,4 +1,4 @@
-import { Level, LevelData, SafetyTip, SafetyTipCategory, HazardType, InteractiveObjectType, DifficultyLevel, EnvironmentObject } from "./types";
+import { Level, LevelData, SafetyTip, SafetyTipCategory, HazardType, InteractiveObjectType, DifficultyLevel, EnvironmentObject, HazardState, Vector3 } from "./types";
 
 // Shared home (floor + outer walls) used by indoor levels
 const BASE_HOME_SHELL: EnvironmentObject[] = [
@@ -52,8 +52,8 @@ export const DIFFICULTY_PROFILES: Record<
     oxygenDepletionMultiplier: 1,
   },
   [DifficultyLevel.Intermediate]: {
-    fireDamageMultiplier: 1.25,
-    oxygenDepletionMultiplier: 1.25,
+    fireDamageMultiplier: 1.4,
+    oxygenDepletionMultiplier: 1.4,
   },
   [DifficultyLevel.Advanced]: {
     fireDamageMultiplier: 1.5,
@@ -68,6 +68,77 @@ export const DIFFICULTY_PROFILES: Record<
     oxygenDepletionMultiplier: 2,
   },
 };
+
+// --- HAZARD TEMPLATES / HELPERS ---
+
+const baseHazard = (
+  id: string,
+  type: HazardType,
+  position: Vector3,
+  severity: number,
+  isSmoking: boolean
+): HazardState => ({
+  id,
+  type,
+  position,
+  isActive: true,
+  severity,
+  isSmoking,
+  isExtinguished: false,
+});
+
+const stoveTopHazard = (id: string, position: Vector3, severity = 2): HazardState =>
+  baseHazard(id, HazardType.StoveTop, position, severity, true);
+
+const electricalOutletHazard = (id: string, position: Vector3): HazardState =>
+  baseHazard(id, HazardType.ElectricalOutlet, position, 1, false);
+
+const fireplaceHazard = (id: string, position: Vector3, severity = 2): HazardState =>
+  baseHazard(id, HazardType.Fireplace, position, severity, true);
+
+const candleHazard = (id: string, position: Vector3): HazardState =>
+  baseHazard(id, HazardType.Candle, position, 1, false);
+
+const spaceHeaterHazard = (id: string, position: Vector3, severity = 2): HazardState =>
+  baseHazard(id, HazardType.SpacerHeater, position, severity, true);
+
+const classBFireHazard = (id: string, position: Vector3, severity = 2, isSmoking = true): HazardState =>
+  baseHazard(id, HazardType.ClassBFire, position, severity, isSmoking);
+
+const classCFireHazard = (id: string, position: Vector3, severity = 2, isSmoking = true): HazardState =>
+  baseHazard(id, HazardType.ClassCFire, position, severity, isSmoking);
+
+const gasLeakHazard = (id: string, position: Vector3, severity = 2): HazardState =>
+  baseHazard(id, HazardType.GasLeak, position, severity, false);
+
+// Short, kid-friendly tips for each hazard type (shown once per playthrough)
+export const HAZARD_TIPS: Partial<Record<HazardType, string>> = {
+  [HazardType.StoveTop]:
+    "Grease fires are very dangerous. Never use water—use the proper extinguisher or cover the pan.",
+  [HazardType.ElectricalOutlet]:
+    "Overloaded outlets can spark fires. Don’t plug too many devices into one socket.",
+  [HazardType.Fireplace]:
+    "Keep furniture and toys away from fireplaces and heaters so nothing catches fire.",
+  [HazardType.Candle]:
+    "Never leave candles burning alone. Blow them out before you leave the room.",
+  [HazardType.SpacerHeater]:
+    "Space heaters need space. Keep them away from beds, curtains, and clothes.",
+  [HazardType.ClassBFire]:
+    "Flammable liquids like gasoline and oil can ignite easily. Store them safely and clean spills.",
+  [HazardType.GasLeak]:
+    "If you smell gas, don’t touch switches. Leave the area and tell an adult right away.",
+};
+
+export const ACHIEVEMENTS = {
+  first_extinguisher_use: {
+    title: "Junior Firefighter",
+    description: "You picked up your first fire extinguisher!",
+  },
+  all_levels_cleared: {
+    title: "Fire Safety Champion",
+    description: "You completed all missions in the house!",
+  },
+} as const;
 
 export const LEVELS: Record<Level, LevelData> = {
   [Level.BasicTraining]: {
@@ -115,42 +186,10 @@ export const LEVELS: Record<Level, LevelData> = {
     name: "Kitchen Safety",
     description: "Learn how to prevent and respond to kitchen fires",
     hazards: [
-      {
-        id: "stove1",
-        type: HazardType.StoveTop,
-        position: { x: -4, y: 0, z: -9 },
-        isActive: true,
-        severity: 2,
-        isSmoking: true,
-        isExtinguished: false
-      },
-      {
-        id: "outlet1",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -4, y: 0.4, z: -9.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet2",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 9.9, y: 0.4, z: 3 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_kitchen_3",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 4, y: 0.4, z: 9.9 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      }
+      stoveTopHazard("stove1", { x: -4, y: 0, z: -9 }, 2),
+      electricalOutletHazard("outlet1", { x: -4, y: 0.4, z: -9.9 }),
+      electricalOutletHazard("outlet2", { x: 9.9, y: 0.4, z: 3 }),
+      electricalOutletHazard("outlet_kitchen_3", { x: 4, y: 0.4, z: 9.9 }),
     ],
     objects: [
       {
@@ -167,13 +206,14 @@ export const LEVELS: Record<Level, LevelData> = {
         isActive: true,
         isCollected: false
       },
-      {
-        id: "detector1",
-        type: InteractiveObjectType.SmokeDetector,
-        position: { x: 0, y: 2.5, z: 0 },
-        isActive: false,
-        isCollected: false
-      },
+      // Smoke detector — not yet wired up, commented out for now
+      // {
+      //   id: "detector1",
+      //   type: InteractiveObjectType.SmokeDetector,
+      //   position: { x: 0, y: 2.5, z: 0 },
+      //   isActive: false,
+      //   isCollected: false
+      // },
       {
         id: "exit1",
         type: InteractiveObjectType.EmergencyExit,
@@ -264,63 +304,15 @@ export const LEVELS: Record<Level, LevelData> = {
     description: "Identify hazards in the Bedroom, Closet, Bathroom, and Living Area.",
     hazards: [
       // 1. Fireplace (Living Room South Wall)
-      {
-        id: "fireplace1",
-        type: HazardType.Fireplace,
-        position: { x: -5, y: 0, z: 9 }, 
-        isActive: true,
-        severity: 2,
-        isSmoking: true,
-        isExtinguished: false
-      },
+      fireplaceHazard("fireplace1", { x: -5, y: 0, z: 9 }, 2),
       // 2. Candle (On Living Room Coffee Table)
-      {
-        id: "candle1",
-        type: HazardType.Candle,
-        position: { x: -6.5, y: 0.6, z: 5 }, 
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      // 3. Space Heater (Bedroom - Dangerous position near bed)
-      {
-        id: "heater1",
-        type: HazardType.SpacerHeater,
-        position: { x: -8, y: 0, z: -6 }, 
-        isActive: true,
-        severity: 2,
-        isSmoking: true,
-        isExtinguished: false
-      },
+      candleHazard("candle1", { x: -6.5, y: 0.6, z: 5 }),
+      // 3. Space Heater (Bedroom)
+      spaceHeaterHazard("heater1", { x: -8, y: 0, z: -6 }, 2),
       // 4. Electrical Outlets
-      {
-        id: "outlet_entertainment",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -9.9, y: 0.5, z: 5 }, // Behind Living Room TV
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_computer",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -9.9, y: 0.5, z: -3 }, // Behind Bedroom Computer
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_closet",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 4, y: 0.5, z: -9.9 }, // Inside Closet
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      }
+      electricalOutletHazard("outlet_entertainment", { x: -9.9, y: 0.5, z: 5 }),
+      electricalOutletHazard("outlet_computer", { x: -9.9, y: 0.5, z: -3 }),
+      electricalOutletHazard("outlet_closet", { x: 4, y: 0.5, z: -9.9 }),
     ],
     objects: [
       {
@@ -337,13 +329,14 @@ export const LEVELS: Record<Level, LevelData> = {
         isActive: true,
         isCollected: false
       },
-      {
-        id: "detector2",
-        type: InteractiveObjectType.SmokeDetector,
-        position: { x: 0, y: 2.8, z: 0 }, // Ceiling Center
-        isActive: false,
-        isCollected: false
-      },
+      // Smoke detector — not yet wired up, commented out for now
+      // {
+      //   id: "detector2",
+      //   type: InteractiveObjectType.SmokeDetector,
+      //   position: { x: 0, y: 2.8, z: 0 }, // Ceiling Center
+      //   isActive: false,
+      //   isCollected: false
+      // },
       {
         id: "exit2",
         type: InteractiveObjectType.EmergencyExit,
@@ -435,64 +428,16 @@ export const LEVELS: Record<Level, LevelData> = {
     description: "Navigate fire hazards in a garage workshop with flammable liquids, electrical tools, and hot equipment.",
     hazards: [
       // 1. Gasoline fire near workbench (Class B - Flammable liquids)
-      {
-        id: "gas_can_fire",
-        type: HazardType.ClassBFire,
-        position: { x: -7, y: 0, z: -7 },
-        isActive: true,
-        severity: 2.5,
-        isSmoking: true,
-        isExtinguished: false
-      },
+      classBFireHazard("gas_can_fire", { x: -7, y: 0, z: -7 }, 2.5, true),
       // 2. Electrical fire from overloaded power strip (Class C)
-      {
-        id: "power_strip_fire",
-        type: HazardType.ClassCFire,
-        position: { x: 7, y: 0, z: -8 },
-        isActive: true,
-        severity: 2,
-        isSmoking: true,
-        isExtinguished: false
-      },
+      classCFireHazard("power_strip_fire", { x: 7, y: 0, z: -8 }, 2, true),
       // 3. Oily rag fire (spontaneous combustion - Class B)
-      {
-        id: "oily_rag_fire",
-        type: HazardType.ClassBFire,
-        position: { x: 5, y: 0, z: 5 },
-        isActive: true,
-        severity: 1.5,
-        isSmoking: true,
-        isExtinguished: false
-      },
+      classBFireHazard("oily_rag_fire", { x: 5, y: 0, z: 5 }, 1.5, true),
       // 4. Overloaded outlets (mounted on walls at eye level)
-      {
-        id: "outlet_garage_1",
-        type: HazardType.ElectricalOutlet,
-        position: { x: -9.9, y: 0.4, z: 0 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
-      {
-        id: "outlet_garage_2",
-        type: HazardType.ElectricalOutlet,
-        position: { x: 9.9, y: 0.4, z: -4 },
-        isActive: true,
-        severity: 1,
-        isSmoking: false,
-        isExtinguished: false
-      },
+      electricalOutletHazard("outlet_garage_1", { x: -9.9, y: 0.4, z: 0 }),
+      electricalOutletHazard("outlet_garage_2", { x: 9.9, y: 0.4, z: -4 }),
       // 5. Gas leak from propane tank
-      {
-        id: "propane_leak",
-        type: HazardType.GasLeak,
-        position: { x: -8, y: 0, z: 6 },
-        isActive: true,
-        severity: 2,
-        isSmoking: false,
-        isExtinguished: false
-      }
+      gasLeakHazard("propane_leak", { x: -8, y: 0, z: 6 }, 2),
     ],
     objects: [
       // Fire extinguisher (Class B for flammable liquids) - mounted on west wall
@@ -519,14 +464,14 @@ export const LEVELS: Record<Level, LevelData> = {
         isActive: true,
         isCollected: false
       },
-      // Heat alarm (not smoke alarm - for garages)
-      {
-        id: "heat_alarm",
-        type: InteractiveObjectType.SmokeDetector,
-        position: { x: 0, y: 2.8, z: 0 },
-        isActive: false,
-        isCollected: false
-      },
+      // Heat alarm — not yet wired up, commented out for now
+      // {
+      //   id: "heat_alarm",
+      //   type: InteractiveObjectType.SmokeDetector,
+      //   position: { x: 0, y: 2.8, z: 0 },
+      //   isActive: false,
+      //   isCollected: false
+      // },
       // Emergency exit (fire-rated door)
       {
         id: "exit_garage",
@@ -907,16 +852,71 @@ export const GAME_CONSTANTS = {
   EXTINGUISHER_RANGE: 3,
   POINTS_FOR_EXTINGUISHING: 100,
   POINTS_FOR_PREVENTION: 50,
-  POINTS_FOR_DETECTOR: 75,
+  // POINTS_FOR_DETECTOR: 75, // Smoke detector not yet wired up
   DAMAGE_DISTANCE: 1.2,
   // Hazard damage system
-  FIRE_DAMAGE_RANGE: 2.5,        // Distance at which fire starts dealing damage
-  FIRE_DAMAGE_RATE: 8,           // Damage per second when in fire range
+  FIRE_DAMAGE_RANGE: 3,          // Distance at which fire starts dealing damage
+  FIRE_DAMAGE_RATE: 11,          // Damage per second when in fire range
   SMOKE_RANGE: 4,                // Distance at which smoke affects oxygen
-  OXYGEN_DEPLETION_RATE: 3,      // Oxygen loss per second in smoke (kid-friendly)
+  OXYGEN_DEPLETION_RATE: 4,      // Oxygen loss per second in smoke
   GAS_MASK_PROTECTION: 1,        // Gas mask blocks oxygen depletion entirely
   OXYGEN_RECOVERY_RATE: 10,      // Oxygen recovery per second when safe
-  LOW_OXYGEN_DAMAGE_RATE: 3      // Damage per second when oxygen is 0 (kid-friendly)
+  LOW_OXYGEN_DAMAGE_RATE: 4,     // Damage per second when oxygen is 0
+  // Danger thresholds & timings (for HUD and audio)
+  HEALTH_CRITICAL_THRESHOLD: 30, // Show strong warnings when HP <= this
+  OXYGEN_CRITICAL_THRESHOLD: 30, // Show strong warnings when O2 <= this
+  HEALTH_VIGNETTE_THRESHOLD: 40, // Start red vignette when HP <= this
+  COUGH_COOLDOWN_MS: 3000        // Base cough cooldown in ms (modified by proximity)
+};
+
+// - FULL_VISUAL_MULTIPLIER: distance (in multiples of SMOKE_RANGE) where full props + fire render
+// - ICON_MULTIPLIER: distance where only a tiny hazard icon renders; beyond this, nothing is drawn
+export const FIRE_VISUAL_TUNING = {
+  FULL_VISUAL_MULTIPLIER: 1.5,
+  ICON_MULTIPLIER: 3,
+};
+
+// Difficulty-aware tuning table (reference) for quick balancing.
+// value mirrors the current GAME_CONSTANTS + DIFFICULTY_PROFILES behaviour.
+export const DIFFICULTY_TUNING: Record<
+  DifficultyLevel,
+  {
+    fireDamagePerSecondNearFire: number;
+    oxygenLossPerSecondInSmokeNoMask: number;
+    ambientOxygenLossFactor: number;
+    lowOxygenDamagePerSecondAtZero: number;
+  }
+> = {
+  [DifficultyLevel.Beginner]: {
+    fireDamagePerSecondNearFire: GAME_CONSTANTS.FIRE_DAMAGE_RATE * DIFFICULTY_PROFILES[DifficultyLevel.Beginner].fireDamageMultiplier,
+    oxygenLossPerSecondInSmokeNoMask: GAME_CONSTANTS.OXYGEN_DEPLETION_RATE * DIFFICULTY_PROFILES[DifficultyLevel.Beginner].oxygenDepletionMultiplier,
+    ambientOxygenLossFactor: 0.1,
+    lowOxygenDamagePerSecondAtZero: GAME_CONSTANTS.LOW_OXYGEN_DAMAGE_RATE,
+  },
+  [DifficultyLevel.Intermediate]: {
+    fireDamagePerSecondNearFire: GAME_CONSTANTS.FIRE_DAMAGE_RATE * DIFFICULTY_PROFILES[DifficultyLevel.Intermediate].fireDamageMultiplier,
+    oxygenLossPerSecondInSmokeNoMask: GAME_CONSTANTS.OXYGEN_DEPLETION_RATE * DIFFICULTY_PROFILES[DifficultyLevel.Intermediate].oxygenDepletionMultiplier,
+    ambientOxygenLossFactor: 0.1,
+    lowOxygenDamagePerSecondAtZero: GAME_CONSTANTS.LOW_OXYGEN_DAMAGE_RATE,
+  },
+  [DifficultyLevel.Advanced]: {
+    fireDamagePerSecondNearFire: GAME_CONSTANTS.FIRE_DAMAGE_RATE * DIFFICULTY_PROFILES[DifficultyLevel.Advanced].fireDamageMultiplier,
+    oxygenLossPerSecondInSmokeNoMask: GAME_CONSTANTS.OXYGEN_DEPLETION_RATE * DIFFICULTY_PROFILES[DifficultyLevel.Advanced].oxygenDepletionMultiplier,
+    ambientOxygenLossFactor: 0.1,
+    lowOxygenDamagePerSecondAtZero: GAME_CONSTANTS.LOW_OXYGEN_DAMAGE_RATE,
+  },
+  [DifficultyLevel.Expert]: {
+    fireDamagePerSecondNearFire: GAME_CONSTANTS.FIRE_DAMAGE_RATE * DIFFICULTY_PROFILES[DifficultyLevel.Expert].fireDamageMultiplier,
+    oxygenLossPerSecondInSmokeNoMask: GAME_CONSTANTS.OXYGEN_DEPLETION_RATE * DIFFICULTY_PROFILES[DifficultyLevel.Expert].oxygenDepletionMultiplier,
+    ambientOxygenLossFactor: 0.1,
+    lowOxygenDamagePerSecondAtZero: GAME_CONSTANTS.LOW_OXYGEN_DAMAGE_RATE,
+  },
+  [DifficultyLevel.Master]: {
+    fireDamagePerSecondNearFire: GAME_CONSTANTS.FIRE_DAMAGE_RATE * DIFFICULTY_PROFILES[DifficultyLevel.Master].fireDamageMultiplier,
+    oxygenLossPerSecondInSmokeNoMask: GAME_CONSTANTS.OXYGEN_DEPLETION_RATE * DIFFICULTY_PROFILES[DifficultyLevel.Master].oxygenDepletionMultiplier,
+    ambientOxygenLossFactor: 0.1,
+    lowOxygenDamagePerSecondAtZero: GAME_CONSTANTS.LOW_OXYGEN_DAMAGE_RATE,
+  },
 };
 
 // Extinguisher ammo system constants

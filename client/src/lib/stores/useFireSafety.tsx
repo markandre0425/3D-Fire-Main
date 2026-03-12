@@ -1,12 +1,11 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { BoundingBox } from "../collision";
-import { HazardState, InteractiveObject, Level, LevelData } from "../types";
-import { LEVELS, SAFETY_TIPS, GAME_CONSTANTS } from "../constants";
+import { HazardState, HazardType, InteractiveObject, Level, LevelData, InteractiveObjectType } from "../types";
+import { LEVELS, SAFETY_TIPS, GAME_CONSTANTS, HAZARD_TIPS } from "../constants";
 import { usePlayer } from "./usePlayer";
 import { useAudio } from "./useAudio";
 import { getLevelConfig } from "../levelConfigs";
-import { HazardType, InteractiveObjectType } from "../types";
 
 interface FireSafetyState {
   currentLevel: Level;
@@ -20,7 +19,9 @@ interface FireSafetyState {
   activeTip: string | null;
   isLevelComplete: boolean;
   lastPickedExtinguisherId: string | null; // Track for respawn system
-  
+  shownHazardTips: HazardType[];
+  currentHazardTipType: HazardType | null;
+
   // Actions
   addCollidable: (collidable: BoundingBox) => void;
   clearCollidables: () => void;
@@ -34,10 +35,12 @@ interface FireSafetyState {
   showSafetyTip: (tipId: string | null) => void;
   extinguishHazard: (hazardId: string, amount?: number) => void;
   collectObject: (objectId: string) => void;
-  activateSmokeDetector: (detectorId: string) => void;
+  // activateSmokeDetector: (detectorId: string) => void; // Not yet wired up
   addHazard: (hazard: HazardState) => void;
   respawnExtinguisher: (objectId: string) => void;
   refillFromCabinet: () => boolean;
+  markHazardTipShown: (type: HazardType) => void;
+  setCurrentHazardTipType: (type: HazardType | null) => void;
 }
 
 export const useFireSafety = create<FireSafetyState>()(
@@ -53,7 +56,9 @@ export const useFireSafety = create<FireSafetyState>()(
     activeTip: null,
     isLevelComplete: false,
     lastPickedExtinguisherId: null,
-    
+    shownHazardTips: [],
+    currentHazardTipType: null,
+
     addCollidable: (collidable: BoundingBox) => {
       set((state) => ({
         collidables: [...state.collidables, collidable],
@@ -68,65 +73,89 @@ export const useFireSafety = create<FireSafetyState>()(
       });
     },
 
+    markHazardTipShown: (type: HazardType) => {
+      if (!HAZARD_TIPS[type]) return;
+      const { shownHazardTips } = get();
+      if (shownHazardTips.includes(type)) return;
+      set({ shownHazardTips: [...shownHazardTips, type] });
+    },
+
+    setCurrentHazardTipType: (type: HazardType | null) => {
+      set({ currentHazardTipType: type });
+    },
+
     startLevel: (level: Level) => {
-      // Reset score and inventory when entering any new level
-      usePlayer.getState().setScore(0);
+      // Reset inventory but keep score accumulating across levels
+      // usePlayer.getState().setScore(0); // Removed: let score accumulate for kids
       usePlayer.getState().setHasExtinguisher(false);
       usePlayer.getState().setHasGasMask(false);
       const levelData = LEVELS[level];
       const levelConfig = getLevelConfig(parseInt(level) || 1);
       const { collidableGeneration } = get();
-      
+
       // Merge level config with constants for enhanced fire management
       let enhancedHazards = [...levelData.hazards];
       let enhancedObjects = [...levelData.objects];
-      
+
       if (levelConfig) {
         // Add level-specific fires from levelConfigs
+        const MIN_DYNAMIC_FIRE_DISTANCE = GAME_CONSTANTS.FIRE_DAMAGE_RANGE * 1.5;
+
         const levelFires = levelConfig.hazards
-          .filter((hazard: any) => hazard.type === 'fire')
-          .map((hazard: any) => {
+          .filter((hazard: any) => hazard.type === "fire")
+          .reduce((acc: HazardState[], hazard: any) => {
             // Map different fire types to appropriate HazardType enum values
             let hazardType = HazardType.ClassAFire; // Default to Class A
-            
-            // You can add more specific mapping logic here if needed
-            // For now, all fires from level configs will use ClassAFire
-            
-            return {
+
+            const candidate: HazardState = {
               id: hazard.id,
               type: hazardType,
-              position: { 
-                x: hazard.position[0], 
-                y: hazard.position[1], 
-                z: hazard.position[2] 
+              position: {
+                x: hazard.position[0],
+                y: hazard.position[1],
+                z: hazard.position[2],
               },
               isActive: true,
               severity: hazard.intensity,
               isSmoking: hazard.intensity > 1.5,
-              isExtinguished: false
+              isExtinguished: false,
             };
-          });
-        
+
+            // Skip dynamic fires that are too close to any existing hazard
+            const isTooClose = [...levelData.hazards, ...acc].some((h) => {
+              const dx = h.position.x - candidate.position.x;
+              const dz = h.position.z - candidate.position.z;
+              const dist = Math.sqrt(dx * dx + dz * dz);
+              return dist < MIN_DYNAMIC_FIRE_DISTANCE;
+            });
+
+            if (!isTooClose) {
+              acc.push(candidate);
+            }
+
+            return acc;
+          }, []);
+
         // Add level-specific items from levelConfigs
         const levelItems = levelConfig.items
           .filter((item: any) => item.type === 'extinguisher')
           .map((item: any) => ({
             id: item.id,
             type: InteractiveObjectType.FireExtinguisher,
-            position: { 
-              x: item.position[0], 
-              y: item.position[1], 
-              z: item.position[2] 
+            position: {
+              x: item.position[0],
+              y: item.position[1],
+              z: item.position[2]
             },
             isActive: true,
             isCollected: false
           }));
-        
+
         enhancedHazards = [...enhancedHazards, ...levelFires];
         enhancedObjects = [...enhancedObjects, ...levelItems];
-        
+
       }
-      
+
       // Choose a level-specific intro safety tip
       const tipMap: Partial<Record<Level, string>> = {
         [Level.Kitchen]: "tip1",       // Stove / cooking safety
@@ -147,20 +176,20 @@ export const useFireSafety = create<FireSafetyState>()(
         isLevelComplete: false,
         activeTip: hasIntroTip ? introTipId! : null,
       });
-      
+
     },
-    
+
     pauseGame: () => {
       set({ isPaused: true });
     },
-    
+
     resumeGame: () => {
       set({ isPaused: false });
     },
-    
+
     completeLevel: () => {
       const { currentLevel, completedLevels } = get();
-      
+
       if (!completedLevels.includes(currentLevel)) {
         set({
           completedLevels: [...completedLevels, currentLevel],
@@ -169,15 +198,13 @@ export const useFireSafety = create<FireSafetyState>()(
       } else {
         set({ isLevelComplete: true });
       }
-      
-      useAudio.getState().playLevelCompleted();
     },
-    
+
     resetLevel: () => {
       const { currentLevel } = get();
       const levelData = LEVELS[currentLevel];
       const { collidableGeneration } = get();
-      
+
       set({
         hazards: [...levelData.hazards],
         interactiveObjects: [...levelData.objects],
@@ -187,35 +214,37 @@ export const useFireSafety = create<FireSafetyState>()(
         isLevelComplete: false,
         activeTip: null
       });
-      
+
       // Reset player state
       usePlayer.getState().resetPlayer();
-      
+
     },
-    
+
     updateHazard: (hazardId: string, updates: Partial<HazardState>) => {
       const { hazards } = get();
-      const updatedHazards = hazards.map(hazard => 
+      const updatedHazards = hazards.map(hazard =>
         hazard.id === hazardId ? { ...hazard, ...updates } : hazard
       );
-      
+
       set({ hazards: updatedHazards });
     },
-    
+
     updateInteractiveObject: (objectId: string, updates: Partial<InteractiveObject>) => {
       const { interactiveObjects } = get();
-      const updatedObjects = interactiveObjects.map(obj => 
+      const updatedObjects = interactiveObjects.map(obj =>
         obj.id === objectId ? { ...obj, ...updates } : obj
       );
-      
+
       set({ interactiveObjects: updatedObjects });
     },
-    
+
     showSafetyTip: (tipId: string | null) => {
       set({ activeTip: tipId });
     },
-    
-    // Gradual extinguishing: reduce severity over time instead of instant kill
+
+    // Gradual extinguish: reduce severity over time instead of instant kill.
+    // This function is PURE game logic: it only updates hazards and score;
+    // audio side-effects are handled by React controllers.
     extinguishHazard: (hazardId: string, amount: number = 1.0) => {
       const { hazards } = get();
 
@@ -244,120 +273,114 @@ export const useFireSafety = create<FireSafetyState>()(
           isActive: !isNowExtinguished,
         };
       });
-      
-      // Only award points / play sound when a hazard actually becomes extinguished
+
+      // Only award points when a hazard actually becomes extinguished
       if (awardedScore) {
         usePlayer.getState().addScore(GAME_CONSTANTS.POINTS_FOR_EXTINGUISHING);
-        useAudio.getState().playHit();
       }
-      
+
       set({ hazards: updatedHazards });
-      
+
       // Check if all hazards are extinguished to complete level
       if (updatedHazards.length > 0 && updatedHazards.every((h) => h.isExtinguished)) {
         setTimeout(() => get().completeLevel(), 1500);
       }
     },
-    
+
     collectObject: (objectId: string) => {
       const { interactiveObjects } = get();
-      const object = interactiveObjects.find(obj => obj.id === objectId);
-      
-      if (object) {
-        // Add points
-        usePlayer.getState().addScore(GAME_CONSTANTS.POINTS_FOR_PREVENTION);
-        
-        const updatedObjects = interactiveObjects.map(obj => 
-          obj.id === objectId ? { ...obj, isCollected: true } : obj
-        );
-        
-        set({ interactiveObjects: updatedObjects });
-        
-        // If it's a fire extinguisher, give it to the player with type
-        const isExtinguisher = object.type === "FireExtinguisher" || 
-            object.type === "WaterExtinguisher" ||
-            object.type === "FoamExtinguisher" ||
-            object.type === "CO2Extinguisher" ||
-            object.type === "PowderExtinguisher" ||
-            object.type === "WetChemicalExtinguisher";
-            
-        if (isExtinguisher) {
-          usePlayer.getState().pickupExtinguisher(object.type);
-          // Track this extinguisher for respawn system
-          set({ lastPickedExtinguisherId: objectId });
-        }
-        
-        // If it's a gas mask, give it to the player
-        if (object.type === "GasMask") {
-          usePlayer.getState().pickupGasMask();
-        }
-        
-        useAudio.getState().playSuccess();
+      const object = interactiveObjects.find((obj) => obj.id === objectId);
+
+      if (!object) return;
+
+      // Add points
+      usePlayer.getState().addScore(GAME_CONSTANTS.POINTS_FOR_PREVENTION);
+
+      const updatedObjects = interactiveObjects.map((obj) =>
+        obj.id === objectId ? { ...obj, isCollected: true } : obj
+      );
+
+      set({ interactiveObjects: updatedObjects });
+
+      // Fire Extinguisher
+      const isExtinguisher =
+        object.type === "FireExtinguisher" ||
+        object.type === "WaterExtinguisher" ||
+        object.type === "FoamExtinguisher" ||
+        object.type === "CO2Extinguisher" ||
+        object.type === "PowderExtinguisher" ||
+        object.type === "WetChemicalExtinguisher";
+
+      if (isExtinguisher) {
+        usePlayer.getState().pickupExtinguisher(object.type);
+        // Track this extinguisher for respawn system
+        set({ lastPickedExtinguisherId: objectId });
+      }
+
+      // Gask Mask
+      if (object.type === "GasMask") {
+        usePlayer.getState().pickupGasMask();
       }
     },
-    
+
     // Respawn a collected extinguisher (makes it pickable again)
     respawnExtinguisher: (objectId: string) => {
       const { interactiveObjects } = get();
-      
-      const updatedObjects = interactiveObjects.map(obj => 
+
+      const updatedObjects = interactiveObjects.map(obj =>
         obj.id === objectId ? { ...obj, isCollected: false } : obj
       );
-      
+
       set({ interactiveObjects: updatedObjects });
     },
-    
+
     // Refill extinguisher from cabinet (if player has extinguisher and is near cabinet)
     refillFromCabinet: () => {
       const playerState = usePlayer.getState();
       const { interactiveObjects } = get();
       const playerPos = playerState.position;
-      
+
       // Check if player has an extinguisher
       if (!playerState.hasExtinguisher) {
-        console.log("No extinguisher to refill");
         return false;
       }
-      
+
       // Check if player is near a cabinet
       const interactDistSq = ((GAME_CONSTANTS?.INTERACTION_DISTANCE || 2.5) + 0.5) ** 2;
-      
+
       // Find nearby cabinets (check environment objects too)
-      // For now, check interactiveObjects for cabinet type
-      const nearbyCabinet = interactiveObjects.find(obj => {
-        if (obj.type !== "ExtinguisherCabinet" && obj.type !== "extinguisher_cabinet") return false;
-        
+      // For now, check interactiveObjects for cabinet type; compare via string to satisfy TS
+      const nearbyCabinet = interactiveObjects.find((obj) => {
+        const typeStr = obj.type as unknown as string;
+        if (typeStr !== "ExtinguisherCabinet" && typeStr !== "extinguisher_cabinet") return false;
+
         const dx = playerPos.x - obj.position.x;
         const dy = playerPos.y - obj.position.y;
         const dz = playerPos.z - obj.position.z;
-        const distSq = dx*dx + dy*dy + dz*dz;
-        
+        const distSq = dx * dx + dy * dy + dz * dz;
+
         return distSq < interactDistSq;
       });
-      
+
       if (nearbyCabinet) {
         playerState.refillExtinguisherAmmo(100); // Full refill
         useAudio.getState().playSuccess();
         return true;
       }
-      
+
       return false;
     },
-    
-    activateSmokeDetector: (detectorId: string) => {
-      const { interactiveObjects } = get();
-      
-      const updatedObjects = interactiveObjects.map(obj => 
-        obj.id === detectorId ? { ...obj, isActive: true } : obj
-      );
-      
-      // Add points
-      usePlayer.getState().addScore(GAME_CONSTANTS.POINTS_FOR_DETECTOR);
-      
-      set({ interactiveObjects: updatedObjects });
-      
-      useAudio.getState().playSuccess();
-    },
+
+    // Smoke detector — not yet wired up, commented out for now
+    // activateSmokeDetector: (detectorId: string) => {
+    //   const { interactiveObjects } = get();
+    //   const updatedObjects = interactiveObjects.map(obj =>
+    //     obj.id === detectorId ? { ...obj, isActive: true } : obj
+    //   );
+    //   usePlayer.getState().addScore(GAME_CONSTANTS.POINTS_FOR_DETECTOR);
+    //   set({ interactiveObjects: updatedObjects });
+    //   useAudio.getState().playSuccess();
+    // },
 
     // Allow systems like RandomFireSpawner to inject new hazards into the store
     addHazard: (hazard: HazardState) => {

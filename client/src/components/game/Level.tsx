@@ -39,7 +39,8 @@ export default function Level() {
     <>
       <Lights />
       <HomeEnvironment />
-      <CollidersDebug enabled={true} />
+      {/* Collider wireframes are available for debugging but disabled in normal play */}
+      <CollidersDebug enabled={false} />
       
       {/* 1. HAZARDS (Fires & Props) */}
       {/* This includes the Level-Specific fires loaded by the Store */}
